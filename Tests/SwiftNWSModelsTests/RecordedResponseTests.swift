@@ -5,39 +5,6 @@ import Testing
 
 @Suite("Decoding recorded responses", .timeLimit(.minutes(suiteTimeLimitMinutes)))
 struct RecordedResponseTests {
-  @Test("A point decodes its grid, links, and nearest city")
-  func aPointDecodesItsGridLinksAndNearestCity() throws {
-    let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
-
-    #expect(point.id?.absoluteString == "https://api.weather.gov/points/30.2672,-97.7431")
-    #expect(point.properties.gridId == "EWX")
-    #expect(point.properties.gridX == 156)
-    #expect(point.properties.gridY == 91)
-    #expect(
-      point.properties.observationStations.absoluteString
-        == "https://api.weather.gov/gridpoints/EWX/156,91/stations")
-    #expect(
-      point.properties.relativeLocation?.properties
-        == Point.RelativeLocation(city: "Austin", state: "TX"))
-    #expect(point.properties.timeZone == "America/Chicago")
-  }
-
-  @Test("A station collection decodes every station, nearest first")
-  func aStationCollectionDecodesEveryStationNearestFirst() throws {
-    let stations = try JSONDecoder().decode(
-      FeatureCollection<ObservationStation>.self, from: Fixture.observationStations.data())
-
-    #expect(stations.features.count == 64)
-    #expect(
-      stations.features.first?.properties
-        == ObservationStation(
-          elevation: QuantitativeValue(unitCode: "wmoUnit:m", value: 199.9488),
-          name: "Austin City Austin Camp Mabry",
-          stationIdentifier: "KATT",
-          timeZone: "America/Chicago"
-        ))
-  }
-
   @Test("An observation decodes its readings, its missing readings, and its timestamp")
   func anObservationDecodesItsReadingsItsMissingReadingsAndItsTimestamp() throws {
     let observation = try JSONDecoder().decode(
@@ -79,6 +46,39 @@ struct RecordedResponseTests {
     #expect(json.contains(#""timestamp":"2026-09-13T19:51:00Z""#))
   }
 
+  @Test("A point decodes its grid, links, and nearest city")
+  func aPointDecodesItsGridLinksAndNearestCity() throws {
+    let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+
+    #expect(point.id?.absoluteString == "https://api.weather.gov/points/30.2672,-97.7431")
+    #expect(point.properties.gridId == "EWX")
+    #expect(point.properties.gridX == 156)
+    #expect(point.properties.gridY == 91)
+    #expect(
+      point.properties.observationStations.absoluteString
+        == "https://api.weather.gov/gridpoints/EWX/156,91/stations")
+    #expect(
+      point.properties.relativeLocation?.properties
+        == Point.RelativeLocation(city: "Austin", state: "TX"))
+    #expect(point.properties.timeZone == "America/Chicago")
+  }
+
+  @Test("A station collection decodes every station in service order")
+  func aStationCollectionDecodesEveryStationInServiceOrder() throws {
+    let stations = try JSONDecoder().decode(
+      FeatureCollection<ObservationStation>.self, from: Fixture.observationStations.data())
+
+    #expect(stations.features.count == 64)
+    #expect(
+      stations.features.first?.properties
+        == ObservationStation(
+          elevation: QuantitativeValue(unitCode: "wmoUnit:m", value: 199.9488),
+          name: "Austin City Austin Camp Mabry",
+          stationIdentifier: "KATT",
+          timeZone: "America/Chicago"
+        ))
+  }
+
   @Test("Problem details decode the status, title, and correlation identifier")
   func problemDetailsDecodeTheStatusTitleAndCorrelationIdentifier() throws {
     let problem = try JSONDecoder().decode(ProblemDetail.self, from: Fixture.problemDetail.data())
@@ -93,5 +93,15 @@ struct RecordedResponseTests {
           title: "Data Unavailable For Requested Point",
           type: "https://api.weather.gov/problems/InvalidPoint"
         ))
+  }
+
+  @Test("Unknown unit and quality codes survive decoding with a missing measurement")
+  func unknownUnitAndQualityCodesSurviveDecodingWithAMissingMeasurement() throws {
+    let body = Data(
+      #"{"qualityControl":"future-quality","unitCode":"wmoUnit:future","value":null}"#.utf8)
+    let value = try JSONDecoder().decode(QuantitativeValue.self, from: body)
+    #expect(value.qualityControl == "future-quality")
+    #expect(value.unitCode == "wmoUnit:future")
+    #expect(value.value == nil)
   }
 }

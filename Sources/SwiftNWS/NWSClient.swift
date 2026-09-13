@@ -9,17 +9,9 @@ import SwiftNWSModels
 
 /// A client for the National Weather Service API.
 ///
-/// The client sends ``/SwiftNWSModels/Endpoint`` values to `https://api.weather.gov` with the
-/// `User-Agent` from its configuration and the media type each endpoint asks for, and decodes the
-/// response. On Apple platforms, create one over a `URLSession`; anywhere else, pass a swifty-networking
-/// transport.
-///
-/// ```swift
-/// let client = NWSClient(
-///   configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)")
-/// )
-/// let observation = try await client.latestObservation(latitude: 30.2672, longitude: -97.7431)
-/// ```
+/// Use ``latestObservation(from:)`` for current conditions, ``value(for:)`` for a reusable
+/// request, and ``send(_:)`` for a single endpoint. All three use the same transport and errors.
+/// On Apple platforms, create a client with ``init(userAgent:)``; elsewhere, pass a transport.
 public struct NWSClient: Sendable {
   /// The values every request is sent with.
   public var configuration: NWSConfiguration
@@ -36,19 +28,31 @@ public struct NWSClient: Sendable {
     self.client = HTTPClient(baseURL: Self.baseURL, transport: transport)
   }
 
+  /// Retrieves the latest observation from a station or a coordinate's station list.
+  ///
+  /// A station lookup sends one request. A coordinate lookup sends three: the point, its linked
+  /// station list, and the first station's observation. The API does not guarantee distance order.
+  /// The result retains its station and timestamp, with no freshness filtering or fallback.
+  ///
+  /// - Parameter source: The station or coordinate to look up.
+  /// - Returns: The station's observation, including any missing measurements.
+  /// - Throws: The same ``NWSError`` as the equivalent ``value(for:)`` request.
+  public func latestObservation(
+    from source: ObservationSource
+  ) async throws(NWSError) -> WeatherObservation {
+    try await value(for: .latestObservation(from: source))
+  }
+
   /// Sends an endpoint and decodes its response.
   ///
-  /// ```swift
-  /// let point = try await client.send(Endpoint.point(latitude: 30.2672, longitude: -97.7431))
-  /// ```
-  ///
   /// - Parameter endpoint: The endpoint to send.
-  /// - Returns: The decoded response.
-  /// - Throws: ``NWSError/problem(_:)`` when the API answers with problem details, and
-  ///   ``NWSError/transport(_:)`` for any other failure.
+  /// - Returns: The decoded body, including its GeoJSON wrapper when the endpoint names one.
+  /// - Throws: ``NWSError/problem(_:)`` for NWS problem details, or ``NWSError/transport(_:)``
+  ///   for transport and decoding failures. Cancellation is a transport cancellation.
   public func send<Value: Decodable & SendableMetatype>(
     _ endpoint: Endpoint<Value>
   ) async throws(NWSError) -> Value {
+    guard !Task.isCancelled else { throw .transport(.cancelled) }
     var headers = HTTPFields()
     headers[.accept] = endpoint.accept.rawValue
     headers[.userAgent] = configuration.userAgent
@@ -59,35 +63,46 @@ public struct NWSClient: Sendable {
     }
   }
 
-  /// The latest observation from the station nearest a location.
+  /// Executes a reusable weather request.
   ///
-  /// The lookup takes three requests: the point for the location, the stations near it, and the
-  /// latest observation from the first station listed, which is the nearest.
+  /// Endpoint requests decode directly as `Value`. Latest-observation requests resolve their
+  /// source and return the observation's properties. No caching or automatic pagination is applied.
   ///
-  /// ```swift
-  /// let observation = try await client.latestObservation(latitude: 30.2672, longitude: -97.7431)
-  /// print(observation.stationName ?? observation.stationId, observation.textDescription ?? "")
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - latitude: The latitude in decimal degrees.
-  ///   - longitude: The longitude in decimal degrees.
-  /// - Returns: The observation.
-  /// - Throws: ``NWSError/noObservationStation`` when the point lists no station,
-  ///   ``NWSError/invalidLink(_:)`` when it links outside the API, and whatever ``send(_:)`` throws.
-  public func latestObservation(
-    latitude: Double,
-    longitude: Double
-  ) async throws(NWSError) -> WeatherObservation {
-    let point = try await send(Endpoint.point(latitude: latitude, longitude: longitude)).properties
-    guard let stationsEndpoint = Endpoint.observationStations(near: point) else {
-      throw .invalidLink(point.observationStations)
+  /// - Parameter request: The portable description to execute.
+  /// - Returns: The concrete response selected by the request's factory or endpoint.
+  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier,
+  ///   ``NWSError/invalidLink(_:)`` for a disallowed link, ``NWSError/noObservationStation``
+  ///   for an empty station list, or any error from ``send(_:)``.
+  public func value<Value: Decodable & SendableMetatype>(
+    for request: WeatherRequest<Value>
+  ) async throws(NWSError) -> Value {
+    guard !Task.isCancelled else { throw .transport(.cancelled) }
+    switch request.resolution {
+    case .endpoint(let endpoint):
+      return try await send(endpoint)
+    case .latestObservation(let source):
+      let identifier: String
+      switch source {
+      case .nearest(let location):
+        let point = try await send(Endpoint.point(for: location)).properties
+        guard let stationsEndpoint = Endpoint.observationStations(near: point) else {
+          throw .invalidLink(point.observationStations)
+        }
+        guard let station = try await send(stationsEndpoint).features.first?.properties else {
+          throw .noObservationStation
+        }
+        identifier = station.stationIdentifier
+      case .station(let stationIdentifier):
+        identifier = stationIdentifier
+      }
+      guard !identifier.isEmpty else { throw .invalidStationIdentifier(identifier) }
+      let endpoint = Endpoint.latestObservation(stationIdentifier: identifier)
+      // Only WeatherRequest<WeatherObservation> can be created with this resolution.
+      // Decode the same response type through its GeoJSON envelope without erasing or casting it.
+      let feature = try await send(
+        Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path))
+      return feature.properties
     }
-    guard let station = try await send(stationsEndpoint).features.first?.properties else {
-      throw .noObservationStation
-    }
-    let latest = Endpoint.latestObservation(stationIdentifier: station.stationIdentifier)
-    return try await send(latest).properties
   }
 
   private static let baseURL: URL = {

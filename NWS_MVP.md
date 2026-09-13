@@ -8,8 +8,13 @@ and signatures are settled when each piece is built, against the live OpenAPI sp
 
 - `/points/{latitude},{longitude}`, the observation stations a point links to, and
   `/stations/{stationId}/observations/latest`, as `Endpoint` values and `Codable` models.
-- `NWSClient.latestObservation(latitude:longitude:)`, sending through `URLSession` on Apple
-  platforms and through AsyncHTTPClient on Linux and Android under the `HTTPPortable` trait.
+- `WeatherCoordinate`, `ObservationSource`, and reusable `WeatherRequest<Response>` values,
+  including custom typed endpoints and inspectable resolution descriptions.
+- `NWSClient.latestObservation(from:)`, delegating to `value(for:)` and `send(_:)`, sending
+  through `URLSession` on Apple platforms and through AsyncHTTPClient on Linux and Android
+  under the `HTTPPortable` trait. Coordinate lookups use the first service-listed station
+  without freshness filtering or fallback.
+- DocC catalogs for both products describing current conditions and request execution.
 - `NWSError`, mapping RFC 7807 problem details into a typed error.
 - An iOS demo app in `Examples/SwiftNWSDemo`.
 

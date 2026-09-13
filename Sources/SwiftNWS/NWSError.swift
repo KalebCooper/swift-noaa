@@ -13,10 +13,11 @@ import SwiftNWSModels
 ///
 /// ```swift
 /// do {
-///   let observation = try await client.latestObservation(latitude: 30.2672, longitude: -97.7431)
+///   let observation = try await client.latestObservation(from: .station("KATT"))
 /// } catch {
 ///   switch error {
 ///   case .invalidLink(let link): report("Unexpected link: \(link)")
+///   case .invalidStationIdentifier: report("A station identifier is required.")
 ///   case .noObservationStation: report("No station reports near here.")
 ///   case .problem(let problem): report(problem.title)
 ///   case .transport(let failure): report(failure.description)
@@ -24,8 +25,13 @@ import SwiftNWSModels
 /// }
 /// ```
 public enum NWSError: Error {
-  /// A response linked to a URL outside `https://api.weather.gov`, so the link was not followed.
+  /// A response contained a disallowed service URL, so the link was not followed.
+  ///
+  /// Links must use the HTTPS API origin without credentials or a fragment.
   case invalidLink(URL)
+
+  /// The station identifier is empty, so no observation request was sent.
+  case invalidStationIdentifier(String)
 
   /// The point lists no observation station to read conditions from.
   case noObservationStation

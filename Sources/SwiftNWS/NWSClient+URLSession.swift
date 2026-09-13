@@ -19,6 +19,14 @@ extension NWSClient {
   public init(configuration: NWSConfiguration, session: URLSession = .shared) {
     self.init(configuration: configuration, transport: URLSessionTransport(session: session))
   }
+
+  /// Creates a client that sends through the shared URL session.
+  ///
+  /// - Parameter userAgent: Your application identity and a contact, such as
+  ///   `(myweatherapp.com, contact@myweatherapp.com)`. There is no default identity.
+  public init(userAgent: String) {
+    self.init(configuration: NWSConfiguration(userAgent: userAgent))
+  }
 }
 
 #endif

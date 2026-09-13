@@ -53,7 +53,7 @@ public struct Point: Codable, Hashable, Sendable {
   /// The grid cell's row.
   public var gridY: Int
 
-  /// The link to the observation stations near the grid cell, nearest first.
+  /// The link to the observation stations usable for the grid cell.
   public var observationStations: URL
 
   /// The city and state nearest the point.

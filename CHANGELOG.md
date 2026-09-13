@@ -8,17 +8,23 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- `WeatherCoordinate`, with typed validation errors and four-decimal normalization.
+- `ObservationSource` and `WeatherRequest<Response>` for reusable, inspectable lookups, named
+  factory extensions, and custom single-HTTP endpoints with consumer-defined response models.
+- `NWSClient.value(for:)` and the Apple-platform `NWSClient(userAgent:)` initializer.
+- DocC catalogs for both products, covering current conditions, request reuse, and custom execution.
+
 - `SwiftNWS` re-exports swifty-networking's `HTTPCore`, so `TransportError` and `Transport` are
   usable, members included, from a file that imports only `SwiftNWS`.
-- `NWSClient.latestObservation(latitude:longitude:)`, the latest observation from the station
-  nearest a location, looked up through the location's point and its station list.
+- `NWSClient.latestObservation(from:)`, the latest observation from an explicit station or the
+  first station listed for a coordinate, delegating to the typed request execution path.
 - `NWSClient`, which sends an `Endpoint` with the configured `User-Agent` and the endpoint's media
   type and decodes the response. It is created over a `URLSession` on Apple platforms, or over any
   swifty-networking transport.
 - `NWSError`, the one error `NWSClient` throws: problem details the API answered with, a transport
-  failure, a link outside the API, or a point with no observation station.
+  failure, a disallowed service link, an empty station identifier, or a point with no observation station.
 - `Endpoint`, a request described as a path and a media type together with the type its response
-  decodes as, with `point(latitude:longitude:)`, `observationStations(near:)`,
+  decodes as, with `point(for:)`, `observationStations(near:)`,
   `latestObservation(stationIdentifier:)`, and `init(accept:link:)` for following a link a response
   returned.
 - `Feature` and `FeatureCollection`, the GeoJSON wrappers the API's responses come in.
@@ -30,3 +36,18 @@ All notable changes to this project are documented here. The format follows
 - `NWSConfiguration` in `SwiftNWS`, holding the `User-Agent` every request to the API must carry.
 - `MediaType` in `SwiftNWSModels`, a media type the API answers with, and `MediaType.geoJSON`.
 - The `SwiftNWSModels` and `SwiftNWS` products.
+
+### Changed
+
+- Replace the unreleased raw-coordinate observation and point methods with methods accepting
+  `WeatherCoordinate`. Configuration-based client initializers and `Endpoint`/`send(_:)` remain.
+- Clarify that coordinate lookups use service order without a guaranteed distance ordering,
+  freshness filtering, station fallback, point caching, or automatic pagination.
+
+### Fixed
+
+- Reject nonfinite and out-of-range coordinates before normalization can trap.
+- Encode station identifiers as individual path segments.
+- Validate service-link scheme, host, port, credentials, and fragments while retaining encoded
+  paths and queries. Explicit HTTPS port 443 and case-insensitive origins are accepted.
+- Check cancellation before every HTTP call in a lookup.

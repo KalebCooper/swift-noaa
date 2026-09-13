@@ -17,8 +17,7 @@ final class ConditionsModel {
   private(set) var phase = Phase.idle
 
   private let client = NWSClient(
-    configuration: NWSConfiguration(
-      userAgent: "(SwiftNWSDemo, https://github.com/KalebCooper/swift-nws)")
+    userAgent: "(SwiftNWSDemo, https://github.com/KalebCooper/swift-nws)"
   )
 
   /// Geocodes an address with MapKit, since the National Weather Service API has no geocoding.
@@ -54,11 +53,14 @@ final class ConditionsModel {
     phase = .loading
     do {
       let (place, coordinate) = try await locate()
-      let observation = try await client.latestObservation(
+      let location = try WeatherCoordinate(
         latitude: coordinate.latitude, longitude: coordinate.longitude)
+      let observation = try await client.latestObservation(from: .nearest(to: location))
       phase = .loaded(place: place, observation: observation)
     } catch let error as NWSError {
       phase = .failed(Self.message(for: error))
+    } catch is WeatherCoordinate.ValidationError {
+      phase = .failed("The location has invalid coordinates.")
     } catch {
       phase = .failed(error.localizedDescription)
     }
@@ -67,6 +69,7 @@ final class ConditionsModel {
   private static func message(for error: NWSError) -> String {
     switch error {
     case .invalidLink(let link): "The API linked outside itself: \(link)"
+    case .invalidStationIdentifier: "The weather service returned an empty station identifier."
     case .noObservationStation: "No weather station reports near this location."
     case .problem(let problem): "\(problem.title): \(problem.detail)"
     case .transport(let failure): failure.description
