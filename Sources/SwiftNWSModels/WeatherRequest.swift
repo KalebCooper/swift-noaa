@@ -8,6 +8,10 @@
 public struct WeatherRequest<Response>: Hashable, Sendable {
   /// The transport-independent work required to obtain a request's response.
   public enum Resolution: Hashable, Sendable {
+    /// Retrieve an alert by identifier and return the GeoJSON properties.
+    /// Only requests returning WeatherAlert carry this resolution.
+    case alert(identifier: String)
+
     /// Send one endpoint and decode its body directly as `Response`.
     case endpoint(Endpoint<Response>)
 
@@ -41,6 +45,45 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
 
   private init(resolution: Resolution) {
     self.resolution = resolution
+  }
+}
+
+extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
+  /// Describes active alerts at a coordinate.
+  /// - Parameter location: The coordinate to filter.
+  /// - Returns: A reusable request for a GeoJSON collection.
+  public static func activeAlerts(for location: WeatherCoordinate) -> Self {
+    Self(endpoint: .activeAlerts(for: location))
+  }
+
+  /// Describes active alerts in a provider area.
+  /// - Parameter area: A nonempty area code.
+  /// - Returns: A reusable request for a GeoJSON collection.
+  public static func activeAlerts(inArea area: String) -> Self {
+    Self(endpoint: .activeAlerts(inArea: area))
+  }
+
+  /// Describes active alerts in a provider zone.
+  /// - Parameter zone: A nonempty zone identifier.
+  /// - Returns: A reusable request for a GeoJSON collection.
+  public static func activeAlerts(inZone zone: String) -> Self {
+    Self(endpoint: .activeAlerts(inZone: zone))
+  }
+
+  /// Describes an active-alert query.
+  /// - Parameter filter: The supported filters.
+  /// - Returns: A reusable request for a GeoJSON collection.
+  public static func activeAlerts(matching filter: ActiveAlertFilter = .init()) -> Self {
+    Self(endpoint: .activeAlerts(matching: filter))
+  }
+}
+
+extension WeatherRequest where Response == WeatherAlert {
+  /// Describes retrieval of one alert.
+  /// - Parameter identifier: The provider alert identifier.
+  /// - Returns: A reusable request returning the alert properties.
+  public static func alert(identifier: String) -> Self {
+    Self(resolution: .alert(identifier: identifier))
   }
 }
 

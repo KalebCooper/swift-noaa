@@ -16,19 +16,28 @@ import SwiftNWSModels
 ///   let observation = try await client.latestObservation(from: .station("KATT"))
 /// } catch {
 ///   switch error {
+///   case .invalidAlertIdentifier: report("An alert identifier is required.")
 ///   case .invalidLink(let link): report("Unexpected link: \(link)")
+///   case .invalidRedirect: report("The API returned an invalid redirect.")
 ///   case .invalidStationIdentifier: report("A station identifier is required.")
 ///   case .noObservationStation: report("No station reports near here.")
 ///   case .problem(let problem): report(problem.title)
+///   case .tooManyRedirects: report("The API redirected too many times.")
 ///   case .transport(let failure): report(failure.description)
 ///   }
 /// }
 /// ```
 public enum NWSError: Error {
+  /// The alert identifier is empty, so no request was sent.
+  case invalidAlertIdentifier(String)
+
   /// A response contained a disallowed service URL, so the link was not followed.
   ///
   /// Links must use the HTTPS API origin without credentials or a fragment.
   case invalidLink(URL)
+
+  /// A redirect Location could not be interpreted as a URL.
+  case invalidRedirect(String)
 
   /// The station identifier is empty, so no observation request was sent.
   case invalidStationIdentifier(String)
@@ -38,6 +47,9 @@ public enum NWSError: Error {
 
   /// The API refused the request and explained why.
   case problem(ProblemDetail)
+
+  /// A redirect loop or more than five redirects prevented completion.
+  case tooManyRedirects
 
   /// The request failed without problem details: no response arrived, the status was an error with
   /// a body that is not problem details, or the body did not decode.

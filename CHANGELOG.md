@@ -8,6 +8,10 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Active alerts by coordinate, area, zone, and typed filters, plus single-alert lookups.
+- Portable CAP models that preserve unknown codes and optional fields, with recorded alert fixtures.
+- Bounded same-origin redirects with cancellation checks and alert sections in the demo.
+
 - Bounded point caching with injected-clock expiry, least-recently-used eviction, opt-out, and clearing.
 
 - Twelve-hour and hourly forecasts through client methods, reusable requests, and linked endpoints.

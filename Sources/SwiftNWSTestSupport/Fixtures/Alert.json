@@ -1,0 +1,139 @@
+{
+    "@context": [
+        "https://geojson.org/geojson-ld/geojson-context.jsonld",
+        {
+            "@version": "1.1",
+            "wx": "https://api.weather.gov/ontology#",
+            "@vocab": "https://api.weather.gov/ontology#"
+        }
+    ],
+    "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6e6bf321dc05d97a3fc0262ae03641b6b41e6b31.001.2",
+    "type": "Feature",
+    "geometry": null,
+    "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6e6bf321dc05d97a3fc0262ae03641b6b41e6b31.001.2",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.6e6bf321dc05d97a3fc0262ae03641b6b41e6b31.001.2",
+        "areaDesc": "Williamson; Hays; Travis; Bastrop; Lee; Bexar; Comal; Guadalupe; Caldwell; Fayette; Atascosa; Wilson; Karnes; Gonzales; De Witt; Lavaca",
+        "geocode": {
+            "SAME": [
+                "048491",
+                "048209",
+                "048453",
+                "048021",
+                "048287",
+                "048029",
+                "048091",
+                "048187",
+                "048055",
+                "048149",
+                "048013",
+                "048493",
+                "048255",
+                "048177",
+                "048123",
+                "048285"
+            ],
+            "UGC": [
+                "TXZ173",
+                "TXZ191",
+                "TXZ192",
+                "TXZ193",
+                "TXZ194",
+                "TXZ205",
+                "TXZ206",
+                "TXZ207",
+                "TXZ208",
+                "TXZ209",
+                "TXZ220",
+                "TXZ221",
+                "TXZ222",
+                "TXZ223",
+                "TXZ224",
+                "TXZ225"
+            ]
+        },
+        "affectedZones": [
+            "https://api.weather.gov/zones/forecast/TXZ173",
+            "https://api.weather.gov/zones/forecast/TXZ191",
+            "https://api.weather.gov/zones/forecast/TXZ192",
+            "https://api.weather.gov/zones/forecast/TXZ193",
+            "https://api.weather.gov/zones/forecast/TXZ194",
+            "https://api.weather.gov/zones/forecast/TXZ205",
+            "https://api.weather.gov/zones/forecast/TXZ206",
+            "https://api.weather.gov/zones/forecast/TXZ207",
+            "https://api.weather.gov/zones/forecast/TXZ208",
+            "https://api.weather.gov/zones/forecast/TXZ209",
+            "https://api.weather.gov/zones/forecast/TXZ220",
+            "https://api.weather.gov/zones/forecast/TXZ221",
+            "https://api.weather.gov/zones/forecast/TXZ222",
+            "https://api.weather.gov/zones/forecast/TXZ223",
+            "https://api.weather.gov/zones/forecast/TXZ224",
+            "https://api.weather.gov/zones/forecast/TXZ225"
+        ],
+        "references": [
+            {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b427ca6143604a9af1714a82cf768a1a4e95f084.001.1",
+                "identifier": "urn:oid:2.49.0.1.840.0.b427ca6143604a9af1714a82cf768a1a4e95f084.001.1",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "sent": "2026-09-13T06:09:00-05:00"
+            }
+        ],
+        "sent": "2026-09-13T12:19:00-05:00",
+        "effective": "2026-09-13T12:19:00-05:00",
+        "onset": "2026-09-13T12:19:00-05:00",
+        "expires": "2026-09-13T20:45:00-05:00",
+        "ends": "2026-09-13T19:00:00-05:00",
+        "status": "Actual",
+        "messageType": "Update",
+        "category": "Met",
+        "severity": "Moderate",
+        "certainty": "Likely",
+        "urgency": "Expected",
+        "event": "Heat Advisory",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Austin/San Antonio TX",
+        "headline": "Heat Advisory issued September 13 at 12:19PM CDT until September 13 at 7:00PM CDT by NWS Austin/San Antonio TX",
+        "description": "* WHAT...For the first Heat Advisory, heat index values up to 111.\nFor the second Heat Advisory, heat index values up to 111 expected.\n\n* WHERE...The I-35 corridor and Coastal Plains.\n\n* WHEN...For the first Heat Advisory, until 7 PM CDT this evening.\nFor the second Heat Advisory, from noon to 7 PM CDT Monday.\n\n* IMPACTS...Hot temperatures and high humidity may cause heat\nillnesses.",
+        "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
+        "response": "Execute",
+        "note": null,
+        "parameters": {
+            "AWIPSidentifier": [
+                "NPWEWX"
+            ],
+            "WMOidentifier": [
+                "WWUS74 KEWX 131719"
+            ],
+            "NWSheadline": [
+                "HEAT ADVISORY IN EFFECT FROM NOON TO 7 PM CDT MONDAY... ...HEAT ADVISORY REMAINS IN EFFECT UNTIL 7 PM CDT THIS EVENING"
+            ],
+            "BLOCKCHANNEL": [
+                "EAS",
+                "NWEM",
+                "CMAS"
+            ],
+            "VTEC": [
+                "/O.CON.KEWX.HT.Y.0010.000000T0000Z-260914T0000Z/"
+            ],
+            "eventEndingTime": [
+                "2026-09-13T19:00:00-05:00"
+            ],
+            "expiredReferences": [
+                "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.589c828ca936b2bb274be2a8b47f7dac62c432ac.001.1,2026-09-13T00:39:00-05:00"
+            ]
+        },
+        "scope": "Public",
+        "code": "IPAWSv1.0",
+        "language": "en-US",
+        "web": "http://www.weather.gov",
+        "eventCode": {
+            "SAME": [
+                "NWS"
+            ],
+            "NationalWeatherService": [
+                "HTY"
+            ]
+        }
+    }
+}

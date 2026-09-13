@@ -13,7 +13,7 @@ send through any networking stack, plus an SDK that sends them for you through
 
 In early development, with no release yet. What works today is the current-conditions lookup: the
 point for a location, its observation stations, a station's latest observation, and twelve-hour
-and hourly forecasts. Alerts, zones, and the rest of the API are not covered yet.
+and hourly forecasts, and active alerts. Alert history, general zone data, and the rest of the API await later releases.
 
 ## Usage
 
@@ -61,6 +61,25 @@ ISO 8601 dates, and the original validity interval. Temperature and wind retain 
 values or quantitative objects, including ranges and missing measurements. No conversion or period
 filtering is implicit. Direct `Endpoint.forecast(for:options:)` and
 `Endpoint.hourlyForecast(for:options:)` factories accept a decoded point.
+
+### Active alerts
+
+```swift
+let alerts = try await weather.activeAlerts(for: home)
+let texas = try await weather.activeAlerts(inArea: "TX")
+let filtered = try await weather.value(
+  for: .activeAlerts(matching: .init(location: .zones(["TXZ192"]), severity: [.severe]))
+)
+if let identifier = alerts.features.first?.properties.id {
+  let alert = try await weather.alert(identifier: identifier)
+  print(alert.headline ?? alert.event, alert.instruction ?? "")
+}
+```
+
+Active queries return `FeatureCollection<WeatherAlert>`; single-alert methods unwrap `WeatherAlert`.
+Filters cover the live spec, with one geographic choice preventing incompatible combinations.
+CAP codes retain unknown values. Only GeoJSON is supported; lists are not automatically paginated.
+The client follows at most five redirects within the HTTPS API origin and rejects loops and unsafe links.
 
 ### Point caching
 
@@ -135,7 +154,7 @@ print(point.id as Any, point.properties.gridId)
 A consumer with its own networking stack needs only `SwiftNWSModels`. Send a GET to
 `https://api.weather.gov` plus `endpoint.path`, set `Accept` to `endpoint.accept.rawValue`, supply
 your own `User-Agent`, and decode the body as the endpoint's response type. Use
-`Endpoint(accept:link:)` to validate service-provided links before following them.
+`Endpoint(accept:featureFlags:link:)` to validate service-provided links before following them.
 
 `WeatherRequest.resolution` is also public and transport-independent: `.endpoint` describes one
 HTTP call; `.latestObservation` describes an `ObservationSource`. A custom executor can interpret
@@ -161,7 +180,7 @@ The unreleased coordinate overloads have been replaced:
 ## Example
 
 [`Examples/SwiftNWSDemo`](Examples/SwiftNWSDemo) is a small iOS app that shows the latest observation
-and forecasts
+forecasts, and active alerts
 for an address, geocoded with MapKit because the API has no geocoding, or for the device's location.
 It references this package by local path. Open `Examples/SwiftNWSDemo/SwiftNWSDemo.xcodeproj` with the
 package itself closed in Xcode, since Xcode lets a local package be open in only one window.

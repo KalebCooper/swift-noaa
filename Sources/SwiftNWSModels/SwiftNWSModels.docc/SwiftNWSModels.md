@@ -9,12 +9,13 @@ open station identifiers through ``ObservationSource``, typed ``WeatherRequest``
 single-HTTP ``Endpoint`` values, and portable response models.
 
 Current conditions and forecasts are available. Forecast requests carry explicit units and
-representation flags. Alert request factories are not available yet.
+representation flags. Active alert factories support geographic and CAP filters.
 
 ## Topics
 
 ### Request descriptions
 
+- ``ActiveAlertFilter``
 - ``Endpoint``
 - ``MediaType``
 - ``ObservationSource``
@@ -24,15 +25,23 @@ representation flags. Alert request factories are not available yet.
 
 ### Response models
 
+- ``AlertCertainty``
+- ``AlertMessageType``
+- ``AlertReference``
+- ``AlertSeverity``
+- ``AlertStatus``
+- ``AlertUrgency``
 - ``Feature``
 - ``FeatureCollection``
 - ``ForecastOptions``
 - ``ForecastPeriod``
 - ``ForecastTemperature``
 - ``ForecastWind``
+- ``JSONValue``
 - ``ObservationStation``
 - ``Point``
 - ``ProblemDetail``
 - ``QuantitativeValue``
+- ``WeatherAlert``
 - ``WeatherForecast``
 - ``WeatherObservation``

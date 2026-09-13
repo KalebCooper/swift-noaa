@@ -12,7 +12,8 @@ final class ConditionsModel {
     case failed(String)
     case idle
     case loaded(
-      forecast: WeatherForecast, hourlyForecast: WeatherForecast, observation: WeatherObservation,
+      alerts: FeatureCollection<WeatherAlert>, forecast: WeatherForecast,
+      hourlyForecast: WeatherForecast, observation: WeatherObservation,
       place: String)
     case loading
   }
@@ -58,11 +59,13 @@ final class ConditionsModel {
       let (place, coordinate) = try await locate()
       let location = try WeatherCoordinate(
         latitude: coordinate.latitude, longitude: coordinate.longitude)
+      let alerts = try await client.activeAlerts(for: location)
       let observation = try await client.latestObservation(from: .nearest(to: location))
       let forecast = try await client.forecast(for: location)
       let hourlyForecast = try await client.hourlyForecast(for: location)
       phase = .loaded(
-        forecast: forecast, hourlyForecast: hourlyForecast, observation: observation, place: place)
+        alerts: alerts, forecast: forecast, hourlyForecast: hourlyForecast,
+        observation: observation, place: place)
     } catch let error as NWSError {
       phase = .failed(Self.message(for: error))
     } catch is WeatherCoordinate.ValidationError {
@@ -74,10 +77,13 @@ final class ConditionsModel {
 
   private static func message(for error: NWSError) -> String {
     switch error {
+    case .invalidAlertIdentifier: "The weather service returned an empty alert identifier."
     case .invalidLink(let link): "The API linked outside itself: \(link)"
+    case .invalidRedirect: "The weather service returned an invalid redirect."
     case .invalidStationIdentifier: "The weather service returned an empty station identifier."
     case .noObservationStation: "No weather station reports near this location."
     case .problem(let problem): "\(problem.title): \(problem.detail)"
+    case .tooManyRedirects: "The weather service redirected too many times. Try again later."
     case .transport(let failure): failure.description
     }
   }

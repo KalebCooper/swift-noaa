@@ -9,6 +9,15 @@ import Foundation
 /// let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
 /// ```
 package enum Fixture: String, CaseIterable, Sendable {
+  /// `/alerts/active?point=30.2672,-97.7431`, active alerts at downtown Austin.
+  case activeAlerts = "ActiveAlerts"
+
+  /// `/alerts/urn:oid:2.49.0.1.840.0.6e6bf321dc05d97a3fc0262ae03641b6b41e6b31.001.2`.
+  case alert = "Alert"
+
+  /// `/alerts/active/area/TX`, active alerts in Texas.
+  case areaAlerts = "AreaAlerts"
+
   /// `/gridpoints/EWX/156,91/forecast?units=us`, with the default representations.
   case forecast = "Forecast"
 
@@ -32,6 +41,9 @@ package enum Fixture: String, CaseIterable, Sendable {
 
   /// `/points/0,0`, the `404` problem details the API answers a point outside its coverage with.
   case problemDetail = "ProblemDetail"
+
+  /// `/alerts/active/zone/TXZ192`, active alerts in the Travis forecast zone.
+  case zoneAlerts = "ZoneAlerts"
 
   /// The recorded body.
   ///

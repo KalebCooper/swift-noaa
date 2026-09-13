@@ -34,7 +34,7 @@ struct ContentView: View {
       EmptyView()
     case .loading:
       Section { ProgressView() }
-    case .loaded(let forecast, let hourlyForecast, let observation, let place):
+    case .loaded(let alerts, let forecast, let hourlyForecast, let observation, let place):
       Section(place) {
         if let description = observation.textDescription, !description.isEmpty {
           LabeledContent("Conditions", value: description)
@@ -45,6 +45,20 @@ struct ContentView: View {
         LabeledContent("Station", value: observation.stationName ?? observation.stationId)
         LabeledContent("Observed") {
           Text(observation.timestamp, format: .dateTime.hour().minute())
+        }
+      }
+      Section("Active Alerts") {
+        if alerts.features.isEmpty {
+          Text("No active alerts returned for this location.")
+        }
+        ForEach(alerts.features, id: \.properties.id) { feature in
+          let alert = feature.properties
+          DisclosureGroup(alert.headline ?? alert.event) {
+            Text(alert.description)
+            if let instruction = alert.instruction, !instruction.isEmpty { Text(instruction) }
+            LabeledContent("Severity", value: alert.severity.rawValue)
+            LabeledContent("Expires") { Text(alert.expires, format: .dateTime) }
+          }
         }
       }
       Section("Forecast") {

@@ -32,7 +32,55 @@ public struct NWSClient: Sendable {
   ) {
     self.configuration = configuration
     self.pointCache = pointCache
-    self.client = HTTPClient(baseURL: Self.baseURL, transport: transport)
+    self.client = HTTPClient(baseURL: Self.baseURL, redirectPolicy: .never, transport: transport)
+  }
+
+  /// Retrieves active alerts at a coordinate.
+  /// - Parameter location: The coordinate to filter.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func activeAlerts(for location: WeatherCoordinate) async throws(NWSError)
+    -> FeatureCollection<WeatherAlert>
+  {
+    try await value(for: .activeAlerts(for: location))
+  }
+
+  /// Retrieves active alerts for a provider area.
+  /// - Parameter area: A nonempty state, territory, or marine area code.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func activeAlerts(inArea area: String) async throws(NWSError) -> FeatureCollection<
+    WeatherAlert
+  > {
+    try await value(for: .activeAlerts(inArea: area))
+  }
+
+  /// Retrieves active alerts for a provider zone.
+  /// - Parameter zone: A nonempty forecast or county zone identifier.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func activeAlerts(inZone zone: String) async throws(NWSError) -> FeatureCollection<
+    WeatherAlert
+  > {
+    try await value(for: .activeAlerts(inZone: zone))
+  }
+
+  /// Retrieves active alerts using supported filters.
+  /// - Parameter filter: The geographic and CAP restrictions.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func activeAlerts(matching filter: ActiveAlertFilter = .init()) async throws(NWSError)
+    -> FeatureCollection<WeatherAlert>
+  {
+    try await value(for: .activeAlerts(matching: filter))
+  }
+
+  /// Retrieves one alert by its provider identifier.
+  /// - Parameter identifier: The alert identifier.
+  /// - Returns: The alert properties.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func alert(identifier: String) async throws(NWSError) -> WeatherAlert {
+    try await value(for: .alert(identifier: identifier))
   }
 
   /// Retrieves the twelve-hour forecast for a coordinate.
@@ -83,18 +131,35 @@ public struct NWSClient: Sendable {
   public func send<Value: Decodable & SendableMetatype>(
     _ endpoint: Endpoint<Value>
   ) async throws(NWSError) -> Value {
-    guard !Task.isCancelled else { throw .transport(.cancelled) }
-    var headers = HTTPFields()
-    headers[.accept] = endpoint.accept.rawValue
-    headers[.userAgent] = configuration.userAgent
-    if !endpoint.featureFlags.isEmpty, let name = HTTPField.Name("Feature-Flags") {
-      headers[name] = endpoint.featureFlags.joined(separator: ",")
+    var endpoint = endpoint
+    var visited = Set<String>()
+    for _ in 0...5 {
+      guard !Task.isCancelled else { throw .transport(.cancelled) }
+      guard visited.insert(endpoint.path).inserted else { throw .tooManyRedirects }
+      var headers = HTTPFields()
+      headers[.accept] = endpoint.accept.rawValue
+      headers[.userAgent] = configuration.userAgent
+      if !endpoint.featureFlags.isEmpty, let name = HTTPField.Name("Feature-Flags") {
+        headers[name] = endpoint.featureFlags.joined(separator: ",")
+      }
+      do {
+        return try await client.execute(Request(headers: headers, path: endpoint.path))
+      } catch {
+        guard case .httpStatus(_, let code, let fields) = error,
+          [301, 302, 303, 307, 308].contains(code),
+          let location = fields[.location]
+        else { throw NWSError(error) }
+        guard let current = URL(string: Self.baseURL.absoluteString + endpoint.path),
+          let link = URL(string: location, relativeTo: current)?.absoluteURL
+        else { throw .invalidRedirect(location) }
+        guard
+          let next = Endpoint<Value>(
+            accept: endpoint.accept, featureFlags: endpoint.featureFlags, link: link)
+        else { throw .invalidLink(link) }
+        endpoint = next
+      }
     }
-    do {
-      return try await client.execute(Request(headers: headers, path: endpoint.path))
-    } catch {
-      throw NWSError(error)
-    }
+    throw .tooManyRedirects
   }
 
   /// Executes a reusable weather request.
@@ -112,6 +177,10 @@ public struct NWSClient: Sendable {
   ) async throws(NWSError) -> Value {
     guard !Task.isCancelled else { throw .transport(.cancelled) }
     switch request.resolution {
+    case .alert(let identifier):
+      guard !identifier.isEmpty else { throw .invalidAlertIdentifier(identifier) }
+      let endpoint = Endpoint.alert(identifier: identifier)
+      return try await send(Endpoint<Feature<Value>>(path: endpoint.path)).properties
     case .endpoint(let endpoint):
       return try await send(endpoint)
     case .forecast(let location, let options), .hourlyForecast(let location, let options):

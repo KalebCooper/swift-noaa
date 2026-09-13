@@ -5,6 +5,11 @@ import Foundation
 #endif
 
 extension KeyedDecodingContainer {
+  func decodeISO8601IfPresent(forKey key: Key) throws -> Date? {
+    guard contains(key), try !decodeNil(forKey: key) else { return nil }
+    return try decodeISO8601(forKey: key)
+  }
+
   func decodeISO8601(forKey key: Key) throws -> Date {
     let text = try decode(String.self, forKey: key)
     guard
