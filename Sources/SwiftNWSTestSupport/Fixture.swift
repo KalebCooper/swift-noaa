@@ -9,6 +9,18 @@ import Foundation
 /// let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
 /// ```
 package enum Fixture: String, CaseIterable, Sendable {
+  /// `/gridpoints/EWX/156,91/forecast?units=us`, with the default representations.
+  case forecast = "Forecast"
+
+  /// `/gridpoints/EWX/156,91/forecast?units=si`, with both quantitative forecast flags.
+  case forecastQuantities = "ForecastQuantities"
+
+  /// `/gridpoints/EWX/156,91/forecast/hourly?units=us`, with default representations.
+  case hourlyForecast = "HourlyForecast"
+
+  /// `/gridpoints/EWX/156,91/forecast/hourly?units=si`, with both quantitative forecast flags.
+  case hourlyForecastQuantities = "HourlyForecastQuantities"
+
   /// `/stations/KATT/observations/latest`, the latest observation from Austin Camp Mabry.
   case observation = "Observation"
 

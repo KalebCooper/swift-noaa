@@ -23,7 +23,7 @@ struct ContentView: View {
 
         conditions
       }
-      .navigationTitle("Current Conditions")
+      .navigationTitle("Weather")
     }
   }
 
@@ -34,7 +34,7 @@ struct ContentView: View {
       EmptyView()
     case .loading:
       Section { ProgressView() }
-    case .loaded(let place, let observation):
+    case .loaded(let forecast, let hourlyForecast, let observation, let place):
       Section(place) {
         if let description = observation.textDescription, !description.isEmpty {
           LabeledContent("Conditions", value: description)
@@ -45,6 +45,22 @@ struct ContentView: View {
         LabeledContent("Station", value: observation.stationName ?? observation.stationId)
         LabeledContent("Observed") {
           Text(observation.timestamp, format: .dateTime.hour().minute())
+        }
+      }
+      Section("Forecast") {
+        ForEach(forecast.periods, id: \.number) { period in
+          VStack(alignment: .leading) {
+            Text(period.name ?? "Forecast").font(.headline)
+            Text(period.detailedForecast)
+          }
+        }
+      }
+      Section("Next 24 Hours") {
+        ForEach(Array(hourlyForecast.periods.prefix(24)), id: \.number) { period in
+          VStack(alignment: .leading) {
+            Text(period.startTime, format: .dateTime.weekday().hour()).font(.headline)
+            Text(period.shortForecast)
+          }
         }
       }
     case .failed(let message):

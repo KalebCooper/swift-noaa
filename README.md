@@ -12,8 +12,8 @@ send through any networking stack, plus an SDK that sends them for you through
 ## Status
 
 In early development, with no release yet. What works today is the current-conditions lookup: the
-point for a location, the observation stations near it, and a station's latest observation. Forecasts,
-alerts, zones, and the rest of the API are not covered yet.
+point for a location, its observation stations, a station's latest observation, and twelve-hour
+and hourly forecasts. Alerts, zones, and the rest of the API are not covered yet.
 
 ## Usage
 
@@ -44,6 +44,23 @@ page. This preserves the service's ordering; it does not calculate distances, an
 guarantee that the first station is geographically closest. The lookup takes three HTTP requests.
 It does not filter stale observations, try a fallback station, cache points, or fetch additional pages.
 Use the result's `stationId` and `timestamp` to assess its source and freshness.
+
+### Forecasts
+
+```swift
+let forecast = try await weather.forecast(for: home)
+let hourly = try await weather.hourlyForecast(
+  for: home,
+  options: .init(featureFlags: [.temperatureQuantity, .windSpeedQuantity], units: .si)
+)
+let request = WeatherRequest.forecast(for: home)
+```
+
+Both methods follow the point's service links. `WeatherForecast` retains periods in service order,
+ISO 8601 dates, and the original validity interval. Temperature and wind retain either their legacy
+values or quantitative objects, including ranges and missing measurements. No conversion or period
+filtering is implicit. Direct `Endpoint.forecast(for:options:)` and
+`Endpoint.hourlyForecast(for:options:)` factories accept a decoded point.
 
 ### Reusable requests
 
@@ -128,6 +145,7 @@ The unreleased coordinate overloads have been replaced:
 ## Example
 
 [`Examples/SwiftNWSDemo`](Examples/SwiftNWSDemo) is a small iOS app that shows the latest observation
+and forecasts
 for an address, geocoded with MapKit because the API has no geocoding, or for the device's location.
 It references this package by local path. Open `Examples/SwiftNWSDemo/SwiftNWSDemo.xcodeproj` with the
 package itself closed in Xcode, since Xcode lets a local package be open in only one window.

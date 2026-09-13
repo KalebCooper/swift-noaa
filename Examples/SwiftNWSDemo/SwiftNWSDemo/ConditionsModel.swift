@@ -5,12 +5,15 @@ import SwiftNWS
 import SwiftNWSModels
 
 /// Finds a location, by address or from the device, and loads the latest observation near it.
+@MainActor
 @Observable
 final class ConditionsModel {
   enum Phase: Equatable {
     case failed(String)
     case idle
-    case loaded(place: String, observation: WeatherObservation)
+    case loaded(
+      forecast: WeatherForecast, hourlyForecast: WeatherForecast, observation: WeatherObservation,
+      place: String)
     case loading
   }
 
@@ -56,7 +59,10 @@ final class ConditionsModel {
       let location = try WeatherCoordinate(
         latitude: coordinate.latitude, longitude: coordinate.longitude)
       let observation = try await client.latestObservation(from: .nearest(to: location))
-      phase = .loaded(place: place, observation: observation)
+      let forecast = try await client.forecast(for: location)
+      let hourlyForecast = try await client.hourlyForecast(for: location)
+      phase = .loaded(
+        forecast: forecast, hourlyForecast: hourlyForecast, observation: observation, place: place)
     } catch let error as NWSError {
       phase = .failed(Self.message(for: error))
     } catch is WeatherCoordinate.ValidationError {

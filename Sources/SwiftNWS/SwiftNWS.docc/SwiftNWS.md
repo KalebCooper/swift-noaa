@@ -1,6 +1,6 @@
 # ``SwiftNWS``
 
-Retrieve current conditions through a typed National Weather Service client.
+Retrieve current conditions and forecasts through a typed National Weather Service client.
 
 ## Overview
 
@@ -26,7 +26,7 @@ Coordinate lookups follow the point's station-list link, then fetch the first li
 latest observation. The service does not guarantee distance ordering. The client does not reject
 old observations, try fallback stations, cache points, or fetch more station pages.
 
-Only the current-conditions slice is available. Forecasts, alerts, feature flags, caching, and
+Twelve-hour and hourly forecasts follow the point's links. Alerts, point caching, and
 pagination are not yet built.
 
 ## Topics
@@ -39,4 +39,5 @@ pagination are not yet built.
 
 ### Request execution
 
+- <doc:Forecasts>
 - <doc:UsingRequests>

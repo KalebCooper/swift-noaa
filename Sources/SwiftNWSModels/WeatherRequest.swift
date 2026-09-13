@@ -11,6 +11,14 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Send one endpoint and decode its body directly as `Response`.
     case endpoint(Endpoint<Response>)
 
+    /// Fetch a point, follow its forecast link with the options, and return the properties.
+    /// Only requests returning WeatherForecast carry this resolution.
+    case forecast(location: WeatherCoordinate, options: ForecastOptions)
+
+    /// Fetch a point, follow its hourly forecast link with the options, and return the properties.
+    /// Only requests returning WeatherForecast carry this resolution.
+    case hourlyForecast(location: WeatherCoordinate, options: ForecastOptions)
+
     /// Resolve the source and decode the latest observation's GeoJSON properties.
     ///
     /// Only requests whose response is ``WeatherObservation`` carry this resolution.
@@ -33,6 +41,30 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
 
   private init(resolution: Resolution) {
     self.resolution = resolution
+  }
+}
+
+extension WeatherRequest where Response == WeatherForecast {
+  /// Describes the twelve-hour forecast for a coordinate.
+  /// - Parameters:
+  ///   - location: The validated coordinate.
+  ///   - options: Units and representation flags.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func forecast(for location: WeatherCoordinate, options: ForecastOptions = .init())
+    -> Self
+  {
+    Self(resolution: .forecast(location: location, options: options))
+  }
+
+  /// Describes the hourly forecast for a coordinate.
+  /// - Parameters:
+  ///   - location: The validated coordinate.
+  ///   - options: Units and representation flags.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func hourlyForecast(
+    for location: WeatherCoordinate, options: ForecastOptions = .init()
+  ) -> Self {
+    Self(resolution: .hourlyForecast(location: location, options: options))
   }
 }
 

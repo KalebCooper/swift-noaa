@@ -28,6 +28,30 @@ public struct NWSClient: Sendable {
     self.client = HTTPClient(baseURL: Self.baseURL, transport: transport)
   }
 
+  /// Retrieves the twelve-hour forecast for a coordinate.
+  /// - Parameters:
+  ///   - location: The coordinate to look up.
+  ///   - options: Units and representation flags.
+  /// - Returns: The forecast and its periods in service order.
+  /// - Throws: ``NWSError/invalidLink(_:)`` or any error from ``send(_:)``.
+  public func forecast(for location: WeatherCoordinate, options: ForecastOptions = .init())
+    async throws(NWSError) -> WeatherForecast
+  {
+    try await value(for: .forecast(for: location, options: options))
+  }
+
+  /// Retrieves the hourly forecast for a coordinate.
+  /// - Parameters:
+  ///   - location: The coordinate to look up.
+  ///   - options: Units and representation flags.
+  /// - Returns: The hourly forecast in service order, without trimming periods.
+  /// - Throws: ``NWSError/invalidLink(_:)`` or any error from ``send(_:)``.
+  public func hourlyForecast(for location: WeatherCoordinate, options: ForecastOptions = .init())
+    async throws(NWSError) -> WeatherForecast
+  {
+    try await value(for: .hourlyForecast(for: location, options: options))
+  }
+
   /// Retrieves the latest observation from a station or a coordinate's station list.
   ///
   /// A station lookup sends one request. A coordinate lookup sends three: the point, its linked
@@ -56,6 +80,9 @@ public struct NWSClient: Sendable {
     var headers = HTTPFields()
     headers[.accept] = endpoint.accept.rawValue
     headers[.userAgent] = configuration.userAgent
+    if !endpoint.featureFlags.isEmpty, let name = HTTPField.Name("Feature-Flags") {
+      headers[name] = endpoint.featureFlags.joined(separator: ",")
+    }
     do {
       return try await client.execute(Request(headers: headers, path: endpoint.path))
     } catch {
@@ -80,6 +107,22 @@ public struct NWSClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
+    case .forecast(let location, let options), .hourlyForecast(let location, let options):
+      let point = try await send(Endpoint.point(for: location)).properties
+      let endpoint: Endpoint<Feature<WeatherForecast>>?
+      let link: URL
+      if case .hourlyForecast = request.resolution {
+        endpoint = .hourlyForecast(for: point, options: options)
+        link = point.forecastHourly
+      } else {
+        endpoint = .forecast(for: point, options: options)
+        link = point.forecast
+      }
+      guard let endpoint else { throw .invalidLink(link) }
+      return try await send(
+        Endpoint<Feature<Value>>(
+          accept: endpoint.accept, featureFlags: endpoint.featureFlags, path: endpoint.path)
+      ).properties
     case .latestObservation(let source):
       let identifier: String
       switch source {

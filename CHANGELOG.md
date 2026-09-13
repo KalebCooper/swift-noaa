@@ -8,6 +8,10 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Twelve-hour and hourly forecasts through client methods, reusable requests, and linked endpoints.
+- Forecast periods, explicit units and feature flags, preserving legacy values and quantities.
+- Recorded forecast fixtures, documentation, and forecast sections in the iOS demo.
+
 - `WeatherCoordinate`, with typed validation errors and four-decimal normalization.
 - `ObservationSource` and `WeatherRequest<Response>` for reusable, inspectable lookups, named
   factory extensions, and custom single-HTTP endpoints with consumer-defined response models.
