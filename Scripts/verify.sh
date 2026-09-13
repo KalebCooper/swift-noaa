@@ -154,6 +154,42 @@ check_swift_testing_only() {
   if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
 }
 
+# Derivation. Every job in every workflow carries a job-level `timeout-minutes`, so a hang fails the
+# job instead of sitting for GitHub's six-hour default. The job set is derived from the files and
+# must be non-empty. A key is recognized only at the job's own indent: one nested inside a step
+# bounds that step, not the job, and leaves the job unbounded. Any two-space key inside `jobs:`
+# counts as a job, quoted spellings included, so an unrecognized name fails loudly rather than
+# making its job invisible to the scan.
+check_job_timeouts() {
+  local name="every job in .github/workflows carries a timeout-minutes"
+  local files report
+  files=$(find "$ROOT/.github/workflows" \( -name '*.yml' -o -name '*.yaml' \) -type f 2>/dev/null | sort)
+  if [ -z "$files" ]; then fail "$name (no workflow file found; the check has lost its subject)"; return; fi
+  # `jobs:` is the only top-level block whose two-space keys are job names, so the scan tracks which
+  # top-level block it is in rather than trusting the indent alone. The name is taken from the whole
+  # line rather than the first field, so a quoted name carrying a space stays one name.
+  report=$(awk '
+    function close_job() {
+      if (job != "") { total++; if (!has) print jobfile ": job " job " has no timeout-minutes" }
+      job = ""; has = 0
+    }
+    FNR == 1 { close_job(); in_jobs = 0 }
+    /^[^[:space:]#]/ { close_job(); in_jobs = ($0 ~ /^jobs:[[:space:]]*$/); next }
+    in_jobs && /^  [^[:space:]#].*:[[:space:]]*$/ {
+      close_job(); job = $0; sub(/^  /, "", job); sub(/:[[:space:]]*$/, "", job); jobfile = FILENAME; next
+    }
+    in_jobs && job != "" && /^    timeout-minutes:[[:space:]]*[0-9]+[[:space:]]*(#.*)?$/ { has = 1; next }
+    END { close_job(); if (total == 0) print "NO-JOBS" }
+  ' $files 2>/dev/null || true)
+  if [ "$report" = "NO-JOBS" ]; then
+    fail "$name (no job found in any workflow; the check has lost its subject)"
+  elif [ -z "$report" ]; then
+    pass "$name"
+  else
+    fail "$name"; printf '%s\n' "$report"
+  fi
+}
+
 # Derivation. Every suite under Tests carries the shared time limit, so a test that stops making
 # progress fails its suite instead of holding the run open. The suite set is derived from the tree
 # and must be non-empty. Four things the scan has to survive. The attribute is read across its whole
@@ -256,6 +292,7 @@ SELF_TESTABLE=(
   check_em_dash
   check_test_jargon
   check_swift_testing_only
+  check_job_timeouts
   check_suite_time_limit
 )
 
@@ -328,6 +365,45 @@ import Testing
   }
 }
 EOF
+  mkdir -p "$d/.github/workflows"
+  cat > "$d/.github/workflows/ci.yml" <<'EOF'
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+EOF
+  cat > "$d/.github/workflows/docs.yml" <<'EOF'
+name: Docs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+EOF
   printf '# Readme\n' > "$d/README.md"
   printf '# Changelog\n' > "$d/CHANGELOG.md"
   printf '# Contributing\n' > "$d/CONTRIBUTING.md"
@@ -373,6 +449,8 @@ plant_violation() {
       printf 'Swap in a test double here.\n' >> "$d/README.md" ;;
     check_swift_testing_only)
       printf 'import XCTest\n' >> "$d/Tests/SwiftNWSModelsTests/MediaTypeTests.swift" ;;
+    check_job_timeouts)
+      printf 'name: Extra\n\non:\n  push:\n\njobs:\n  stray:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n' > "$d/.github/workflows/extra.yml" ;;
     check_suite_time_limit)
       printf 'import Testing\n\n@Suite struct UnboundedTests {\n  @Test func aTestRuns() {\n    #expect(true)\n  }\n}\n' > "$d/Tests/SwiftNWSTests/UnboundedTests.swift" ;;
   esac
@@ -390,6 +468,9 @@ plant_second_violation() {
     # A test file is as Darwin-only as a source file, and `@testable` is still an import.
     check_darwin_guard)
       printf '@testable import HTTPURLSession\nimport Testing\n' > "$d/Tests/SwiftNWSTests/Unguarded.swift" ;;
+    # A key indented into a step bounds that step, not the job, so the job is still unbounded.
+    check_job_timeouts)
+      printf 'name: Nested\n\non:\n  push:\n\njobs:\n  nested:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n        timeout-minutes: 5\n' > "$d/.github/workflows/nested.yml" ;;
     # A suite nested inside a bounded one is indented, so a scan anchored at the margin would not
     # see it. The outer suite carries the limit; the inner one does not.
     check_suite_time_limit)
@@ -406,6 +487,10 @@ plant_third_violation() {
     # Importing one declaration is still importing the module.
     check_models_import_boundary)
       printf 'import struct HTTPCore.Request\n' > "$d/Sources/SwiftNWSModels/Leak.swift" ;;
+    # A quoted job name is still a job. Failing to recognize it would hide the job rather than
+    # report it, which is the one way this check can go quiet instead of loud.
+    check_job_timeouts)
+      printf 'name: Quoted\n\non:\n  push:\n\njobs:\n  "quoted":\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n' > "$d/.github/workflows/quoted.yml" ;;
     # A suite is still a suite when another attribute precedes it on the line.
     check_suite_time_limit)
       printf 'import Testing\n\n@MainActor @Suite struct PrefixedTests {\n  @Test func aTestRuns() {\n    #expect(true)\n  }\n}\n' > "$d/Tests/SwiftNWSTests/PrefixedTests.swift" ;;
@@ -455,6 +540,8 @@ remove_subject() {
     check_swift_testing_only)
       printf 'import SwiftNWSModels\n' > "$d/Tests/SwiftNWSModelsTests/MediaTypeTests.swift"
       printf 'import SwiftNWS\n' > "$d/Tests/SwiftNWSTests/ClientTests.swift" ;;
+    check_job_timeouts)
+      rm -rf "$d/.github" ;;
     # The tree keeps its test files and loses every suite, so the arm proves the empty derived set
     # fails on its own rather than on a file-scope test the check also refuses.
     check_suite_time_limit)
