@@ -38,6 +38,13 @@ let endpoint = Endpoint.point(latitude: 30.2672, longitude: -97.7431)
 let point = try await client.send(endpoint).properties
 ```
 
+## Example
+
+[`Examples/SwiftNWSDemo`](Examples/SwiftNWSDemo) is a small iOS app that shows the latest observation
+for an address, geocoded with MapKit because the API has no geocoding, or for the device's location.
+It references this package by local path. Open `Examples/SwiftNWSDemo/SwiftNWSDemo.xcodeproj` with the
+package itself closed in Xcode, since Xcode lets a local package be open in only one window.
+
 ## Products
 
 | Product | What it is | Depends on |
