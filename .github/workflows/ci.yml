@@ -116,7 +116,7 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild test \
-            -scheme swift-nws-Package \
+            -scheme swift-noaa \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2' \
             -skipPackagePluginValidation \
             | xcbeautify --renderer github-actions

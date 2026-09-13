@@ -39,6 +39,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Rename the package and repository from `swift-nws` to `swift-noaa`, retaining the existing
+  `SwiftNWS` and `SwiftNWSModels` products.
 - Replace the unreleased raw-coordinate observation and point methods with methods accepting
   `WeatherCoordinate`. Configuration-based client initializers and `Endpoint`/`send(_:)` remain.
 - Clarify that coordinate lookups use service order without a guaranteed distance ordering,

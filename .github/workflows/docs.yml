@@ -110,19 +110,19 @@ jobs:
             exit 1
           fi
           "$(xcrun --find docc)" merge .docc-deps/SwiftNWSModels.doccarchive "$found" \
-            --synthesized-landing-page-name swift-nws \
+            --synthesized-landing-page-name swift-noaa \
             --synthesized-landing-page-kind Package \
             --output-path .merged.doccarchive
 
       # Rewrite the archive for static hosting under the Pages sub-path
-      # (site serves from https://<owner>.github.io/swift-nws/).
+      # (site serves from https://<owner>.github.io/swift-noaa/).
       - name: Transform for static hosting
         run: |
           set -euo pipefail
           "$(xcrun --find docc)" process-archive transform-for-static-hosting \
             .merged.doccarchive \
             --output-path _site \
-            --hosting-base-path swift-nws
+            --hosting-base-path swift-noaa
 
       # DocC's static-hosting output has no landing page at the site root: the bare index.html is an
       # app shell that keeps baseUrl "/" (so its assets 404 under the Pages sub-path) and has no route
@@ -136,11 +136,11 @@ jobs:
             <head>
               <meta charset="utf-8">
               <meta http-equiv="refresh" content="0; url=documentation/">
-              <link rel="canonical" href="https://kalebcooper.github.io/swift-nws/documentation/">
-              <title>swift-nws</title>
+              <link rel="canonical" href="https://kalebcooper.github.io/swift-noaa/documentation/">
+              <title>swift-noaa</title>
             </head>
             <body>
-              <p>Redirecting to the <a href="documentation/">swift-nws documentation</a>…</p>
+              <p>Redirecting to the <a href="documentation/">swift-noaa documentation</a>…</p>
             </body>
           </html>
           HTML

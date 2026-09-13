@@ -12,8 +12,8 @@
 # Usage: ./Scripts/linux-test.sh [additional swiftpm arguments]
 #   e.g. ./Scripts/linux-test.sh --filter SwiftNWSModelsTests
 #
-# Set SWIFT_NWS_TRAITS to run once under that trait list instead:
-#   e.g. SWIFT_NWS_TRAITS=HTTPPortable ./Scripts/linux-test.sh
+# Set SWIFT_NOAA_TRAITS to run once under that trait list instead:
+#   e.g. SWIFT_NOAA_TRAITS=HTTPPortable ./Scripts/linux-test.sh
 # Set it to the empty string for a single run under the default trait set.
 
 set -euo pipefail
@@ -25,7 +25,7 @@ readonly IMAGE="swift:6.3-noble"
 # must not share a scratch directory with the host's macOS build, and a volume survives the container
 # so repeat runs are incremental instead of cold. Each trait set gets a directory of its own inside
 # it, because the same manifest under another trait set is a different build graph.
-readonly SCRATCH_VOLUME="swift-nws-linux-build"
+readonly SCRATCH_VOLUME="swift-noaa-linux-build"
 
 readonly REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -46,7 +46,7 @@ run_suite() {
     scratch="/scratch/traits-${traits//,/-}"
     traits_argument=(--traits "$traits")
   fi
-  echo "==> swift-nws on Linux, traits: ${traits:-default}"
+  echo "==> swift-noaa on Linux, traits: ${traits:-default}"
   # `${array[@]+...}` guards the expansion: under `set -u` the bash macOS ships rejects an empty array.
   docker run --rm \
     --volume "$REPO_ROOT:/workspace" \
@@ -59,8 +59,8 @@ run_suite() {
 
 # Unset means both runs; explicitly empty means one run under the default trait set, so `+` rather
 # than `:+` is the test that tells the two apart.
-if [ -n "${SWIFT_NWS_TRAITS+set}" ]; then
-  run_suite "$SWIFT_NWS_TRAITS" "$@"
+if [ -n "${SWIFT_NOAA_TRAITS+set}" ]; then
+  run_suite "$SWIFT_NOAA_TRAITS" "$@"
   exit 0
 fi
 
@@ -71,7 +71,7 @@ run_suite "HTTPPortable" "$@"
 readonly RESOLVED="$REPO_ROOT/Package.resolved"
 resolved_snapshot=""
 if [ -f "$RESOLVED" ]; then
-  resolved_snapshot="$(mktemp "${TMPDIR:-/tmp}/swift-nws-resolved.XXXXXX")"
+  resolved_snapshot="$(mktemp "${TMPDIR:-/tmp}/swift-noaa-resolved.XXXXXX")"
   cp "$RESOLVED" "$resolved_snapshot"
   trap 'cp "$resolved_snapshot" "$RESOLVED"; rm -f "$resolved_snapshot"' EXIT
 fi

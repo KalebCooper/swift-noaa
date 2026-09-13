@@ -1,10 +1,13 @@
-# swift-nws
+# swift-noaa
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A Swift package for the [National Weather Service API](https://www.weather.gov/documentation/services-web-API):
-`Codable` models and endpoint descriptions you can send through any networking stack, and an SDK that
-sends them for you through [swifty-networking](https://github.com/KalebCooper/swifty-networking).
+Swift integrations for NOAA services, starting with the National Weather Service.
+
+The package currently provides `Codable` models and endpoint descriptions for the
+[National Weather Service API](https://www.weather.gov/documentation/services-web-API) that you can
+send through any networking stack, plus an SDK that sends them for you through
+[swifty-networking](https://github.com/KalebCooper/swifty-networking).
 
 ## Status
 
@@ -152,13 +155,13 @@ A consumer with its own networking stack adds only `SwiftNWSModels` and fetches 
 ## Installation
 
 ```swift
-.package(url: "https://github.com/KalebCooper/swift-nws.git", branch: "main")
+.package(url: "https://github.com/KalebCooper/swift-noaa.git", branch: "main")
 ```
 
 On Linux or Android, enable the trait on the dependency:
 
 ```swift
-.package(url: "https://github.com/KalebCooper/swift-nws.git", branch: "main",
+.package(url: "https://github.com/KalebCooper/swift-noaa.git", branch: "main",
          traits: ["HTTPPortable"])
 ```
 

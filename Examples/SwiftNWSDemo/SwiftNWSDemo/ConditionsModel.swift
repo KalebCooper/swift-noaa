@@ -17,7 +17,7 @@ final class ConditionsModel {
   private(set) var phase = Phase.idle
 
   private let client = NWSClient(
-    userAgent: "(SwiftNWSDemo, https://github.com/KalebCooper/swift-nws)"
+    userAgent: "(SwiftNWSDemo, https://github.com/KalebCooper/swift-noaa)"
   )
 
   /// Geocodes an address with MapKit, since the National Weather Service API has no geocoding.

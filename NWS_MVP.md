@@ -1,4 +1,4 @@
-# swift-nws feature set for 0.1.0 and 1.0.0
+# NWS feature set for swift-noaa 0.1.0 and 1.0.0
 
 This document names what each release must contain. It describes scope, not design: types, names,
 and signatures are settled when each piece is built, against the live OpenAPI spec at

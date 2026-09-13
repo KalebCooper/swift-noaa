@@ -6,7 +6,7 @@ import PackageDescription
 // and depends on nothing, so a consumer with a networking stack of its own can take it alone, and
 // SwiftNWS sends those descriptions through swifty-networking.
 let package = Package(
-  name: "swift-nws",
+  name: "swift-noaa",
   platforms: [
     .iOS(.v26), .macOS(.v26), .tvOS(.v26), .visionOS(.v26), .watchOS(.v26),
   ],
