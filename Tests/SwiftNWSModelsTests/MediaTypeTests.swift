@@ -1,4 +1,5 @@
 import SwiftNWSModels
+import SwiftNWSTestSupport
 import Testing
 
 @Suite("MediaType", .timeLimit(.minutes(suiteTimeLimitMinutes)))

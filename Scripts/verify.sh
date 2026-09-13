@@ -101,6 +101,20 @@ check_unsafe() {
   if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
 }
 
+# Derivation. HTTPURLSession exists only on Apple platforms, so every file that imports it compiles
+# only under `#if canImport(Darwin)`, and the Linux and Android builds compile it out. The subject is
+# derived from the import rather than from a directory, because these files live among the rest of
+# the SDK and its tests. Every spelling of the import counts, so an unguarded file cannot hide behind
+# an attribute or an access level.
+check_darwin_guard() {
+  local name="every file that imports HTTPURLSession is wrapped in #if canImport(Darwin)"
+  local files missing
+  files=$(grep -lE '^\s*(@[A-Za-z_]+\s+)*((public|package|internal|fileprivate|private)\s+)?import ([a-z]+ )?HTTPURLSession\b' $(swift_files Sources) $(swift_files Tests) 2>/dev/null </dev/null | sort)
+  if [ -z "$files" ]; then fail "$name (no file imports HTTPURLSession; the check has lost its subject)"; return; fi
+  missing=$(grep -L '^#if canImport(Darwin)' $files || true)
+  if [ -z "$missing" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$missing"; fi
+}
+
 # Prohibition. Comments state constraints in domain terms; provenance belongs in commit messages.
 check_coordinates() {
   local name="no plan, phase, task, or turn coordinates in Sources or Tests"
@@ -237,6 +251,7 @@ SELF_TESTABLE=(
   check_banned_imports
   check_wall_clock_and_locks
   check_unsafe
+  check_darwin_guard
   check_coordinates
   check_em_dash
   check_test_jargon
@@ -278,11 +293,15 @@ EOF
 import HTTPCore
 import SwiftNWSModels
 
-#if canImport(Darwin)
-import HTTPURLSession
-#endif
-
 public struct Client: Sendable {}
+EOF
+  cat > "$d/Sources/SwiftNWS/Client+URLSession.swift" <<'EOF'
+#if canImport(Darwin)
+import Foundation
+import HTTPURLSession
+
+extension Client {}
+#endif
 EOF
   # The suite here is written in the wrapped shape swift-format produces for a long attribute, so
   # the clean-tree arm fails if the scan stops reading at the end of the first line.
@@ -344,6 +363,8 @@ plant_violation() {
       printf 'let now = Date()\n' >> "$d/Sources/SwiftNWSModels/MediaType.swift" ;;
     check_unsafe)
       printf 'let n = unsafe ptr.load()\n' >> "$d/Sources/SwiftNWS/Client.swift" ;;
+    check_darwin_guard)
+      printf 'import HTTPURLSession\n\nextension Client {}\n' > "$d/Sources/SwiftNWS/Unguarded.swift" ;;
     check_coordinates)
       printf '// Added in P3\055T2 for Ph\141se 4\n' >> "$d/Sources/SwiftNWSModels/MediaType.swift" ;;
     check_em_dash)
@@ -366,6 +387,9 @@ plant_second_violation() {
     # An attribute and an access level in front of the import do not make it another import.
     check_models_import_boundary)
       printf '@_exported public import HTTPURLSession\n' > "$d/Sources/SwiftNWSModels/Leak.swift" ;;
+    # A test file is as Darwin-only as a source file, and `@testable` is still an import.
+    check_darwin_guard)
+      printf '@testable import HTTPURLSession\nimport Testing\n' > "$d/Tests/SwiftNWSTests/Unguarded.swift" ;;
     # A suite nested inside a bounded one is indented, so a scan anchored at the margin would not
     # see it. The outer suite carries the limit; the inner one does not.
     check_suite_time_limit)
@@ -426,6 +450,8 @@ remove_subject() {
   case "$2" in
     check_models_foundation_import | check_models_import_boundary)
       rm -rf "$d/Sources/SwiftNWSModels" ;;
+    check_darwin_guard)
+      rm -f "$d/Sources/SwiftNWS/Client+URLSession.swift" ;;
     check_swift_testing_only)
       printf 'import SwiftNWSModels\n' > "$d/Tests/SwiftNWSModelsTests/MediaTypeTests.swift"
       printf 'import SwiftNWS\n' > "$d/Tests/SwiftNWSTests/ClientTests.swift" ;;

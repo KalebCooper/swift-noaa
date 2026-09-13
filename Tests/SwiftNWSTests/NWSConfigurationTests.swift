@@ -1,5 +1,5 @@
 import SwiftNWS
-import SwiftNWSModels
+import SwiftNWSTestSupport
 import Testing
 
 @Suite("NWSConfiguration", .timeLimit(.minutes(suiteTimeLimitMinutes)))

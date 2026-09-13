@@ -24,13 +24,17 @@ let package = Package(
     ),
   ],
   dependencies: [
+    // HTTPCore's requests and responses carry their header fields as swift-http-types values, and
+    // HTTPCore does not re-export the module, so the SDK names the dependency it uses. The floor is
+    // swifty-networking's own, so the graph does not change.
+    .package(url: "https://github.com/apple/swift-http-types.git", from: "1.6.0"),
     // The trait of the same name is forwarded only while this package's own `HTTPPortable` trait is
     // enabled, so the AsyncHTTPClient and SwiftNIO packages behind it are resolved for no one else.
     .package(
       url: "https://github.com/KalebCooper/swifty-networking.git",
       from: "1.0.0",
       traits: [.trait(name: "HTTPPortable", condition: .when(traits: ["HTTPPortable"]))]
-    )
+    ),
   ],
   targets: [
     // `HTTPURLSession` compiles only on Apple platforms, and `HTTPPortable` is an empty module unless
@@ -42,6 +46,7 @@ let package = Package(
         .product(
           name: "HTTPPortable", package: "swifty-networking",
           condition: .when(traits: ["HTTPPortable"])),
+        .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(
           name: "HTTPURLSession", package: "swifty-networking",
           condition: .when(platforms: [.iOS, .macCatalyst, .macOS, .tvOS, .visionOS, .watchOS])),
@@ -50,11 +55,29 @@ let package = Package(
       swiftSettings: swiftSettings
     ),
     .target(name: "SwiftNWSModels", swiftSettings: swiftSettings),
-    .testTarget(
-      name: "SwiftNWSModelsTests", dependencies: ["SwiftNWSModels"], swiftSettings: swiftSettings
+    // Support shared by the test targets: responses recorded from the live API, and the suite time
+    // limit. It is in no product, so nothing here reaches a consumer.
+    .target(
+      name: "SwiftNWSTestSupport",
+      resources: [.copy("Fixtures")],
+      swiftSettings: swiftSettings
     ),
     .testTarget(
-      name: "SwiftNWSTests", dependencies: ["SwiftNWS", "SwiftNWSModels"], swiftSettings: swiftSettings
+      name: "SwiftNWSModelsTests",
+      dependencies: ["SwiftNWSModels", "SwiftNWSTestSupport"],
+      swiftSettings: swiftSettings
+    ),
+    .testTarget(
+      name: "SwiftNWSTests",
+      dependencies: [
+        .product(name: "HTTPCore", package: "swifty-networking"),
+        .product(name: "HTTPTesting", package: "swifty-networking"),
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        "SwiftNWS",
+        "SwiftNWSModels",
+        "SwiftNWSTestSupport",
+      ],
+      swiftSettings: swiftSettings
     ),
   ],
   swiftLanguageModes: [.v6]

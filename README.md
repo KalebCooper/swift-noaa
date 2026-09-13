@@ -8,15 +8,42 @@ sends them for you through [swifty-networking](https://github.com/KalebCooper/sw
 
 ## Status
 
-In early development and not yet usable against the API. The package layout, both products, and their
-test targets are in place; no endpoint, response model, or client exists yet. There is no release.
+In early development, with no release yet. What works today is the current-conditions lookup: the
+point for a location, the observation stations near it, and a station's latest observation. Forecasts,
+alerts, zones, and the rest of the API are not covered yet.
+
+## Usage
+
+```swift
+import SwiftNWS
+
+let client = NWSClient(
+  configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)")
+)
+
+let observation = try await client.latestObservation(latitude: 30.2672, longitude: -97.7431)
+print(observation.textDescription ?? "", observation.temperature?.value ?? .nan)
+```
+
+The API has no key, but it rejects requests without a `User-Agent` naming your application and a way
+to contact you, so the configuration requires one.
+
+Every request is also available as a plain value. Send it yourself, or through the client:
+
+```swift
+import SwiftNWSModels
+
+let endpoint = Endpoint.point(latitude: 30.2672, longitude: -97.7431)
+// GET https://api.weather.gov/points/30.2672,-97.7431, Accept: application/geo+json
+let point = try await client.send(endpoint).properties
+```
 
 ## Products
 
 | Product | What it is | Depends on |
 |---|---|---|
-| `SwiftNWSModels` | Models and endpoint descriptions for the API, usable on any data layer. Today it carries `MediaType`. | Nothing. |
-| `SwiftNWS` | The SDK that sends `SwiftNWSModels` endpoints. Today it carries `NWSConfiguration`, which holds the `User-Agent` the API requires. | `SwiftNWSModels`, swifty-networking. |
+| `SwiftNWSModels` | `Endpoint` descriptions and the models their responses decode into: `Point`, `ObservationStation`, `WeatherObservation`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
+| `SwiftNWS` | `NWSClient`, which sends endpoints and follows the links between responses, with `NWSConfiguration` and one typed error, `NWSError`. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
 
 A consumer with its own networking stack adds only `SwiftNWSModels` and fetches no dependency at all.
 
@@ -25,9 +52,11 @@ A consumer with its own networking stack adds only `SwiftNWSModels` and fetches 
 - Swift 6.2 or later.
 - iOS, macOS, tvOS, visionOS, and watchOS 26 or later, Linux, or Android.
 - `SwiftNWS` depends on [swifty-networking](https://github.com/KalebCooper/swifty-networking) 1.0.0 or
-  later. On Apple platforms it sends through `URLSession`. On Linux and Android, enable the
-  off-by-default `HTTPPortable` trait, which pulls in AsyncHTTPClient and SwiftNIO; a consumer who
-  leaves it off never fetches or builds either.
+  later and [swift-http-types](https://github.com/apple/swift-http-types) 1.6.0 or later. On Apple
+  platforms it sends through `URLSession`. On Linux and Android, enable the off-by-default
+  `HTTPPortable` trait, which pulls in AsyncHTTPClient and SwiftNIO, and pass swifty-networking's
+  `AsyncHTTPClientTransport` to `NWSClient(configuration:transport:)`; a consumer who leaves the trait
+  off never fetches or builds either.
 
 ## Installation
 
