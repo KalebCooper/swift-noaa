@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Bounded point caching with injected-clock expiry, least-recently-used eviction, opt-out, and clearing.
+
 - Twelve-hour and hourly forecasts through client methods, reusable requests, and linked endpoints.
 - Forecast periods, explicit units and feature flags, preserving legacy values and quantities.
 - Recorded forecast fixtures, documentation, and forecast sections in the iOS demo.
@@ -48,7 +50,7 @@ All notable changes to this project are documented here. The format follows
 - Replace the unreleased raw-coordinate observation and point methods with methods accepting
   `WeatherCoordinate`. Configuration-based client initializers and `Endpoint`/`send(_:)` remain.
 - Clarify that coordinate lookups use service order without a guaranteed distance ordering,
-  freshness filtering, station fallback, point caching, or automatic pagination.
+  freshness filtering, station fallback, or automatic pagination.
 
 ### Fixed
 

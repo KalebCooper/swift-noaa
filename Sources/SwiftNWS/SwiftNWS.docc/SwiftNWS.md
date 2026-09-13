@@ -24,9 +24,10 @@ a contact is required; there is no default identity.
 
 Coordinate lookups follow the point's station-list link, then fetch the first listed station's
 latest observation. The service does not guarantee distance ordering. The client does not reject
-old observations, try fallback stations, cache points, or fetch more station pages.
+old observations, try fallback stations, or fetch more station pages. Coordinate lookups share
+``PointCache``; direct endpoint requests bypass it.
 
-Twelve-hour and hourly forecasts follow the point's links. Alerts, point caching, and
+Twelve-hour and hourly forecasts follow the point's links. Alerts and
 pagination are not yet built.
 
 ## Topics
@@ -36,6 +37,7 @@ pagination are not yet built.
 - ``NWSClient``
 - ``NWSConfiguration``
 - ``NWSError``
+- ``PointCache``
 
 ### Request execution
 

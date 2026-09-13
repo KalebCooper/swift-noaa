@@ -43,7 +43,7 @@ Constructing or inspecting it sends nothing.
 
 The coordinate lookup uses service ordering rather than calculating distance. Do not assume
 the first listed station is geographically closest. To match the SDK, do not add freshness
-filtering, fallback stations, caching, or automatic pagination, and check cancellation before
+filtering, fallback stations, or automatic pagination, and check cancellation before
 each HTTP call.
 
 ## Extend the vocabulary
@@ -56,3 +56,11 @@ Custom multi-step workflows remain the consumer's own functions.
 The existing GeoJSON models retain `Feature.id`, `Feature.properties`, and the collection's
 features. They do not preserve arbitrary metadata or geometry. Unknown unit and quality codes
 remain strings; null measurements remain nil.
+
+## Point cache policy
+
+The SDK remembers up to 128 point mappings for 24 hours with least-recently-used eviction.
+Expiry uses a monotonic clock. Client copies share the cache, which callers can clear or disable.
+Only successful coordinate resolutions populate it; direct endpoint requests bypass it.
+This is SDK policy rather than part of request construction. A custom executor chooses its own
+cache policy. Forecast and observation responses are not cached by the point cache.

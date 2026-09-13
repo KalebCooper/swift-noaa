@@ -16,15 +16,22 @@ public struct NWSClient: Sendable {
   /// The values every request is sent with.
   public var configuration: NWSConfiguration
 
+  /// The shared point cache, or nil when point caching is disabled.
+  public let pointCache: PointCache?
+
   private let client: HTTPClient
 
   /// Creates a client that sends through a swifty-networking transport.
   ///
   /// - Parameters:
   ///   - configuration: The values every request is sent with.
+  ///   - pointCache: Shared point mappings, or nil to disable caching.
   ///   - transport: What sends each request.
-  public init(configuration: NWSConfiguration, transport: any Transport) {
+  public init(
+    configuration: NWSConfiguration, pointCache: PointCache? = .init(), transport: any Transport
+  ) {
     self.configuration = configuration
+    self.pointCache = pointCache
     self.client = HTTPClient(baseURL: Self.baseURL, transport: transport)
   }
 
@@ -54,7 +61,7 @@ public struct NWSClient: Sendable {
 
   /// Retrieves the latest observation from a station or a coordinate's station list.
   ///
-  /// A station lookup sends one request. A coordinate lookup sends three: the point, its linked
+  /// A station lookup sends one request. An uncached coordinate lookup sends three: the point, its linked
   /// station list, and the first station's observation. The API does not guarantee distance order.
   /// The result retains its station and timestamp, with no freshness filtering or fallback.
   ///
@@ -93,7 +100,7 @@ public struct NWSClient: Sendable {
   /// Executes a reusable weather request.
   ///
   /// Endpoint requests decode directly as `Value`. Latest-observation requests resolve their
-  /// source and return the observation's properties. No caching or automatic pagination is applied.
+  /// source and return the observation's properties. Coordinate resolutions reuse the point cache. Direct endpoints bypass it. No automatic pagination is applied.
   ///
   /// - Parameter request: The portable description to execute.
   /// - Returns: The concrete response selected by the request's factory or endpoint.
@@ -108,7 +115,7 @@ public struct NWSClient: Sendable {
     case .endpoint(let endpoint):
       return try await send(endpoint)
     case .forecast(let location, let options), .hourlyForecast(let location, let options):
-      let point = try await send(Endpoint.point(for: location)).properties
+      let point = try await point(for: location)
       let endpoint: Endpoint<Feature<WeatherForecast>>?
       let link: URL
       if case .hourlyForecast = request.resolution {
@@ -127,7 +134,7 @@ public struct NWSClient: Sendable {
       let identifier: String
       switch source {
       case .nearest(let location):
-        let point = try await send(Endpoint.point(for: location)).properties
+        let point = try await point(for: location)
         guard let stationsEndpoint = Endpoint.observationStations(near: point) else {
           throw .invalidLink(point.observationStations)
         }
@@ -146,6 +153,18 @@ public struct NWSClient: Sendable {
         Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path))
       return feature.properties
     }
+  }
+
+  private func point(for location: WeatherCoordinate) async throws(NWSError) -> Point {
+    guard !Task.isCancelled else { throw .transport(.cancelled) }
+    let cached = pointCache?.lookup(location)
+    if let point = cached?.point { return point }
+    let point = try await send(Endpoint.point(for: location)).properties
+    guard !Task.isCancelled else { throw .transport(.cancelled) }
+    if let generation = cached?.generation {
+      pointCache?.insert(point, for: location, generation: generation)
+    }
+    return point
   }
 
   private static let baseURL: URL = {

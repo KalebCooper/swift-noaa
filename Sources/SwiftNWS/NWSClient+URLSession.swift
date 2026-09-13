@@ -15,9 +15,15 @@ extension NWSClient {
   ///
   /// - Parameters:
   ///   - configuration: The values every request is sent with.
+  ///   - pointCache: Shared point mappings, or nil to disable caching.
   ///   - session: The session that sends each request; defaults to the shared session.
-  public init(configuration: NWSConfiguration, session: URLSession = .shared) {
-    self.init(configuration: configuration, transport: URLSessionTransport(session: session))
+  public init(
+    configuration: NWSConfiguration, pointCache: PointCache? = .init(),
+    session: URLSession = .shared
+  ) {
+    self.init(
+      configuration: configuration, pointCache: pointCache,
+      transport: URLSessionTransport(session: session))
   }
 
   /// Creates a client that sends through the shared URL session.

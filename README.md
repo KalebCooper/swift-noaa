@@ -41,8 +41,8 @@ then round to four decimal places. The initializer throws `WeatherCoordinate.Val
 
 `.nearest(to:)` follows the point's station-list link and uses the first station on the returned
 page. This preserves the service's ordering; it does not calculate distances, and the API does not
-guarantee that the first station is geographically closest. The lookup takes three HTTP requests.
-It does not filter stale observations, try a fallback station, cache points, or fetch additional pages.
+guarantee that the first station is geographically closest. An uncached lookup takes three HTTP requests.
+It does not filter stale observations, try a fallback station, or fetch additional pages.
 Use the result's `stationId` and `timestamp` to assess its source and freshness.
 
 ### Forecasts
@@ -61,6 +61,22 @@ ISO 8601 dates, and the original validity interval. Temperature and wind retain 
 values or quantitative objects, including ranges and missing measurements. No conversion or period
 filtering is implicit. Direct `Endpoint.forecast(for:options:)` and
 `Endpoint.hourlyForecast(for:options:)` factories accept a decoded point.
+
+### Point caching
+
+Coordinate forecasts and observations share a `PointCache`: up to 128 mappings for 24 hours, with
+least-recently-used eviction and monotonic expiry. Client copies share it. Forecast and observation
+responses are fetched each time; direct `send` calls bypass the point cache. Concurrent misses may
+make independent requests.
+
+```swift
+weather.pointCache?.removeAll()
+let uncached = NWSClient(configuration: .init(userAgent: "(example.com, contact@example.com)"), pointCache: nil)
+let cache = PointCache(capacity: 64, lifetime: .seconds(3_600))
+```
+
+A custom `Clock` can be injected into `PointCache` for deterministic expiry. Clearing prevents earlier
+in-flight point lookups from repopulating the cache. Failures and cancelled lookups are not stored.
 
 ### Reusable requests
 
