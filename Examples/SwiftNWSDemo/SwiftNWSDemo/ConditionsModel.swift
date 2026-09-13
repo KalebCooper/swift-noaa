@@ -61,8 +61,9 @@ final class ConditionsModel {
         latitude: coordinate.latitude, longitude: coordinate.longitude)
       let alerts = try await client.activeAlerts(for: location)
       let observation = try await client.latestObservation(from: .nearest(to: location))
-      let forecast = try await client.forecast(for: location)
-      let hourlyForecast = try await client.hourlyForecast(for: location)
+      let options = ForecastOptions(featureFlags: [.temperatureQuantity, .windSpeedQuantity])
+      let forecast = try await client.forecast(for: location, options: options)
+      let hourlyForecast = try await client.hourlyForecast(for: location, options: options)
       phase = .loaded(
         alerts: alerts, forecast: forecast, hourlyForecast: hourlyForecast,
         observation: observation, place: place)

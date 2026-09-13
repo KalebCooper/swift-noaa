@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- WMO-to-Foundation measurement conversion and percentage fractions, shared by the demo.
+
 - Active alerts by coordinate, area, zone, and typed filters, plus single-alert lookups.
 - Portable CAP models that preserve unknown codes and optional fields, with recorded alert fixtures.
 - Bounded same-origin redirects with cancellation checks and alert sections in the demo.

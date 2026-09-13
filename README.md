@@ -97,6 +97,24 @@ let cache = PointCache(capacity: 64, lifetime: .seconds(3_600))
 A custom `Clock` can be injected into `PointCache` for deterministic expiry. Clearing prevents earlier
 in-flight point lookups from repopulating the cache. Failures and cancelled lookups are not stored.
 
+### WMO units
+
+Import `SwiftNWS` to convert the WMO codes found in the recorded responses using Foundation:
+
+```swift
+let fahrenheit = observation.temperature?.measurement(in: UnitTemperature.fahrenheit)
+let milesPerHour = observation.windSpeed?.measurement(in: UnitSpeed.milesPerHour)
+let humidityFraction = observation.relativeHumidity?.fraction
+// On Apple platforms:
+let temperatureText = fahrenheit?.formatted(.measurement(width: .abbreviated, usage: .asProvided))
+```
+
+The adapter covers temperature, speed, pressure, length, and angle readings. Percentages become
+fractions for `.percent` formatting. Unknown units, incompatible dimensions, and null values return
+nil. No conversion occurs during decoding, and range bounds and quality codes remain on the original
+quantity. `SwiftNWSModels` remains independent of full Foundation; the optional SDK adapter uses
+Foundation's conversion facilities on all supported platforms.
+
 ### Reusable requests
 
 The everyday method delegates to the same execution path as this request:

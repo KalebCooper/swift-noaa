@@ -43,4 +43,5 @@ provider filters. Pagination is not automatic.
 
 - <doc:ActiveAlerts>
 - <doc:Forecasts>
+- <doc:Units>
 - <doc:UsingRequests>

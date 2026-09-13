@@ -1,3 +1,4 @@
+import SwiftNWS
 import SwiftNWSModels
 import SwiftUI
 
@@ -66,6 +67,7 @@ struct ContentView: View {
           VStack(alignment: .leading) {
             Text(period.name ?? "Forecast").font(.headline)
             Text(period.detailedForecast)
+            forecastMeasurements(period)
           }
         }
       }
@@ -74,11 +76,22 @@ struct ContentView: View {
           VStack(alignment: .leading) {
             Text(period.startTime, format: .dateTime.weekday().hour()).font(.headline)
             Text(period.shortForecast)
+            forecastMeasurements(period)
           }
         }
       }
     case .failed(let message):
       Section { Text(message).foregroundStyle(.red) }
+    }
+  }
+
+  @ViewBuilder
+  private func forecastMeasurements(_ period: ForecastPeriod) -> some View {
+    if case .quantity(let temperature) = period.temperature {
+      LabeledContent("Temperature", value: Optional(temperature).displayText)
+    }
+    if case .quantity(let wind) = period.windSpeed {
+      LabeledContent("Wind", value: Optional(wind).displayText)
     }
   }
 
@@ -93,19 +106,18 @@ extension QuantitativeValue? {
   fileprivate var displayText: String {
     guard let quantity = self, let value = quantity.value else { return "Not reported" }
     let wholeNumber = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(0))
-    switch quantity.unitCode {
-    case "wmoUnit:degC":
-      return Measurement(value: value, unit: UnitTemperature.celsius)
-        .formatted(
-          .measurement(width: .abbreviated, usage: .weather, numberFormatStyle: wholeNumber))
-    case "wmoUnit:km_h-1":
-      return Measurement(value: value, unit: UnitSpeed.kilometersPerHour)
-        .formatted(.measurement(width: .abbreviated, usage: .wind, numberFormatStyle: wholeNumber))
-    case "wmoUnit:percent":
-      return (value / 100).formatted(.percent.precision(.fractionLength(0)))
-    default:
-      return "\(value.formatted()) \(quantity.unitCode)"
+    if let temperature = quantity.measurement(in: UnitTemperature.celsius) {
+      return temperature.formatted(
+        .measurement(width: .abbreviated, usage: .weather, numberFormatStyle: wholeNumber))
     }
+    if let wind = quantity.measurement(in: UnitSpeed.kilometersPerHour) {
+      return wind.formatted(
+        .measurement(width: .abbreviated, usage: .wind, numberFormatStyle: wholeNumber))
+    }
+    if let fraction = quantity.fraction {
+      return fraction.formatted(.percent.precision(.fractionLength(0)))
+    }
+    return "\(value.formatted()) \(quantity.unitCode)"
   }
 }
 

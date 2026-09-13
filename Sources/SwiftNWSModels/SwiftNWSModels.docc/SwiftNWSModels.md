@@ -11,6 +11,10 @@ single-HTTP ``Endpoint`` values, and portable response models.
 Current conditions and forecasts are available. Forecast requests carry explicit units and
 representation flags. Active alert factories support geographic and CAP filters.
 
+Quantities preserve their WMO unit code and nullable value without conversion. The optional
+`SwiftNWS` SDK adds Foundation measurement conversion and percentage fractions; these models do
+not require full Foundation or a networking stack.
+
 ## Topics
 
 ### Request descriptions
