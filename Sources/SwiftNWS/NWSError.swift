@@ -3,7 +3,10 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
-import HTTPCore
+// The SDK's public API names HTTPCore's types (`TransportError` in this error, `Transport` in the
+// client's initializer), so the module is re-exported: a consumer reads a transport failure's members
+// under member import visibility without importing a module it never declared a dependency on.
+@_exported import HTTPCore
 import SwiftNWSModels
 
 /// Why a request to the National Weather Service API failed.

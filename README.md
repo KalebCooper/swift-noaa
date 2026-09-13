@@ -50,7 +50,7 @@ package itself closed in Xcode, since Xcode lets a local package be open in only
 | Product | What it is | Depends on |
 |---|---|---|
 | `SwiftNWSModels` | `Endpoint` descriptions and the models their responses decode into: `Point`, `ObservationStation`, `WeatherObservation`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
-| `SwiftNWS` | `NWSClient`, which sends endpoints and follows the links between responses, with `NWSConfiguration` and one typed error, `NWSError`. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
+| `SwiftNWS` | `NWSClient`, which sends endpoints and follows the links between responses, with `NWSConfiguration` and one typed error, `NWSError`. It re-exports swifty-networking's `HTTPCore`, so `Transport` and `TransportError` need no import of their own. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
 
 A consumer with its own networking stack adds only `SwiftNWSModels` and fetches no dependency at all.
 

@@ -69,7 +69,7 @@ final class ConditionsModel {
     case .invalidLink(let link): "The API linked outside itself: \(link)"
     case .noObservationStation: "No weather station reports near this location."
     case .problem(let problem): "\(problem.title): \(problem.detail)"
-    case .transport(let failure): String(describing: failure)
+    case .transport(let failure): failure.description
     }
   }
 }

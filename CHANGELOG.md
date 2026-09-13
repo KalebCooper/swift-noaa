@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- `SwiftNWS` re-exports swifty-networking's `HTTPCore`, so `TransportError` and `Transport` are
+  usable, members included, from a file that imports only `SwiftNWS`.
 - `NWSClient.latestObservation(latitude:longitude:)`, the latest observation from the station
   nearest a location, looked up through the location's point and its station list.
 - `NWSClient`, which sends an `Endpoint` with the configured `User-Agent` and the endpoint's media
