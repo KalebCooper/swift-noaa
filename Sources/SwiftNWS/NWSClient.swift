@@ -124,10 +124,15 @@ public struct NWSClient: Sendable {
 
   /// Sends an endpoint and decodes its response.
   ///
+  /// Follows at most five redirects within the API origin, preserving request headers.
+  /// Every hop checks cancellation. Direct sends bypass point caching.
+  ///
   /// - Parameter endpoint: The endpoint to send.
   /// - Returns: The decoded body, including its GeoJSON wrapper when the endpoint names one.
   /// - Throws: ``NWSError/problem(_:)`` for NWS problem details, or ``NWSError/transport(_:)``
   ///   for transport and decoding failures. Cancellation is a transport cancellation.
+  ///   Redirects can throw ``NWSError/invalidRedirect(_:)``, ``NWSError/invalidLink(_:)``,
+  ///   or ``NWSError/tooManyRedirects``.
   public func send<Value: Decodable & SendableMetatype>(
     _ endpoint: Endpoint<Value>
   ) async throws(NWSError) -> Value {
@@ -170,6 +175,7 @@ public struct NWSClient: Sendable {
   /// - Parameter request: The portable description to execute.
   /// - Returns: The concrete response selected by the request's factory or endpoint.
   /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier,
+  ///   ``NWSError/invalidAlertIdentifier(_:)`` for an empty alert identifier,
   ///   ``NWSError/invalidLink(_:)`` for a disallowed link, ``NWSError/noObservationStation``
   ///   for an empty station list, or any error from ``send(_:)``.
   public func value<Value: Decodable & SendableMetatype>(

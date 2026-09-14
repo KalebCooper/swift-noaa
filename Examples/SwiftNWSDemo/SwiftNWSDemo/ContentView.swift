@@ -87,11 +87,17 @@ struct ContentView: View {
 
   @ViewBuilder
   private func forecastMeasurements(_ period: ForecastPeriod) -> some View {
-    if case .quantity(let temperature) = period.temperature {
+    switch period.temperature {
+    case .quantity(let temperature):
       LabeledContent("Temperature", value: Optional(temperature).displayText)
+    case .value(let value):
+      LabeledContent("Temperature", value: "\(value.formatted()) \(period.temperatureUnit ?? "")")
     }
-    if case .quantity(let wind) = period.windSpeed {
+    switch period.windSpeed {
+    case .quantity(let wind):
       LabeledContent("Wind", value: Optional(wind).displayText)
+    case .text(let text):
+      LabeledContent("Wind", value: text)
     }
   }
 
@@ -104,7 +110,17 @@ struct ContentView: View {
 extension QuantitativeValue? {
   /// The measurement formatted for the current locale, converting the units the API reports in.
   fileprivate var displayText: String {
-    guard let quantity = self, let value = quantity.value else { return "Not reported" }
+    guard let quantity = self else { return "Not reported" }
+    guard let value = quantity.value else {
+      if let minimum = quantity.minValue, let maximum = quantity.maxValue {
+        var lower = quantity
+        var upper = quantity
+        lower.value = minimum
+        upper.value = maximum
+        return "\(Optional(lower).displayText) to \(Optional(upper).displayText)"
+      }
+      return "Not reported"
+    }
     let wholeNumber = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(0))
     if let temperature = quantity.measurement(in: UnitTemperature.celsius) {
       return temperature.formatted(

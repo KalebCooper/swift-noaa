@@ -35,6 +35,16 @@ Thanks for your interest. Contributions are welcome; every change to the public 
 
 ## Pull requests
 
+Before a release, run the package tests on the shared `swift-noaa` scheme, both Linux configurations
+with `Scripts/linux-test.sh`, strict lint, and `Scripts/verify.sh`. Build both DocC catalogs with
+warnings treated as errors, then merge and transform them for static hosting. Build and run the demo
+with the package window closed in Xcode.
+
+CI repeats Linux, Android, iOS simulator, and lint checks, builds the demo in Release configuration,
+and builds documentation on pull requests. Pages publication runs only from `main`. Approve the
+release tag after all lanes pass on the release commit; a local pass does not establish hosted or
+Android success.
+
 - Target `main`. One concern per PR.
 - Update `CHANGELOG.md` under **Unreleased**.
 

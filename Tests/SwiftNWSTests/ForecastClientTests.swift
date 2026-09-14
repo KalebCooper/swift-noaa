@@ -101,6 +101,8 @@ private struct ForecastIdentity: Decodable, Sendable {
 
 extension WeatherRequest where Response == WeatherForecast {
   fileprivate static var austinForecast: Self {
-    .forecast(for: try! WeatherCoordinate(latitude: 30.2672, longitude: -97.7431))
+    get throws {
+      .forecast(for: try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431))
+    }
   }
 }

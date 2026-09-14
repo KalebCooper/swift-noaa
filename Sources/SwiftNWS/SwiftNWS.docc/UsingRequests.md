@@ -62,7 +62,7 @@ or wrap that endpoint in a request. The result retains `Feature.id` and `Feature
 geometry and other unmodeled metadata are not retained.
 
 ``NWSError`` distinguishes problem details, transport and decoding failures, invalid links,
-empty station identifiers, and empty station lists. Cancellation is
+invalid or excessive redirects, empty station or alert identifiers, and empty station lists. Cancellation is
 `NWSError.transport(.cancelled)`; it is checked before each HTTP call. No new retry policy
 is applied by the weather lookup.
 

@@ -61,6 +61,22 @@ struct ForecastResponseTests {
     #expect(Endpoint.forecast(for: point) == nil)
   }
 
+  @Test("Forecast timestamps retain milliseconds when encoded")
+  func forecastTimestampsRetainMillisecondsWhenEncoded() throws {
+    var forecast = try JSONDecoder().decode(
+      Feature<WeatherForecast>.self, from: Fixture.forecast.data()
+    ).properties
+    let instant = try Date(
+      "2026-09-13T14:30:00.125Z",
+      strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true))
+    forecast.generatedAt = instant
+    forecast.periods[0].startTime = instant
+    let decoded = try JSONDecoder().decode(
+      WeatherForecast.self, from: JSONEncoder().encode(forecast))
+    #expect(decoded.generatedAt == instant)
+    #expect(decoded.periods[0].startTime == instant)
+  }
+
   @Test("Malformed forecast values fail decoding")
   func malformedForecastValuesFailDecoding() throws {
     #expect(throws: DecodingError.self) {

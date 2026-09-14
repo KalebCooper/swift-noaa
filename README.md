@@ -11,9 +11,12 @@ send through any networking stack, plus an SDK that sends them for you through
 
 ## Status
 
-In early development, with no release yet. What works today is the current-conditions lookup: the
-point for a location, its observation stations, a station's latest observation, and twelve-hour
-and hourly forecasts, and active alerts. Alert history, general zone data, and the rest of the API await later releases.
+The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
+point caching, and active alerts by coordinate, area, zone, and CAP filters. WMO readings can be
+converted with Foundation. The release is not tagged yet.
+
+Alert history, raw grid data, general zone and office endpoints, automatic pagination, and retries
+are outside this release.
 
 ## Usage
 
@@ -33,7 +36,7 @@ let stationObservation = try await weather.latestObservation(from: .station("KAT
 
 The API has no key, but it requires a `User-Agent` naming your application and a way to contact you.
 The short initializer uses the shared URL session on Apple platforms. The existing
-`NWSClient(configuration:session:)` and `NWSClient(configuration:transport:)` initializers remain
+`NWSClient(configuration:pointCache:session:)` and `NWSClient(configuration:pointCache:transport:)` initializers remain
 available for custom sessions and transports.
 
 Coordinates reject nonfinite values and values outside latitude -90...90 and longitude -180...180,
@@ -171,11 +174,11 @@ print(point.id as Any, point.properties.gridId)
 
 A consumer with its own networking stack needs only `SwiftNWSModels`. Send a GET to
 `https://api.weather.gov` plus `endpoint.path`, set `Accept` to `endpoint.accept.rawValue`, supply
-your own `User-Agent`, and decode the body as the endpoint's response type. Use
+your own `User-Agent`, set `Feature-Flags` from `endpoint.featureFlags` when nonempty, and decode the body as the endpoint's response type. Use
 `Endpoint(accept:featureFlags:link:)` to validate service-provided links before following them.
 
 `WeatherRequest.resolution` is also public and transport-independent: `.endpoint` describes one
-HTTP call; `.latestObservation` describes an `ObservationSource`. A custom executor can interpret
+HTTP call; `.latestObservation` describes an `ObservationSource`; forecast cases describe a coordinate and options, and `.alert` describes an identifier. A custom executor can interpret
 the source using the lookup rules above. Requests contain no SDK or transport closures.
 
 Direct endpoints preserve the existing GeoJSON wrappers, including `Feature.id` and
@@ -185,7 +188,7 @@ Measurements can be absent or have a null value; unknown unit and quality codes 
 ### Errors and migration
 
 The client throws `NWSError`: NWS problem details, transport or decoding failures, invalid
-service links, empty station identifiers, or a station list with no stations. Cancellation is
+service links or redirects, excess redirect hops, empty station or alert identifiers, or a station list with no stations. Cancellation is
 `NWSError.transport(.cancelled)`, with a cancellation check before each HTTP call.
 
 The unreleased coordinate overloads have been replaced:
@@ -207,7 +210,7 @@ package itself closed in Xcode, since Xcode lets a local package be open in only
 
 | Product | What it is | Depends on |
 |---|---|---|
-| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `WeatherRequest`, `Endpoint`, and portable response models: `Point`, `ObservationStation`, `WeatherObservation`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
+| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `WeatherRequest`, `Endpoint`, and portable response models: `Point`, `ObservationStation`, `WeatherObservation`, `WeatherForecast`, `WeatherAlert`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
 | `SwiftNWS` | `NWSClient`, which sends endpoints and follows the links between responses, with `NWSConfiguration` and one typed error, `NWSError`. It re-exports swifty-networking's `HTTPCore`, so `Transport` and `TransportError` need no import of their own. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
 
 A consumer with its own networking stack adds only `SwiftNWSModels` and fetches no dependency at all.
@@ -220,7 +223,7 @@ A consumer with its own networking stack adds only `SwiftNWSModels` and fetches 
   later and [swift-http-types](https://github.com/apple/swift-http-types) 1.6.0 or later. On Apple
   platforms it sends through `URLSession`. On Linux and Android, enable the off-by-default
   `HTTPPortable` trait, which pulls in AsyncHTTPClient and SwiftNIO, and pass swifty-networking's
-  `AsyncHTTPClientTransport` to `NWSClient(configuration:transport:)`; a consumer who leaves the trait
+  `AsyncHTTPClientTransport` to `NWSClient(configuration:pointCache:transport:)`; a consumer who leaves the trait
   off never fetches or builds either.
 
 ## Installation
@@ -237,6 +240,12 @@ On Linux or Android, enable the trait on the dependency:
 ```
 
 Every change is recorded in [CHANGELOG.md](CHANGELOG.md).
+
+## Documentation and verification
+
+Both products have DocC catalogs. The [documentation site](https://kalebcooper.github.io/swift-noaa/documentation/)
+is published from `main`; Swift Package Index is configured to build both products.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the local checks and CI matrix.
 
 ## License
 

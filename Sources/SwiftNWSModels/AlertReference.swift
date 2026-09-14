@@ -64,7 +64,8 @@ public struct AlertReference: Codable, Hashable, Sendable {
     try container.encode(id, forKey: .id)
     try container.encode(identifier, forKey: .identifier)
     try container.encode(sender, forKey: .sender)
-    try container.encode(sent.formatted(.iso8601), forKey: .sent)
+    try container.encode(
+      sent.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)), forKey: .sent)
   }
 
   private enum CodingKeys: String, CodingKey {

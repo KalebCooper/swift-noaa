@@ -16,11 +16,12 @@ print(endpoint.accept.rawValue) // application/geo+json
 ```
 
 Send a GET to `https://api.weather.gov` plus the endpoint's path, set the Accept header to
-its media type, and provide a User-Agent identifying your application and a contact.
+its media type, and provide a User-Agent identifying your application and a contact. When
+`endpoint.featureFlags` is nonempty, join it with commas for the Feature-Flags header.
 Decode the successful response as `Feature<Point>` for this endpoint. Your networking stack
 owns status handling, cancellation, and decoding.
 
-Use `Endpoint(accept:link:)` for links returned by the API. It accepts only HTTPS on
+Use `Endpoint(accept:featureFlags:link:)` for links returned by the API. It accepts only HTTPS on
 `api.weather.gov`, with no credentials or fragment and either no explicit port or port 443.
 It retains the encoded path and query. A disallowed link returns nil and must not be followed.
 The path-based initializer is a low-level escape hatch; callers supply the path and response
@@ -33,6 +34,12 @@ Constructing or inspecting it sends nothing.
 
 - An endpoint resolution contains `Endpoint<Response>`. Decode the complete body as
   `Response`, without adding or removing a GeoJSON wrapper.
+- Forecast resolutions contain a coordinate and options. Resolve the point, validate its forecast
+  or hourly link using the corresponding endpoint factory, then return the feature's properties.
+  Preserve the endpoint's units query and feature flags.
+- An alert resolution contains an identifier. Reject an empty identifier, send `Endpoint.alert(identifier:)`,
+  and return the feature's properties. Active-alert factories use an endpoint resolution and retain
+  the returned collection. Follow canonical redirects only after validating their origin.
 - A latest-observation resolution contains ``ObservationSource`` and is only created for
   ``WeatherObservation`` responses. For an explicit station, reject an empty identifier,
   send `Endpoint.latestObservation(stationIdentifier:)`, and return the feature's properties.

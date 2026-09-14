@@ -84,10 +84,14 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(elevation, forKey: .elevation)
     try container.encodeIfPresent(forecastGenerator, forKey: .forecastGenerator)
-    try container.encode(generatedAt.formatted(.iso8601), forKey: .generatedAt)
+    try container.encode(
+      generatedAt.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)),
+      forKey: .generatedAt)
     try container.encode(periods, forKey: .periods)
     try container.encode(units, forKey: .units)
-    try container.encode(updateTime.formatted(.iso8601), forKey: .updateTime)
+    try container.encode(
+      updateTime.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)),
+      forKey: .updateTime)
     try container.encode(validTimes, forKey: .validTimes)
   }
 

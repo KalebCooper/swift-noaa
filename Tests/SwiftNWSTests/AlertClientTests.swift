@@ -10,7 +10,7 @@ import Testing
 @Suite("Alert client", .timeLimit(.minutes(suiteTimeLimitMinutes)))
 struct AlertClientTests {
   @Test("Alert access layers agree", arguments: [0, 1, 2], [0, 1, 2, 3])
-  func accessLayersAgree(layer: Int, selection: Int) async throws {
+  func alertAccessLayersAgree(layer: Int, selection: Int) async throws {
     let location = try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431)
     let endpoints: [Endpoint<FeatureCollection<WeatherAlert>>] = [
       .activeAlerts(for: location), .activeAlerts(inArea: "TX"),
@@ -46,8 +46,17 @@ struct AlertClientTests {
     #expect(transport.requests[0].request.headerFields[.accept] == "application/geo+json")
   }
 
+  @Test("Alert factories infer reusable responses without sending")
+  func alertFactoriesInferReusableResponsesWithoutSending() throws {
+    let request = WeatherRequest.activeAlerts(inArea: "TX")
+    let alert = WeatherRequest.alert(identifier: "example")
+    let custom = WeatherRequest.texasAlerts
+    #expect(request == custom)
+    #expect(alert == .alert(identifier: "example"))
+  }
+
   @Test("Cancellation between redirect hops prevents another request")
-  func cancellationBetweenHops() async throws {
+  func cancellationBetweenRedirectHopsPreventsAnotherRequest() async throws {
     let transport = MockTransport()
     transport.setHandler(forPath: "/alerts/active") { _ in
       withUnsafeCurrentTask { $0?.cancel() }
@@ -67,7 +76,7 @@ struct AlertClientTests {
   }
 
   @Test("Empty lists return immediately without following pagination")
-  func emptyCollection() async throws {
+  func emptyListsReturnImmediatelyWithoutFollowingPagination() async throws {
     let transport = MockTransport()
     transport.setHandler(forPath: "/alerts/active") { _ in
       .success(
@@ -82,33 +91,8 @@ struct AlertClientTests {
     #expect(transport.requests.count == 1)
   }
 
-  @Test(
-    "Redirects preserve headers and decode recorded canonical responses",
-    arguments: [
-      "/alerts/active/area/TX", "https://api.weather.gov/alerts/active/area/TX", "active/area/TX",
-    ])
-  func followsCanonicalRedirect(location: String) async throws {
-    let transport = MockTransport()
-    let body = try Fixture.areaAlerts.data()
-    transport.setHandler(forPath: "/alerts/active") { _ in
-      .success(
-        MockTransport.Answer(Response(headers: [.location: location], status: .movedPermanently)))
-    }
-    transport.setHandler(forPath: "/alerts/active/area/TX") { _ in
-      .success(MockTransport.Answer(Response(body: body, status: .ok)))
-    }
-    let client = NWSClient(configuration: .init(userAgent: "test"), transport: transport)
-    let result = try await client.activeAlerts(matching: .init(location: .areas(["TX"])))
-    #expect(result.features.count == 12)
-    #expect(
-      transport.requests.map(\.request.path) == [
-        "/alerts/active?area=TX", "/alerts/active/area/TX",
-      ])
-    #expect(transport.requests.allSatisfy { $0.request.headerFields[.userAgent] == "test" })
-  }
-
   @Test("Redirect loops and hop limits terminate", arguments: [false, true])
-  func redirectsAreBounded(loop: Bool) async throws {
+  func redirectLoopsAndHopLimitsTerminate(loop: Bool) async throws {
     let transport = MockTransport()
     for index in 0...6 {
       let path = index == 0 ? "/alerts/active" : "/hop/\(index)"
@@ -136,7 +120,7 @@ struct AlertClientTests {
       "https://user:password@api.weather.gov/alerts", "https://api.weather.gov:444/alerts",
       "https://api.weather.gov/alerts#fragment",
     ])
-  func rejectsRedirectOrigin(location: String) async throws {
+  func redirectsCannotEscapeTheAPIOrigin(location: String) async throws {
     let transport = MockTransport()
     transport.setHandler(forPath: "/alerts/active") { _ in
       .success(
@@ -149,9 +133,34 @@ struct AlertClientTests {
   }
 
   @Test(
+    "Redirects preserve headers and decode recorded canonical responses",
+    arguments: [
+      "/alerts/active/area/TX", "https://api.weather.gov/alerts/active/area/TX", "active/area/TX",
+    ])
+  func redirectsPreserveHeadersAndDecodeRecordedCanonicalResponses(location: String) async throws {
+    let transport = MockTransport()
+    let body = try Fixture.areaAlerts.data()
+    transport.setHandler(forPath: "/alerts/active") { _ in
+      .success(
+        MockTransport.Answer(Response(headers: [.location: location], status: .movedPermanently)))
+    }
+    transport.setHandler(forPath: "/alerts/active/area/TX") { _ in
+      .success(MockTransport.Answer(Response(body: body, status: .ok)))
+    }
+    let client = NWSClient(configuration: .init(userAgent: "test"), transport: transport)
+    let result = try await client.activeAlerts(matching: .init(location: .areas(["TX"])))
+    #expect(result.features.count == 12)
+    #expect(
+      transport.requests.map(\.request.path) == [
+        "/alerts/active?area=TX", "/alerts/active/area/TX",
+      ])
+    #expect(transport.requests.allSatisfy { $0.request.headerFields[.userAgent] == "test" })
+  }
+
+  @Test(
     "Single alert convenience and reusable request unwrap the same feature",
     arguments: [false, true])
-  func singleAlert(useRequest: Bool) async throws {
+  func singleAlertConvenienceAndReusableRequestUnwrapTheSameFeature(useRequest: Bool) async throws {
     let transport = MockTransport()
     let body = try Fixture.alert.data()
     transport.setHandler(forPath: "/alerts/example") { _ in
@@ -163,10 +172,17 @@ struct AlertClientTests {
       (useRequest
       ? client.value(for: .alert(identifier: "example")) : client.alert(identifier: "example"))
     #expect(result == (try JSONDecoder().decode(Feature<WeatherAlert>.self, from: body)).properties)
-    let error = await #expect(throws: NWSError.self) { try await client.alert(identifier: "") }
+    let error = await #expect(throws: NWSError.self) {
+      try await
+        (useRequest ? client.value(for: .alert(identifier: "")) : client.alert(identifier: ""))
+    }
     guard case .invalidAlertIdentifier("") = error else {
       Issue.record("Expected empty identifier error"); return
     }
     #expect(transport.requests.count == 1)
   }
+}
+
+extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
+  fileprivate static var texasAlerts: Self { .activeAlerts(inArea: "TX") }
 }

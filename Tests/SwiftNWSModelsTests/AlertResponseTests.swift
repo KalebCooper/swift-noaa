@@ -24,6 +24,20 @@ struct AlertResponseTests {
         == alerts)
   }
 
+  @Test("Alert timestamps retain milliseconds when encoded")
+  func alertTimestampsRetainMillisecondsWhenEncoded() throws {
+    var alert = try JSONDecoder().decode(Feature<WeatherAlert>.self, from: Fixture.alert.data())
+      .properties
+    let instant = try Date(
+      "2026-09-13T14:30:00.125Z",
+      strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true))
+    alert.onset = instant
+    alert.sent = instant
+    let decoded = try JSONDecoder().decode(WeatherAlert.self, from: JSONEncoder().encode(alert))
+    #expect(decoded.onset == instant)
+    #expect(decoded.sent == instant)
+  }
+
   @Test("An alert retains references and optional CAP fields")
   func anAlertRetainsReferencesAndOptionalCAPFields() throws {
     let alert = try JSONDecoder().decode(Feature<WeatherAlert>.self, from: Fixture.alert.data())

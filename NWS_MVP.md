@@ -6,17 +6,13 @@ and signatures are settled when each piece is built, against the live OpenAPI sp
 
 ## Built today
 
-- `/points/{latitude},{longitude}`, the observation stations a point links to, and
-  `/stations/{stationId}/observations/latest`, as `Endpoint` values and `Codable` models.
-- `WeatherCoordinate`, `ObservationSource`, and reusable `WeatherRequest<Response>` values,
-  including custom typed endpoints and inspectable resolution descriptions.
-- `NWSClient.latestObservation(from:)`, delegating to `value(for:)` and `send(_:)`, sending
-  through `URLSession` on Apple platforms and through AsyncHTTPClient on Linux and Android
-  under the `HTTPPortable` trait. Coordinate lookups use the first service-listed station
-  without freshness filtering or fallback.
-- DocC catalogs for both products describing current conditions and request execution.
-- `NWSError`, mapping RFC 7807 problem details into a typed error.
-- An iOS demo app in `Examples/SwiftNWSDemo`.
+The 0.1.0 implementation includes observations, linked twelve-hour and hourly forecasts,
+bounded point caching, active-alert filters and canonical endpoints, individual alerts, and
+WMO measurement conversion. Every HTTP operation has an endpoint, reusable request, and client
+surface. Recorded fixtures, tests, both DocC catalogs, and the demo cover these features.
+
+Release validation runs locally before publication. The Android and hosted CI lanes must pass
+on the pushed release commit before approving the 0.1.0 tag. Tagging and pushing require owner approval.
 
 ## 0.1.0: current conditions, forecast, and active alerts for a location
 

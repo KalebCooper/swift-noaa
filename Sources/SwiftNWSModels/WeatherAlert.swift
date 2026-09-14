@@ -249,11 +249,16 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
     try container.encode(certainty, forKey: .certainty)
     try container.encodeIfPresent(code, forKey: .code)
     try container.encode(description, forKey: .description)
-    try container.encode(effective.formatted(.iso8601), forKey: .effective)
-    try container.encodeIfPresent(ends?.formatted(.iso8601), forKey: .ends)
+    try container.encode(
+      effective.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)),
+      forKey: .effective)
+    try container.encodeIfPresent(
+      ends?.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)), forKey: .ends)
     try container.encode(event, forKey: .event)
     try container.encodeIfPresent(eventCode, forKey: .eventCode)
-    try container.encode(expires.formatted(.iso8601), forKey: .expires)
+    try container.encode(
+      expires.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)), forKey: .expires
+    )
     try container.encodeIfPresent(geocode, forKey: .geocode)
     try container.encodeIfPresent(headline, forKey: .headline)
     try container.encode(id, forKey: .id)
@@ -261,14 +266,16 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
     try container.encodeIfPresent(language, forKey: .language)
     try container.encode(messageType, forKey: .messageType)
     try container.encodeIfPresent(note, forKey: .note)
-    try container.encodeIfPresent(onset?.formatted(.iso8601), forKey: .onset)
+    try container.encodeIfPresent(
+      onset?.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)), forKey: .onset)
     try container.encodeIfPresent(parameters, forKey: .parameters)
     try container.encodeIfPresent(references, forKey: .references)
     try container.encode(response, forKey: .response)
     try container.encodeIfPresent(scope, forKey: .scope)
     try container.encode(sender, forKey: .sender)
     try container.encode(senderName, forKey: .senderName)
-    try container.encode(sent.formatted(.iso8601), forKey: .sent)
+    try container.encode(
+      sent.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)), forKey: .sent)
     try container.encode(severity, forKey: .severity)
     try container.encode(status, forKey: .status)
     try container.encode(urgency, forKey: .urgency)

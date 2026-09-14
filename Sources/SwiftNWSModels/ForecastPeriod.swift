@@ -156,7 +156,9 @@ public struct ForecastPeriod: Codable, Hashable, Sendable {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(detailedForecast, forKey: .detailedForecast)
     try container.encodeIfPresent(dewpoint, forKey: .dewpoint)
-    try container.encode(endTime.formatted(.iso8601), forKey: .endTime)
+    try container.encode(
+      endTime.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)), forKey: .endTime
+    )
     try container.encodeIfPresent(icon, forKey: .icon)
     try container.encode(isDaytime, forKey: .isDaytime)
     try container.encodeIfPresent(name, forKey: .name)
@@ -164,7 +166,9 @@ public struct ForecastPeriod: Codable, Hashable, Sendable {
     try container.encodeIfPresent(probabilityOfPrecipitation, forKey: .probabilityOfPrecipitation)
     try container.encodeIfPresent(relativeHumidity, forKey: .relativeHumidity)
     try container.encode(shortForecast, forKey: .shortForecast)
-    try container.encode(startTime.formatted(.iso8601), forKey: .startTime)
+    try container.encode(
+      startTime.formatted(Date.ISO8601FormatStyle(includingFractionalSeconds: true)),
+      forKey: .startTime)
     try container.encode(temperature, forKey: .temperature)
     try container.encodeIfPresent(temperatureTrend, forKey: .temperatureTrend)
     try container.encodeIfPresent(temperatureUnit, forKey: .temperatureUnit)

@@ -3,6 +3,7 @@ name: Docs
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 # Least-privilege GITHUB_TOKEN plus the scopes deploy-pages needs to publish.
@@ -62,7 +63,7 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2' \
             -derivedDataPath .derivedData-models \
             -skipPackagePluginValidation \
-            OTHER_DOCC_FLAGS='--enable-experimental-external-link-support' \
+            OTHER_DOCC_FLAGS='--warnings-as-errors --enable-experimental-external-link-support' \
             | xcbeautify --renderer github-actions
 
       # Lifted out of derived data entirely, so the path handed to --dependency belongs to nothing that
@@ -95,7 +96,7 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2' \
             -derivedDataPath .derivedData \
             -skipPackagePluginValidation \
-            OTHER_DOCC_FLAGS="--enable-experimental-external-link-support --dependency ${{ steps.models.outputs.archive }}" \
+            OTHER_DOCC_FLAGS="--warnings-as-errors --enable-experimental-external-link-support --dependency ${{ steps.models.outputs.archive }}" \
             | xcbeautify --renderer github-actions
 
       # Two products means two archives. A merged archive gets a synthesized landing page at
