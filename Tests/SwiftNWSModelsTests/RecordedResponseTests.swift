@@ -16,10 +16,10 @@ struct RecordedResponseTests {
     #expect(observation.textDescription == "Clear")
     #expect(
       observation.temperature
-        == QuantitativeValue(qualityControl: "V", unitCode: "wmoUnit:degC", value: 37.8))
+        == QuantitativeValue(qualityControl: .verified, unitCode: "wmoUnit:degC", value: 37.8))
     #expect(
       observation.windChill
-        == QuantitativeValue(qualityControl: "V", unitCode: "wmoUnit:degC", value: nil))
+        == QuantitativeValue(qualityControl: .verified, unitCode: "wmoUnit:degC", value: nil))
     // 2026-09-13T19:51:00+00:00
     #expect(observation.timestamp == Date(timeIntervalSince1970: 1_789_329_060))
   }
@@ -100,7 +100,7 @@ struct RecordedResponseTests {
     let body = Data(
       #"{"qualityControl":"future-quality","unitCode":"wmoUnit:future","value":null}"#.utf8)
     let value = try JSONDecoder().decode(QuantitativeValue.self, from: body)
-    #expect(value.qualityControl == "future-quality")
+    #expect(value.qualityControl?.rawValue == "future-quality")
     #expect(value.unitCode == "wmoUnit:future")
     #expect(value.value == nil)
   }

@@ -13,10 +13,18 @@ extension Endpoint where Response == FeatureCollection<WeatherAlert> {
   }
 
   /// Lists active alerts for a state, territory, or marine area.
-  /// - Parameter area: A nonempty provider area code, encoded as one path segment.
+  /// - Parameter area: A provider area code, encoded as one path segment.
   /// - Returns: The GeoJSON collection endpoint.
-  public static func activeAlerts(inArea area: String) -> Self {
-    Self(path: "/alerts/active/area/" + encodedSegment(area))
+  public static func activeAlerts(inArea area: AreaCode) -> Self {
+    Self(path: "/alerts/active/area/" + encodedSegment(area.rawValue))
+  }
+
+  /// Lists active alerts using a consumer-defined area enum.
+  /// - Parameter area: A String-backed state, territory, or marine area code.
+  /// - Returns: The GeoJSON collection endpoint.
+  public static func activeAlerts<Area>(inArea area: Area) -> Self
+  where Area: RawRepresentable, Area.RawValue == String {
+    activeAlerts(inArea: AreaCode(area))
   }
 
   /// Lists active alerts for a forecast or county zone.

@@ -33,6 +33,10 @@ All notable changes are documented here, following
 
 - Rename the package from `swift-nws` to `swift-noaa`, retaining `SwiftNWS` and `SwiftNWSModels`.
 - Replace prerelease raw-coordinate overloads with `WeatherCoordinate` and `ObservationSource`.
+- Replace provider-enumerated alert, forecast, and measurement strings with forward-compatible
+  typed code values, including direct interoperability with consumer-defined String-backed enums.
+- Add named state, territory, marine-area, and marine-region codes for alert queries while retaining
+  unknown values and keeping zone identifiers and event vocabulary open.
 - Keep station ordering, freshness assessment, fallback, pagination, and retries under consumer
   control; no provider guarantee is inferred.
 

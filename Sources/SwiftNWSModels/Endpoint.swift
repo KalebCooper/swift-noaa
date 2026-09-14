@@ -22,7 +22,7 @@ public struct Endpoint<Response>: Hashable, Sendable {
   public var accept: MediaType
 
   /// The comma-separated values to send in the Feature-Flags header.
-  public var featureFlags: [String]
+  public var featureFlags: [NWSFeatureFlag]
 
   /// The path, and query when there is one, relative to `https://api.weather.gov`.
   public var path: String
@@ -43,7 +43,7 @@ public struct Endpoint<Response>: Hashable, Sendable {
   ///   - accept: The media type to ask for; defaults to ``MediaType/geoJSON``.
   ///   - featureFlags: Explicit response representations to request.
   ///   - link: An absolute URL from a response.
-  public init?(accept: MediaType = .geoJSON, featureFlags: [String] = [], link: URL) {
+  public init?(accept: MediaType = .geoJSON, featureFlags: [NWSFeatureFlag] = [], link: URL) {
     guard let components = URLComponents(url: link, resolvingAgainstBaseURL: false),
       components.scheme?.lowercased() == "https",
       components.host?.lowercased() == "api.weather.gov",
@@ -57,16 +57,48 @@ public struct Endpoint<Response>: Hashable, Sendable {
       accept: accept, featureFlags: featureFlags, path: components.percentEncodedPath + query)
   }
 
+  /// Creates an endpoint from an API link using a consumer-defined feature flag enum.
+  /// - Parameters:
+  ///   - accept: The media type to ask for; defaults to ``MediaType/geoJSON``.
+  ///   - featureFlags: String-backed response representations to request.
+  ///   - link: An absolute URL from a response.
+  public init?<Flag>(accept: MediaType = .geoJSON, featureFlags: [Flag], link: URL)
+  where Flag: RawRepresentable, Flag.RawValue == String {
+    var converted: [NWSFeatureFlag] = []
+    converted.reserveCapacity(featureFlags.count)
+    for featureFlag in featureFlags {
+      converted.append(NWSFeatureFlag(featureFlag))
+    }
+    self.init(accept: accept, featureFlags: converted, link: link)
+  }
+
   /// Creates an endpoint from a path.
   ///
   /// - Parameters:
   ///   - accept: The media type to ask for; defaults to ``MediaType/geoJSON``.
   ///   - featureFlags: Explicit response representations to request.
   ///   - path: The path relative to `https://api.weather.gov`, starting with `/`.
-  public init(accept: MediaType = .geoJSON, featureFlags: [String] = [], path: String) {
+  public init(
+    accept: MediaType = .geoJSON, featureFlags: [NWSFeatureFlag] = [], path: String
+  ) {
     self.accept = accept
     self.featureFlags = featureFlags
     self.path = path
+  }
+
+  /// Creates an endpoint from a path using a consumer-defined feature flag enum.
+  /// - Parameters:
+  ///   - accept: The media type to ask for; defaults to ``MediaType/geoJSON``.
+  ///   - featureFlags: String-backed response representations to request.
+  ///   - path: The path relative to `https://api.weather.gov`, starting with `/`.
+  public init<Flag>(accept: MediaType = .geoJSON, featureFlags: [Flag], path: String)
+  where Flag: RawRepresentable, Flag.RawValue == String {
+    var converted: [NWSFeatureFlag] = []
+    converted.reserveCapacity(featureFlags.count)
+    for featureFlag in featureFlags {
+      converted.append(NWSFeatureFlag(featureFlag))
+    }
+    self.init(accept: accept, featureFlags: converted, path: path)
   }
 }
 
@@ -92,7 +124,7 @@ extension Endpoint where Response == Feature<WeatherForecast> {
   private static func forecast(link: URL, options: ForecastOptions) -> Self? {
     guard
       var endpoint = Self(
-        featureFlags: options.featureFlags.map(\.rawValue).sorted(), link: link),
+        featureFlags: options.featureFlags.sorted { $0.rawValue < $1.rawValue }, link: link),
       var components = URLComponents(string: endpoint.path)
     else { return nil }
     var items = components.percentEncodedQueryItems ?? []
@@ -133,7 +165,7 @@ extension Endpoint where Response == FeatureCollection<ObservationStation> {
   /// The observation stations usable for a point, followed from the point's link.
   ///
   /// - Parameter point: The point whose stations to list.
-  /// - Returns: The endpoint, or `nil` when the link is rejected by ``init(accept:featureFlags:link:)``.
+  /// - Returns: The endpoint, or `nil` when the link is rejected by ``init(accept:featureFlags:link:)-(_,[NWSFeatureFlag],_)``.
   public static func observationStations(near point: Point) -> Endpoint? {
     Endpoint(link: point.observationStations)
   }

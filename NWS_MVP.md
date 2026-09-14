@@ -30,10 +30,11 @@ platform the package claims, documented and tested in CI.
   `windSpeed`, `windGust`, `windDirection`, `icon`, `shortForecast`, `detailedForecast`, plus
   `dewpoint` and `relativeHumidity` on hourly periods, and the forecast's `updateTime`,
   `generatedAt`, `validTimes`, and `elevation`.
-- The `units` query (`us` or `si`) as an explicit option.
-- The `Feature-Flags` header as explicit options, starting with the two the forecast accepts,
-  `forecast_temperature_qv` and `forecast_wind_speed_qv`. The decoded shape follows the flags a
-  request sends, so turning a flag on never produces a decoding surprise.
+- The `units` query (`us` or `si`) as an explicit, extensible code value.
+- The `Feature-Flags` header as explicit, extensible code values, starting with the two the forecast
+  accepts, `forecast_temperature_qv` and `forecast_wind_speed_qv`. Consumers can pass their own
+  `String`-backed enums. The decoded shape follows the flags a request sends, so turning a flag on never
+  produces a decoding surprise.
 - Client conveniences for a coordinate's forecast and hourly forecast.
 
 ### Point caching
@@ -48,24 +49,27 @@ platform the package claims, documented and tested in CI.
 ### Active alerts
 
 - `/alerts/active` filtered by point, and by the other active-alert filters the spec lists (area,
-  zone, region, event, status, message type, severity, urgency, certainty).
-- `/alerts/active/zone/{zoneId}`, `/alerts/active/area/{area}`, and `/alerts/{id}`.
+  zone, region, event, status, message type, severity, urgency, certainty). Enumerated area and marine
+  region inputs are extensible code values; zone identifiers and event names remain strings.
+- `/alerts/active/zone/{zoneId}`, `/alerts/active/area/{area}`, and `/alerts/{id}`. Consumers can pass
+  their own `String`-backed area enums at the client, reusable-request, and endpoint levels.
 - An alert model covering the CAP fields the API returns, including `event`, `headline`,
   `description`, `instruction`, `severity`, `certainty`, `urgency`, `status`, `messageType`,
-  `category`, `response`, `areaDesc`, `affectedZones`, `sent`, `effective`, `onset`, `expires`, and
-  `ends`. Enumerations decode an unknown value without failing, because the API adds values without
-  a version change.
+  `category`, `response`, `scope`, `areaDesc`, `affectedZones`, `sent`, `effective`, `onset`,
+  `expires`, and `ends`. Enumerated values decode an unknown value without failing, because the API
+  adds values without a version change.
 - The 301 answers some alert queries give on the way to a canonical URL, followed and tested.
 - A client convenience for the active alerts at a coordinate.
 - GeoJSON only; the CAP XML and Atom media types wait for 1.0.0.
 
 ### Units
 
-- A mapping from the WMO unit codes the API reports (`wmoUnit:degC`, `wmoUnit:km_h-1`,
+- A mapping from the WMO unit identifiers the API reports (`wmoUnit:degC`, `wmoUnit:km_h-1`,
   `wmoUnit:percent`, `wmoUnit:Pa`, `wmoUnit:m`, `wmoUnit:degree_(angle)`, and the rest seen in
   recorded responses) to something a consumer can convert and format, so an app does not rebuild the
-  table the demo carries today. Where it lives is settled with the portability rule in mind:
-  `SwiftNWSModels` may not need full Foundation.
+  table the demo carries today. WMO identifiers remain strings because the schema does not enumerate
+  them; enumerated quality-control codes use extensible code values. Where the mapping lives is settled
+  with the portability rule in mind: `SwiftNWSModels` may not need full Foundation.
 
 ### Release quality
 

@@ -25,7 +25,7 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
   public var periods: [ForecastPeriod]
 
   /// The unit system reported by the service; unknown values are preserved.
-  public var units: String
+  public var units: ForecastUnits
 
   /// When the underlying forecast data was updated.
   public var updateTime: Date
@@ -48,7 +48,7 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
     forecastGenerator: String? = nil,
     generatedAt: Date,
     periods: [ForecastPeriod],
-    units: String,
+    units: ForecastUnits,
     updateTime: Date,
     validTimes: String
   ) {
@@ -71,7 +71,7 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
       forecastGenerator: try container.decodeIfPresent(String.self, forKey: .forecastGenerator),
       generatedAt: try container.decodeISO8601(forKey: .generatedAt),
       periods: try container.decode([ForecastPeriod].self, forKey: .periods),
-      units: try container.decode(String.self, forKey: .units),
+      units: try container.decode(ForecastUnits.self, forKey: .units),
       updateTime: try container.decodeISO8601(forKey: .updateTime),
       validTimes: try container.decode(String.self, forKey: .validTimes)
     )

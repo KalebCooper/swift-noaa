@@ -17,7 +17,7 @@ public struct QuantitativeValue: Codable, Hashable, Sendable {
 
   /// The quality control flag the observation system assigned to the measurement, such as `V` for
   /// verified.
-  public var qualityControl: String?
+  public var qualityControl: QualityControlCode?
 
   /// The WMO unit code the measurement is expressed in, such as `wmoUnit:degC` or `wmoUnit:km_h-1`.
   public var unitCode: String
@@ -36,7 +36,7 @@ public struct QuantitativeValue: Codable, Hashable, Sendable {
   public init(
     maxValue: Double? = nil,
     minValue: Double? = nil,
-    qualityControl: String? = nil,
+    qualityControl: QualityControlCode? = nil,
     unitCode: String,
     value: Double?
   ) {

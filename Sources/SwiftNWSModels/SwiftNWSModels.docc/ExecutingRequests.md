@@ -17,7 +17,8 @@ print(endpoint.accept.rawValue) // application/geo+json
 
 Send a GET to `https://api.weather.gov` plus the endpoint's path, set the Accept header to
 its media type, and provide a User-Agent identifying your application and a contact. When
-`endpoint.featureFlags` is nonempty, join it with commas for the Feature-Flags header.
+`endpoint.featureFlags` is nonempty, join each value's `rawValue` with commas for the
+Feature-Flags header.
 Decode the successful response as `Feature<Point>` for this endpoint. Your networking stack
 owns status handling, cancellation, and decoding.
 
@@ -58,11 +59,13 @@ each HTTP call.
 Constrained extensions can return existing request factories. A custom single-HTTP operation can
 use `WeatherRequest(endpoint:)` with a consumer-defined response type. There is no public
 initializer for assigning arbitrary built-in resolutions to unrelated response types.
-Custom multi-step workflows remain the consumer's own functions.
+Custom multi-step workflows remain the consumer's own functions. Area factories at the endpoint,
+request, and client levels accept either `AreaCode` or a consumer-defined String-backed enum.
 
 The existing GeoJSON models retain `Feature.id`, `Feature.properties`, and the collection's
-features. They do not preserve arbitrary metadata or geometry. Unknown unit and quality codes
-remain strings; null measurements remain nil.
+features. They do not preserve arbitrary metadata or geometry. WMO unit identifiers remain
+strings. Enumerated forecast and quality codes use open values whose `rawValue` preserves unknown
+provider values; null measurements remain nil.
 
 ## Point cache policy
 

@@ -1,24 +1,12 @@
-/// An extensible CAP severity code.
-/// Unknown service values are retained in `rawValue`.
+/// An extensible forecast unit-system code.
 ///
-/// ```swift
-/// let code = AlertSeverity(rawValue: "FutureCode")
-/// ```
-public struct AlertSeverity: Codable, Hashable, RawRepresentable, Sendable {
-  /// The CAP Extreme code.
-  public static let extreme = Self(rawValue: "Extreme")
+/// Known values match the live NWS schema. Unknown service values remain available in ``rawValue``.
+public struct ForecastUnits: Codable, Hashable, RawRepresentable, Sendable {
+  /// International System units.
+  public static let si = Self(rawValue: "si")
 
-  /// The CAP Minor code.
-  public static let minor = Self(rawValue: "Minor")
-
-  /// The CAP Moderate code.
-  public static let moderate = Self(rawValue: "Moderate")
-
-  /// The CAP Severe code.
-  public static let severe = Self(rawValue: "Severe")
-
-  /// The CAP Unknown code.
-  public static let unknown = Self(rawValue: "Unknown")
+  /// United States customary units.
+  public static let us = Self(rawValue: "us")
 
   /// The service's exact code.
   public let rawValue: String

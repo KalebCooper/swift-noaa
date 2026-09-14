@@ -20,12 +20,17 @@ struct ForecastResponseTests {
     #expect(forecast.validTimes == "2026-09-13T16:00:00+00:00/P7DT9H")
     #expect(first.endTime > first.startTime)
     #expect(first.temperatureTrend == nil)
+    #expect(first.windDirection == .sse)
     switch fixture {
     case .forecast:
+      #expect(forecast.units == .us)
       #expect(first.temperature == .value(101))
+      #expect(first.temperatureUnit == .fahrenheit)
       #expect(first.windSpeed == .text("15 mph"))
       #expect(first.windGust == nil)
     case .forecastQuantities:
+      #expect(forecast.units == .si)
+      #expect(first.temperatureUnit == nil)
       #expect(
         first.temperature == .quantity(.init(unitCode: "wmoUnit:degC", value: 26.11111111111111)))
       #expect(
@@ -34,10 +39,14 @@ struct ForecastResponseTests {
             .init(maxValue: 16.09344, minValue: 8.04672, unitCode: "wmoUnit:km_h-1", value: nil)))
     case .hourlyForecast:
       #expect(forecast.periods.count == 156)
+      #expect(forecast.units == .us)
+      #expect(first.temperatureUnit == .fahrenheit)
       #expect(first.temperature == .value(97))
       #expect(first.relativeHumidity?.value == 43)
     case .hourlyForecastQuantities:
       #expect(forecast.periods.count == 156)
+      #expect(forecast.units == .si)
+      #expect(first.temperatureUnit == nil)
       #expect(first.windGust == .quantity(.init(unitCode: "wmoUnit:km_h-1", value: 32.18688)))
       #expect(first.dewpoint?.value == 21.666666666666668)
     default: Issue.record("Unexpected fixture")
@@ -56,7 +65,7 @@ struct ForecastResponseTests {
         for: point,
         options: .init(featureFlags: [.windSpeedQuantity, .temperatureQuantity], units: .si)))
     #expect(endpoint.path == "/gridpoints/NEW/1,2/forecast?x=a%2Fb&units=si")
-    #expect(endpoint.featureFlags == ["forecast_temperature_qv", "forecast_wind_speed_qv"])
+    #expect(endpoint.featureFlags == [.temperatureQuantity, .windSpeedQuantity])
     point.forecast = try #require(URL(string: "http://api.weather.gov/forecast"))
     #expect(Endpoint.forecast(for: point) == nil)
   }
@@ -94,18 +103,24 @@ struct ForecastResponseTests {
     var properties = try #require(object["properties"] as? [String: Any])
     var periods = try #require(properties["periods"] as? [[String: Any]])
     periods[0]["name"] = nil
-    periods[0]["windDirection"] = "future-direction"
-    periods[0]["temperatureTrend"] = "future-trend"
     periods[0]["temperature"] = ["unitCode": "future:unit", "value": NSNull()]
+    periods[0]["temperatureTrend"] = "future-trend"
+    periods[0]["temperatureUnit"] = "future-temperature-unit"
+    periods[0]["windDirection"] = "future-direction"
     periods[0]["startTime"] = "2026-09-13T23:00:00.123Z"
     properties["periods"] = periods
+    properties["units"] = "future-units"
     object["properties"] = properties
     let body = try JSONSerialization.data(withJSONObject: object)
     let first = try #require(
       JSONDecoder().decode(Feature<WeatherForecast>.self, from: body).properties.periods.first)
     #expect(first.name == nil)
-    #expect(first.windDirection == "future-direction")
-    #expect(first.temperatureTrend == "future-trend")
     #expect(first.temperature == .quantity(.init(unitCode: "future:unit", value: nil)))
+    #expect(first.temperatureTrend?.rawValue == "future-trend")
+    #expect(first.temperatureUnit?.rawValue == "future-temperature-unit")
+    #expect(first.windDirection.rawValue == "future-direction")
+    #expect(
+      try JSONDecoder().decode(Feature<WeatherForecast>.self, from: body).properties.units.rawValue
+        == "future-units")
   }
 }

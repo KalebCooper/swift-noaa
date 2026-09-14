@@ -13,11 +13,11 @@ struct AlertClientTests {
   func alertAccessLayersAgree(layer: Int, selection: Int) async throws {
     let location = try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431)
     let endpoints: [Endpoint<FeatureCollection<WeatherAlert>>] = [
-      .activeAlerts(for: location), .activeAlerts(inArea: "TX"),
+      .activeAlerts(for: location), .activeAlerts(inArea: .texas),
       .activeAlerts(inZone: "TXZ192"), .activeAlerts(matching: .init(severity: [.moderate])),
     ]
     let requests: [WeatherRequest<FeatureCollection<WeatherAlert>>] = [
-      .activeAlerts(for: location), .activeAlerts(inArea: "TX"),
+      .activeAlerts(for: location), .activeAlerts(inArea: .texas),
       .activeAlerts(inZone: "TXZ192"), .activeAlerts(matching: .init(severity: [.moderate])),
     ]
     let body = try Fixture.activeAlerts.data()
@@ -31,7 +31,7 @@ struct AlertClientTests {
     if layer == 0 {
       switch selection {
       case 0: result = try await client.activeAlerts(for: location)
-      case 1: result = try await client.activeAlerts(inArea: "TX")
+      case 1: result = try await client.activeAlerts(inArea: .texas)
       case 2: result = try await client.activeAlerts(inZone: "TXZ192")
       default: result = try await client.activeAlerts(matching: .init(severity: [.moderate]))
       }
@@ -48,7 +48,7 @@ struct AlertClientTests {
 
   @Test("Alert factories infer reusable responses without sending")
   func alertFactoriesInferReusableResponsesWithoutSending() throws {
-    let request = WeatherRequest.activeAlerts(inArea: "TX")
+    let request = WeatherRequest.activeAlerts(inArea: .texas)
     let alert = WeatherRequest.alert(identifier: "example")
     let custom = WeatherRequest.texasAlerts
     #expect(request == custom)
@@ -73,6 +73,26 @@ struct AlertClientTests {
       return
     }
     #expect(transport.requests.count == 1)
+  }
+
+  @Test("Consumer area enums work across all access levels")
+  func consumerAreaEnumsWorkAcrossAllAccessLevels() async throws {
+    let body = try Fixture.areaAlerts.data()
+    let expected = try JSONDecoder().decode(FeatureCollection<WeatherAlert>.self, from: body)
+    let endpoint: Endpoint<FeatureCollection<WeatherAlert>> = .activeAlerts(
+      inArea: ConsumerArea.texas)
+    let request: WeatherRequest<FeatureCollection<WeatherAlert>> = .activeAlerts(
+      inArea: ConsumerArea.texas)
+    let transport = MockTransport()
+    transport.setHandler(forPath: endpoint.path) { _ in
+      .success(MockTransport.Answer(Response(body: body, status: .ok)))
+    }
+    let client = NWSClient(configuration: .init(userAgent: "test"), transport: transport)
+
+    #expect(try await client.activeAlerts(inArea: ConsumerArea.texas) == expected)
+    #expect(try await client.value(for: request) == expected)
+    #expect(try await client.send(endpoint) == expected)
+    #expect(transport.requests.map(\.request.path) == Array(repeating: endpoint.path, count: 3))
   }
 
   @Test("Empty lists return immediately without following pagination")
@@ -148,7 +168,7 @@ struct AlertClientTests {
       .success(MockTransport.Answer(Response(body: body, status: .ok)))
     }
     let client = NWSClient(configuration: .init(userAgent: "test"), transport: transport)
-    let result = try await client.activeAlerts(matching: .init(location: .areas(["TX"])))
+    let result = try await client.activeAlerts(matching: .init(location: .areas([.texas])))
     #expect(result.features.count == 12)
     #expect(
       transport.requests.map(\.request.path) == [
@@ -183,6 +203,10 @@ struct AlertClientTests {
   }
 }
 
+private enum ConsumerArea: String {
+  case texas = "TX"
+}
+
 extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
-  fileprivate static var texasAlerts: Self { .activeAlerts(inArea: "TX") }
+  fileprivate static var texasAlerts: Self { .activeAlerts(inArea: .texas) }
 }

@@ -17,10 +17,12 @@ The client does not trim expired periods or infer a freshness guarantee.
 
 Temperature preserves either a legacy number or a quantitative object. Wind speed and gusts preserve
 either text (including ranges) or a quantitative object. Quantities can have a null value or only
-minimum and maximum values. Unknown unit, trend, and direction codes remain strings.
+minimum and maximum values. Unit, trend, and direction codes use typed open values; compare known
+static members or inspect `rawValue` for a provider value added after this SDK release.
 Hourly periods additionally expose dewpoint and relative humidity when present.
 
 Use `Endpoint.forecast(for:options:)` or `Endpoint.hourlyForecast(for:options:)` with a decoded
 point for a single HTTP operation. These retain the GeoJSON feature envelope and validate the
 service link's origin. Options replace a link's units query while preserving its other encoded
-query items. Only the forecast request receives its Feature-Flags header.
+query items. Only the forecast request receives its Feature-Flags header. `ForecastOptions` and
+`Endpoint` also accept consumer-defined String-backed enums for feature flags and units.

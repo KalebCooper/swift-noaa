@@ -49,13 +49,13 @@ public struct ForecastPeriod: Codable, Hashable, Sendable {
   public var temperature: ForecastTemperature
 
   /// The temperature trend; unknown values are preserved.
-  public var temperatureTrend: String?
+  public var temperatureTrend: ForecastTemperatureTrend?
 
   /// The legacy temperature unit, when reported.
-  public var temperatureUnit: String?
+  public var temperatureUnit: ForecastTemperatureUnit?
 
   /// The wind direction; unknown values are preserved.
-  public var windDirection: String
+  public var windDirection: ForecastWindDirection
 
   /// The peak wind gust, when reported.
   public var windGust: ForecastWind?
@@ -96,9 +96,9 @@ public struct ForecastPeriod: Codable, Hashable, Sendable {
     shortForecast: String,
     startTime: Date,
     temperature: ForecastTemperature,
-    temperatureTrend: String? = nil,
-    temperatureUnit: String? = nil,
-    windDirection: String,
+    temperatureTrend: ForecastTemperatureTrend? = nil,
+    temperatureUnit: ForecastTemperatureUnit? = nil,
+    windDirection: ForecastWindDirection,
     windGust: ForecastWind? = nil,
     windSpeed: ForecastWind
   ) {
@@ -141,9 +141,11 @@ public struct ForecastPeriod: Codable, Hashable, Sendable {
       shortForecast: try container.decode(String.self, forKey: .shortForecast),
       startTime: try container.decodeISO8601(forKey: .startTime),
       temperature: try container.decode(ForecastTemperature.self, forKey: .temperature),
-      temperatureTrend: try container.decodeIfPresent(String.self, forKey: .temperatureTrend),
-      temperatureUnit: try container.decodeIfPresent(String.self, forKey: .temperatureUnit),
-      windDirection: try container.decode(String.self, forKey: .windDirection),
+      temperatureTrend: try container.decodeIfPresent(
+        ForecastTemperatureTrend.self, forKey: .temperatureTrend),
+      temperatureUnit: try container.decodeIfPresent(
+        ForecastTemperatureUnit.self, forKey: .temperatureUnit),
+      windDirection: try container.decode(ForecastWindDirection.self, forKey: .windDirection),
       windGust: try container.decodeIfPresent(ForecastWind.self, forKey: .windGust),
       windSpeed: try container.decode(ForecastWind.self, forKey: .windSpeed)
     )

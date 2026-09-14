@@ -6,6 +6,7 @@ Retrieve active CAP alerts as GeoJSON and preserve the service's values.
 
 ```swift
 let alerts = try await weather.activeAlerts(for: home)
+let texas = try await weather.activeAlerts(inArea: .texas)
 for feature in alerts.features {
   let alert = feature.properties
   print(alert.headline ?? alert.event)
@@ -15,16 +16,19 @@ for feature in alerts.features {
 
 `ActiveAlertFilter` supports certainty, code, event, message type, severity, status, and urgency.
 Its optional location is one of areas, a point, regions, region type, or zones. This excludes the
-geographic combinations the service rejects. Empty arrays omit a filter. The service validates
-provider codes; this package does not keep a second, potentially stale registry.
+geographic combinations the service rejects. Empty arrays omit a filter. `AreaCode` and
+`MarineRegionCode` name the live schema values while retaining unknown raw values. Zone identifiers,
+event names, and event codes remain open strings.
 
 Use `activeAlerts(inArea:)` or `activeAlerts(inZone:)` for canonical area or zone paths.
-`alert(identifier:)` retrieves an individual alert's properties. Equivalent `WeatherRequest`
+The area overloads on `NWSClient`, `WeatherRequest`, and `Endpoint` also accept a consumer-defined
+String-backed enum directly. `alert(identifier:)` retrieves an individual alert's properties. Equivalent `WeatherRequest`
 factories perform no work until executed. `Endpoint` factories retain the GeoJSON envelopes.
 
 ## Preserve the source
 
-Known CAP codes have named constants, and unknown strings round-trip unchanged. Nullable dates,
+Known CAP codes use typed open values with named constants, and unknown raw values round-trip.
+Nullable dates,
 instructions, and headlines remain optional. Parameters and event codes retain their JSON values.
 Lists retain service order and stop after one returned collection; CAP XML, Atom, history, and
 automatic pagination are outside this release.

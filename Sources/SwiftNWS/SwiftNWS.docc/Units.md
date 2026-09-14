@@ -21,8 +21,9 @@ conversion to a compatible destination unit. `wmoUnit:percent` exposes a fractio
 for a reported value of 65.
 
 Unknown codes, incompatible destination dimensions, and missing measurements return nil.
-No range bound is substituted for a missing value. The source quantity retains its bounds,
-quality control, and unit code unchanged.
+No range bound is substituted for a missing value. The source quantity retains its bounds and
+unit code unchanged. Quality control uses `QualityControlCode`: known provider values have named
+static members, and `rawValue` preserves values added later.
 
 ## Format for display
 

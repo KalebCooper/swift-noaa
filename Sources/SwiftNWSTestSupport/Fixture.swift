@@ -9,25 +9,25 @@ import Foundation
 /// let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
 /// ```
 package enum Fixture: String, CaseIterable, Sendable {
-  /// `/alerts/active?point=30.2672,-97.7431`, active alerts at downtown Austin.
+  /// `/alerts/active?point=30.2672,-97.7431`, covering typed CAP codes at downtown Austin.
   case activeAlerts = "ActiveAlerts"
 
-  /// `/alerts/urn:oid:2.49.0.1.840.0.6e6bf321dc05d97a3fc0262ae03641b6b41e6b31.001.2`.
+  /// One `/alerts/{id}` response covering typed CAP codes and optional fields.
   case alert = "Alert"
 
-  /// `/alerts/active/area/TX`, active alerts in Texas.
+  /// `/alerts/active/area/TX`, covering the typed Texas area path and CAP codes.
   case areaAlerts = "AreaAlerts"
 
-  /// `/gridpoints/EWX/156,91/forecast?units=us`, with the default representations.
+  /// `/gridpoints/EWX/156,91/forecast?units=us`, covering US units and legacy code values.
   case forecast = "Forecast"
 
-  /// `/gridpoints/EWX/156,91/forecast?units=si`, with both quantitative forecast flags.
+  /// `/gridpoints/EWX/156,91/forecast?units=si`, covering SI units and both quantitative flags.
   case forecastQuantities = "ForecastQuantities"
 
-  /// `/gridpoints/EWX/156,91/forecast/hourly?units=us`, with default representations.
+  /// `/gridpoints/EWX/156,91/forecast/hourly?units=us`, covering US units and compass codes.
   case hourlyForecast = "HourlyForecast"
 
-  /// `/gridpoints/EWX/156,91/forecast/hourly?units=si`, with both quantitative forecast flags.
+  /// `/gridpoints/EWX/156,91/forecast/hourly?units=si`, covering SI units and quantitative flags.
   case hourlyForecastQuantities = "HourlyForecastQuantities"
 
   /// `/stations/KATT/observations/latest`, the latest observation from Austin Camp Mabry.

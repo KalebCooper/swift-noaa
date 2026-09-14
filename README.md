@@ -57,19 +57,25 @@ let hourly = try await weather.hourlyForecast(
   options: .init(featureFlags: [.temperatureQuantity, .windSpeedQuantity], units: .si)
 )
 let request = WeatherRequest.forecast(for: home)
+
+// Your app's String-backed enums work without a conversion layer.
+enum AppUnits: String { case metric = "si" }
+let appOptions = ForecastOptions(units: AppUnits.metric)
 ```
 
 Both methods follow the point's service links. `WeatherForecast` retains periods in service order,
 ISO 8601 dates, and the original validity interval. Temperature and wind retain either their legacy
 values or quantitative objects, including ranges and missing measurements. No conversion or period
 filtering is implicit. Direct `Endpoint.forecast(for:options:)` and
-`Endpoint.hourlyForecast(for:options:)` factories accept a decoded point.
+`Endpoint.hourlyForecast(for:options:)` factories accept a decoded point. Forecast units,
+feature flags, temperature units and trends, wind directions, and measurement quality flags are
+typed open values: known schema codes have named static members, while `rawValue` retains additions.
 
 ### Active alerts
 
 ```swift
 let alerts = try await weather.activeAlerts(for: home)
-let texas = try await weather.activeAlerts(inArea: "TX")
+let texas = try await weather.activeAlerts(inArea: .texas)
 let filtered = try await weather.value(
   for: .activeAlerts(matching: .init(location: .zones(["TXZ192"]), severity: [.severe]))
 )
@@ -81,7 +87,19 @@ if let identifier = alerts.features.first?.properties.id {
 
 Active queries return `FeatureCollection<WeatherAlert>`; single-alert methods unwrap `WeatherAlert`.
 Filters cover the live spec, with one geographic choice preventing incompatible combinations.
-CAP codes retain unknown values. Only GeoJSON is supported; lists are not automatically paginated.
+`AreaCode`, `MarineRegionCode`, and CAP fields expose known values without rejecting future
+`rawValue`s. Zone identifiers, event names, and event codes remain open strings.
+
+A String-backed app enum works directly at all three access levels:
+
+```swift
+enum AppArea: String { case home = "TX" }
+let everyday = try await weather.activeAlerts(inArea: AppArea.home)
+let reusable = WeatherRequest.activeAlerts(inArea: AppArea.home)
+let endpoint = Endpoint<FeatureCollection<WeatherAlert>>.activeAlerts(inArea: AppArea.home)
+```
+
+Only GeoJSON is supported; lists are not automatically paginated.
 The client follows at most five redirects within the HTTPS API origin and rejects loops and unsafe links.
 
 ### Point caching
@@ -174,7 +192,8 @@ print(point.id as Any, point.properties.gridId)
 
 A consumer with its own networking stack needs only `SwiftNWSModels`. Send a GET to
 `https://api.weather.gov` plus `endpoint.path`, set `Accept` to `endpoint.accept.rawValue`, supply
-your own `User-Agent`, set `Feature-Flags` from `endpoint.featureFlags` when nonempty, and decode the body as the endpoint's response type. Use
+your own `User-Agent`, set `Feature-Flags` from `endpoint.featureFlags.map(\.rawValue)` when nonempty, and decode the body
+as the endpoint's response type. Use
 `Endpoint(accept:featureFlags:link:)` to validate service-provided links before following them.
 
 `WeatherRequest.resolution` is also public and transport-independent: `.endpoint` describes one
@@ -183,7 +202,8 @@ the source using the lookup rules above. Requests contain no SDK or transport cl
 
 Direct endpoints preserve the existing GeoJSON wrappers, including `Feature.id` and
 `Feature.properties`. Everyday observation methods return `WeatherObservation` directly.
-Measurements can be absent or have a null value; unknown unit and quality codes remain strings.
+Measurements can be absent or have a null value. WMO unit identifiers remain strings; enumerated
+quality codes are typed open values that preserve unknown `rawValue`s.
 
 ### Errors and migration
 

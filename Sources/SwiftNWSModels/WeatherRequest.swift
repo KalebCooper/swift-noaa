@@ -57,10 +57,18 @@ extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
   }
 
   /// Describes active alerts in a provider area.
-  /// - Parameter area: A nonempty area code.
+  /// - Parameter area: A state, territory, or marine area code.
   /// - Returns: A reusable request for a GeoJSON collection.
-  public static func activeAlerts(inArea area: String) -> Self {
+  public static func activeAlerts(inArea area: AreaCode) -> Self {
     Self(endpoint: .activeAlerts(inArea: area))
+  }
+
+  /// Describes active alerts using a consumer-defined area enum.
+  /// - Parameter area: A String-backed state, territory, or marine area code.
+  /// - Returns: A reusable request for a GeoJSON collection.
+  public static func activeAlerts<Area>(inArea area: Area) -> Self
+  where Area: RawRepresentable, Area.RawValue == String {
+    activeAlerts(inArea: AreaCode(area))
   }
 
   /// Describes active alerts in a provider zone.

@@ -57,6 +57,8 @@ struct ContentView: View {
           DisclosureGroup(alert.headline ?? alert.event) {
             Text(alert.description)
             if let instruction = alert.instruction, !instruction.isEmpty { Text(instruction) }
+            LabeledContent("Category", value: alert.category.rawValue)
+            LabeledContent("Response", value: alert.response.rawValue)
             LabeledContent("Severity", value: alert.severity.rawValue)
             LabeledContent("Expires") { Text(alert.expires, format: .dateTime) }
           }
@@ -91,7 +93,8 @@ struct ContentView: View {
     case .quantity(let temperature):
       LabeledContent("Temperature", value: Optional(temperature).displayText)
     case .value(let value):
-      LabeledContent("Temperature", value: "\(value.formatted()) \(period.temperatureUnit ?? "")")
+      LabeledContent(
+        "Temperature", value: "\(value.formatted()) \(period.temperatureUnit?.rawValue ?? "")")
     }
     switch period.windSpeed {
     case .quantity(let wind):

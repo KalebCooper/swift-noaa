@@ -23,6 +23,12 @@ public struct AlertStatus: Codable, Hashable, RawRepresentable, Sendable {
   /// The service's exact code.
   public let rawValue: String
 
+  /// Creates a code from a consumer-defined String-backed value.
+  /// - Parameter value: The value whose raw string to retain.
+  public init<Value>(_ value: Value) where Value: RawRepresentable, Value.RawValue == String {
+    self.init(rawValue: value.rawValue)
+  }
+
   /// Creates a code without restricting future service values.
   /// - Parameter rawValue: The exact code.
   public init(rawValue: String) { self.rawValue = rawValue }

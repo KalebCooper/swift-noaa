@@ -8,8 +8,10 @@ This product has no SDK or third-party networking dependency. It provides valida
 open station identifiers through ``ObservationSource``, typed ``WeatherRequest`` values,
 single-HTTP ``Endpoint`` values, and portable response models.
 
-Current conditions and forecasts are available. Forecast requests carry explicit units and
-representation flags. Active alert factories support geographic and CAP filters.
+Current conditions and forecasts are available. Forecast requests carry explicit typed units and
+representation flags. Provider-enumerated codes are open values: named static members cover the
+live schema while `rawValue` preserves additions. String-backed consumer enums can be passed to
+request options and endpoints. Active alert factories support geographic and CAP filters.
 
 Quantities preserve their WMO unit code and nullable value without conversion. The optional
 `SwiftNWS` SDK adds Foundation measurement conversion and percentage fractions; these models do
@@ -26,6 +28,20 @@ not require full Foundation or a networking stack.
 - ``WeatherCoordinate``
 - ``WeatherRequest``
 - <doc:ExecutingRequests>
+
+### Code values
+
+- ``AlertCategory``
+- ``AlertResponse``
+- ``AlertScope``
+- ``AreaCode``
+- ``ForecastTemperatureTrend``
+- ``ForecastTemperatureUnit``
+- ``ForecastUnits``
+- ``ForecastWindDirection``
+- ``MarineRegionCode``
+- ``NWSFeatureFlag``
+- ``QualityControlCode``
 
 ### Response models
 

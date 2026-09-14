@@ -54,8 +54,8 @@ Custom multi-step workflows can be ordinary async functions that call the client
 ## Inspect results and failures
 
 Everyday observations retain station identity and timestamp, allowing your application to choose
-a freshness policy. Measurements may be absent or contain a null value. Unit and quality codes
-remain open strings.
+a freshness policy. Measurements may be absent or contain a null value. WMO unit identifiers stay
+open strings; enumerated quality codes use open `QualityControlCode` values.
 
 For the existing GeoJSON envelope, use `send(Endpoint.latestObservation(stationIdentifier:))`
 or wrap that endpoint in a request. The result retains `Feature.id` and `Feature.properties`;

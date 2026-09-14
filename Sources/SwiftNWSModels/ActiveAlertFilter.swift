@@ -7,7 +7,8 @@ import Foundation
 /// Filters accepted by the active-alert endpoint.
 ///
 /// Location filters are mutually exclusive. Empty arrays omit their query parameter.
-/// Provider identifiers and event names remain open; the service validates their vocabulary.
+/// Area and marine-region codes expose the live vocabulary while preserving additions. Zone
+/// identifiers and event names remain open; the service validates their vocabulary.
 ///
 /// ```swift
 /// let filter = ActiveAlertFilter(location: .point(home), severity: [.severe])
@@ -16,15 +17,37 @@ public struct ActiveAlertFilter: Hashable, Sendable {
   /// One geographic restriction accepted by the API.
   public enum Location: Hashable, Sendable {
     /// State, territory, or marine area codes.
-    case areas([String])
+    case areas([AreaCode])
     /// A validated coordinate.
     case point(WeatherCoordinate)
-    /// Marine region codes.
-    case regions([String])
     /// Land or marine alerts.
     case regionType(RegionType)
+    /// Marine region codes.
+    case regions([MarineRegionCode])
     /// Forecast or county zone identifiers.
     case zones([String])
+
+    /// Creates an area location from a consumer-defined String-backed enum.
+    public static func areas<Area>(_ areas: [Area]) -> Self
+    where Area: RawRepresentable, Area.RawValue == String {
+      var converted: [AreaCode] = []
+      converted.reserveCapacity(areas.count)
+      for area in areas {
+        converted.append(AreaCode(area))
+      }
+      return .areas(converted)
+    }
+
+    /// Creates a marine-region location from a consumer-defined String-backed enum.
+    public static func regions<Region>(_ regions: [Region]) -> Self
+    where Region: RawRepresentable, Region.RawValue == String {
+      var converted: [MarineRegionCode] = []
+      converted.reserveCapacity(regions.count)
+      for region in regions {
+        converted.append(MarineRegionCode(region))
+      }
+      return .regions(converted)
+    }
   }
 
   /// The region types accepted by the active-alert query.
@@ -90,11 +113,11 @@ public struct ActiveAlertFilter: Hashable, Sendable {
     add("status", status.map { $0.rawValue.lowercased() })
     add("urgency", urgency.map(\.rawValue))
     switch location {
-    case .areas(let areas): add("area", areas)
+    case .areas(let areas): add("area", areas.map(\.rawValue))
     case .point(let point):
       values["point"] = String(Endpoint.point(for: point).path.dropFirst("/points/".count))
-    case .regions(let regions): add("region", regions)
     case .regionType(let type): values["region_type"] = type.rawValue
+    case .regions(let regions): add("region", regions.map(\.rawValue))
     case .zones(let zones): add("zone", zones)
     case nil: break
     }

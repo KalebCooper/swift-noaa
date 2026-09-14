@@ -46,13 +46,23 @@ public struct NWSClient: Sendable {
   }
 
   /// Retrieves active alerts for a provider area.
-  /// - Parameter area: A nonempty state, territory, or marine area code.
+  /// - Parameter area: A state, territory, or marine area code.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
   /// - Throws: Any ``NWSError`` from ``value(for:)``.
-  public func activeAlerts(inArea area: String) async throws(NWSError) -> FeatureCollection<
+  public func activeAlerts(inArea area: AreaCode) async throws(NWSError) -> FeatureCollection<
     WeatherAlert
   > {
     try await value(for: .activeAlerts(inArea: area))
+  }
+
+  /// Retrieves active alerts using a consumer-defined area enum.
+  /// - Parameter area: A String-backed state, territory, or marine area code.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func activeAlerts<Area>(inArea area: Area) async throws(NWSError) -> FeatureCollection<
+    WeatherAlert
+  > where Area: RawRepresentable, Area.RawValue == String {
+    try await activeAlerts(inArea: AreaCode(area))
   }
 
   /// Retrieves active alerts for a provider zone.
@@ -145,7 +155,7 @@ public struct NWSClient: Sendable {
       headers[.accept] = endpoint.accept.rawValue
       headers[.userAgent] = configuration.userAgent
       if !endpoint.featureFlags.isEmpty, let name = HTTPField.Name("Feature-Flags") {
-        headers[name] = endpoint.featureFlags.joined(separator: ",")
+        headers[name] = endpoint.featureFlags.map(\.rawValue).joined(separator: ",")
       }
       do {
         return try await client.execute(Request(headers: headers, path: endpoint.path))

@@ -19,7 +19,7 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
   public var areaDesc: String
 
   /// The CAP category code, including unknown values.
-  public var category: String
+  public var category: AlertCategory
 
   /// The certainty of the event.
   public var certainty: AlertCertainty
@@ -76,10 +76,10 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
   public var references: [AlertReference]?
 
   /// The CAP response code, including unknown values.
-  public var response: String
+  public var response: AlertResponse
 
   /// The distribution scope.
-  public var scope: String?
+  public var scope: AlertScope?
 
   /// The sender identifier.
   public var sender: String
@@ -138,7 +138,7 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
   public init(
     affectedZones: [URL],
     areaDesc: String,
-    category: String,
+    category: AlertCategory,
     certainty: AlertCertainty,
     code: String? = nil,
     description: String,
@@ -157,8 +157,8 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
     onset: Date? = nil,
     parameters: [String: [JSONValue]]? = nil,
     references: [AlertReference]? = nil,
-    response: String,
-    scope: String? = nil,
+    response: AlertResponse,
+    scope: AlertScope? = nil,
     sender: String,
     senderName: String,
     sent: Date,
@@ -207,7 +207,7 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
     self.init(
       affectedZones: try container.decode([URL].self, forKey: .affectedZones),
       areaDesc: try container.decode(String.self, forKey: .areaDesc),
-      category: try container.decode(String.self, forKey: .category),
+      category: try container.decode(AlertCategory.self, forKey: .category),
       certainty: try container.decode(AlertCertainty.self, forKey: .certainty),
       code: try container.decodeIfPresent(String.self, forKey: .code),
       description: try container.decode(String.self, forKey: .description),
@@ -226,8 +226,8 @@ public struct WeatherAlert: Codable, Hashable, Sendable {
       onset: try container.decodeISO8601IfPresent(forKey: .onset),
       parameters: try container.decodeIfPresent([String: [JSONValue]].self, forKey: .parameters),
       references: try container.decodeIfPresent([AlertReference].self, forKey: .references),
-      response: try container.decode(String.self, forKey: .response),
-      scope: try container.decodeIfPresent(String.self, forKey: .scope),
+      response: try container.decode(AlertResponse.self, forKey: .response),
+      scope: try container.decodeIfPresent(AlertScope.self, forKey: .scope),
       sender: try container.decode(String.self, forKey: .sender),
       senderName: try container.decode(String.self, forKey: .senderName),
       sent: try container.decodeISO8601(forKey: .sent),
