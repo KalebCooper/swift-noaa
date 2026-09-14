@@ -14,7 +14,7 @@ struct ForecastClientTests {
     let transport = MockTransport()
     let body = try Fixture.point.data()
     transport.setHandler(forPath: "/points/30.2672,-97.7431") { _ in
-      withUnsafeCurrentTask { $0?.cancel() }
+      unsafe withUnsafeCurrentTask { unsafe $0?.cancel() }
       return .success(MockTransport.Answer(Response(body: body, status: .ok)))
     }
     let client = NWSClient(configuration: .init(userAgent: "test"), transport: transport)

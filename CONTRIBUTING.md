@@ -40,6 +40,12 @@ with `Scripts/linux-test.sh`, strict lint, and `Scripts/verify.sh`. Build both D
 warnings treated as errors, then merge and transform them for static hosting. Build and run the demo
 with the package window closed in Xcode.
 
+After building `SwiftNWS` for an iOS simulator, use
+`bash Scripts/build-docs.sh /path/to/Debug-iphonesimulator /tmp/swift-noaa-docs` with a new output
+directory. This extracts only the two products' public symbols, resolves the SDK against the models
+archive, and writes the static site under the output directory's `site` folder. It runs the same
+warning-as-error conversion used in CI without recursively documenting dependencies.
+
 CI repeats Linux, Android, iOS simulator, and lint checks, builds the demo in Release configuration,
 and builds documentation on pull requests. Pages publication runs only from `main`. Approve the
 release tag after all lanes pass on the release commit; a local pass does not establish hosted or

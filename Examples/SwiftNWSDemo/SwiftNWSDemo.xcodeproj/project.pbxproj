@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 110;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -26,10 +26,12 @@
 /* Begin PBXFrameworksBuildPhase section */
 		0857A2203057428200DBEBC7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				0857A2F13057429000DBEBC7 /* SwiftNWS in Frameworks */,
 				0857A2F23057429000DBEBC7 /* SwiftNWSModels in Frameworks */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -62,6 +64,8 @@
 				0857A2213057428200DBEBC7 /* Resources */,
 			);
 			buildRules = (
+			);
+			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
 				0857A2253057428200DBEBC7 /* SwiftNWSDemo */,
@@ -98,7 +102,6 @@
 				Base,
 			);
 			mainGroup = 0857A21A3057428200DBEBC7;
-			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				0857A2F03057429000DBEBC7 /* XCLocalSwiftPackageReference "../.." */,
 			);
@@ -115,21 +118,25 @@
 /* Begin PBXResourcesBuildPhase section */
 		0857A2213057428200DBEBC7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0857A21F3057428200DBEBC7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		0857A22C3057428500DBEBC7 /* Debug configuration for PBXProject "SwiftNWSDemo" */ = {
+		0857A22C3057428500DBEBC7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -190,7 +197,7 @@
 			};
 			name = Debug;
 		};
-		0857A22D3057428500DBEBC7 /* Release configuration for PBXProject "SwiftNWSDemo" */ = {
+		0857A22D3057428500DBEBC7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -243,7 +250,7 @@
 			};
 			name = Release;
 		};
-		0857A22F3057428500DBEBC7 /* Debug configuration for PBXNativeTarget "SwiftNWSDemo" */ = {
+		0857A22F3057428500DBEBC7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -284,7 +291,7 @@
 			};
 			name = Debug;
 		};
-		0857A2303057428500DBEBC7 /* Release configuration for PBXNativeTarget "SwiftNWSDemo" */ = {
+		0857A2303057428500DBEBC7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -331,17 +338,19 @@
 		0857A21E3057428200DBEBC7 /* Build configuration list for PBXProject "SwiftNWSDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0857A22C3057428500DBEBC7 /* Debug configuration for PBXProject "SwiftNWSDemo" */,
-				0857A22D3057428500DBEBC7 /* Release configuration for PBXProject "SwiftNWSDemo" */,
+				0857A22C3057428500DBEBC7 /* Debug */,
+				0857A22D3057428500DBEBC7 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		0857A22E3057428500DBEBC7 /* Build configuration list for PBXNativeTarget "SwiftNWSDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0857A22F3057428500DBEBC7 /* Debug configuration for PBXNativeTarget "SwiftNWSDemo" */,
-				0857A2303057428500DBEBC7 /* Release configuration for PBXNativeTarget "SwiftNWSDemo" */,
+				0857A22F3057428500DBEBC7 /* Debug */,
+				0857A2303057428500DBEBC7 /* Release */,
 			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
@@ -365,5 +374,4 @@
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0857A21B3057428200DBEBC7 /* Project object */;
-	validationLevel = 1;
 }

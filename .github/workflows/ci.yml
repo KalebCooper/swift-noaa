@@ -20,9 +20,7 @@ jobs:
     # six-hour default. The ceiling is meant to be that job's slowest green run on `main` under its
     # current definition, rounded up to the next five minutes and then tripled. `Scripts/verify.sh`
     # holds the rule that every job has one.
-    # Provisional: this repository has no green run yet, so the ceiling is swifty-networking's for
-    # the matching lane, which builds the same AsyncHTTPClient and SwiftNIO stack. Replace it with
-    # this lane's own figure once it has green runs.
+    # The first green main run took 4m 4s: rounded to five minutes, then tripled.
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -57,7 +55,7 @@ jobs:
     # runner-image bump would fail the download before anything was compiled.
     runs-on: ubuntu-24.04
     # The action bounds only the emulator boot, so a hung adb run is otherwise unbounded here.
-    # Provisional, from swifty-networking's matching lane; replace it once this lane has green runs.
+    # The first green main run took 6m 41s: rounded to ten minutes, then tripled.
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -136,7 +134,7 @@ jobs:
     name: swift-format lint
     runs-on: ubuntu-latest
     container: swift:6.3-noble
-    # Provisional, from swifty-networking's matching lane; replace it once this lane has green runs.
+    # The first green main run took 51s: rounded to five minutes, then tripled.
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7

@@ -38,6 +38,8 @@ All notable changes are documented here, following
 
 ### Fixed
 
+- Keep the demo project compatible with Xcode 26 and document only the package's own products in CI.
+- Explicitly mark the cancellation tests' unsafe task access for strict memory-safety checking.
 - Reject invalid coordinates before rounding, and encode provider identifiers as path segments.
 - Reject linked or redirected URLs outside the HTTPS API origin, with credentials, or with fragments.
 - Preserve millisecond precision when encoding forecast and alert timestamps.

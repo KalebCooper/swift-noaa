@@ -59,7 +59,7 @@ struct AlertClientTests {
   func cancellationBetweenRedirectHopsPreventsAnotherRequest() async throws {
     let transport = MockTransport()
     transport.setHandler(forPath: "/alerts/active") { _ in
-      withUnsafeCurrentTask { $0?.cancel() }
+      unsafe withUnsafeCurrentTask { unsafe $0?.cancel() }
       return .success(
         MockTransport.Answer(
           Response(headers: [.location: "/alerts/active/area/TX"], status: .movedPermanently)))
