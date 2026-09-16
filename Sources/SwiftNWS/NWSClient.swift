@@ -132,6 +132,49 @@ public struct NWSClient: Sendable {
     try await value(for: .latestObservation(from: source))
   }
 
+  /// Creates a lazy page traversal for a reusable station request.
+  /// - Parameter request: A station query or a custom one-page endpoint request.
+  /// - Returns: An independent, demand-driven page sequence.
+  public func observationStationPages(
+    for request: WeatherRequest<FeatureCollection<ObservationStation>>
+  ) -> ObservationStationPageSequence {
+    switch request.resolution {
+    case .endpoint(let endpoint):
+      ObservationStationPageSequence(client: self, endpoint: endpoint, followsLinks: false)
+    case .observationStations(let query):
+      ObservationStationPageSequence(
+        client: self, endpoint: .observationStations(query: query), followsLinks: true)
+    default:
+      preconditionFailure(
+        "Only endpoint and station-query resolutions can describe station collections.")
+    }
+  }
+
+  /// Creates a lazy page traversal for a station query.
+  /// - Parameter query: The validated filters and initial cursor.
+  /// - Returns: Station pages in service order.
+  public func observationStationPages(query: ObservationStationQuery)
+    -> ObservationStationPageSequence
+  {
+    observationStationPages(for: .observationStations(query: query))
+  }
+
+  /// Creates a lazy feature traversal for a reusable station request.
+  /// - Parameter request: A station query or a custom one-page endpoint request.
+  /// - Returns: Station features with their GeoJSON metadata.
+  public func observationStations(
+    for request: WeatherRequest<FeatureCollection<ObservationStation>>
+  ) -> ObservationStationSequence {
+    ObservationStationSequence(pages: observationStationPages(for: request))
+  }
+
+  /// Creates a lazy feature traversal for a station query.
+  /// - Parameter query: The validated filters and initial cursor.
+  /// - Returns: Station features in service order.
+  public func observationStations(query: ObservationStationQuery) -> ObservationStationSequence {
+    observationStations(for: .observationStations(query: query))
+  }
+
   /// Sends an endpoint and decodes its response.
   ///
   /// Follows at most five redirects within the API origin, preserving request headers.
@@ -151,26 +194,12 @@ public struct NWSClient: Sendable {
     for _ in 0...5 {
       guard !Task.isCancelled else { throw .transport(.cancelled) }
       guard visited.insert(endpoint.path).inserted else { throw .tooManyRedirects }
-      var headers = HTTPFields()
-      headers[.accept] = endpoint.accept.rawValue
-      headers[.userAgent] = configuration.userAgent
-      if !endpoint.featureFlags.isEmpty, let name = HTTPField.Name("Feature-Flags") {
-        headers[name] = endpoint.featureFlags.map(\.rawValue).joined(separator: ",")
-      }
       do {
-        return try await client.execute(Request(headers: headers, path: endpoint.path))
+        return try await client.execute(request(for: endpoint, redirectPolicy: .never))
       } catch {
-        guard case .httpStatus(_, let code, let fields) = error,
-          [301, 302, 303, 307, 308].contains(code),
-          let location = fields[.location]
-        else { throw NWSError(error) }
-        guard let current = URL(string: Self.baseURL.absoluteString + endpoint.path),
-          let link = URL(string: location, relativeTo: current)?.absoluteURL
-        else { throw .invalidRedirect(location) }
-        guard
-          let next = Endpoint<Value>(
-            accept: endpoint.accept, featureFlags: endpoint.featureFlags, link: link)
-        else { throw .invalidLink(link) }
+        guard let next = try redirectEndpoint(after: error, from: endpoint) else {
+          throw NWSError(error)
+        }
         endpoint = next
       }
     }
@@ -237,6 +266,42 @@ public struct NWSClient: Sendable {
       let feature = try await send(
         Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path))
       return feature.properties
+    case .observationStations(let query):
+      let endpoint = Endpoint.observationStations(query: query)
+      return try await send(Endpoint<Value>(path: endpoint.path))
+    }
+  }
+
+  func redirectEndpoint<Value>(
+    after error: TransportError, from endpoint: Endpoint<Value>
+  ) throws(NWSError) -> Endpoint<Value>? {
+    guard case .httpStatus(_, let code, let fields) = error,
+      [301, 302, 303, 307, 308].contains(code),
+      let location = fields[.location]
+    else { return nil }
+    guard let current = URL(string: Self.baseURL.absoluteString + endpoint.path),
+      let link = URL(string: location, relativeTo: current)?.absoluteURL
+    else { throw .invalidRedirect(location) }
+    guard
+      let next = Endpoint<Value>(
+        accept: endpoint.accept, featureFlags: endpoint.featureFlags, link: link)
+    else { throw .invalidLink(link) }
+    return next
+  }
+
+  func stationPages(
+    endpoint: Endpoint<FeatureCollection<ObservationStation>>, followsLinks: Bool
+  ) -> PageSequence<FeatureCollection<ObservationStation>> {
+    client.pages(
+      request(for: endpoint, redirectPolicy: .never), as: FeatureCollection<ObservationStation>.self
+    ) { page, request in
+      guard followsLinks,
+        let next = try? ObservationStationPageSequence.continuation(
+          page.value.pagination, from: endpoint)
+      else { return nil }
+      var request = request
+      request.path = next.path
+      return .request(request)
     }
   }
 
@@ -250,6 +315,20 @@ public struct NWSClient: Sendable {
       pointCache?.insert(point, for: location, generation: generation)
     }
     return point
+  }
+
+  private func request<Response>(
+    for endpoint: Endpoint<Response>, redirectPolicy: RedirectPolicy
+  ) -> Request {
+    var headers = HTTPFields()
+    headers[.accept] = endpoint.accept.rawValue
+    headers[.userAgent] = configuration.userAgent
+    if !endpoint.featureFlags.isEmpty, let name = HTTPField.Name("Feature-Flags") {
+      headers[name] = endpoint.featureFlags.map(\.rawValue).joined(separator: ",")
+    }
+    return Request(
+      headers: headers, options: RequestOptions(redirectPolicy: redirectPolicy),
+      path: endpoint.path)
   }
 
   private static let baseURL: URL = {

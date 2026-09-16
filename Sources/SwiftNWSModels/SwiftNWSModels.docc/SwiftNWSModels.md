@@ -25,6 +25,7 @@ not require full Foundation or a networking stack.
 - ``Endpoint``
 - ``MediaType``
 - ``ObservationSource``
+- ``ObservationStationQuery``
 - ``WeatherCoordinate``
 - ``WeatherRequest``
 - <doc:ExecutingRequests>
@@ -58,7 +59,9 @@ not require full Foundation or a networking stack.
 - ``ForecastTemperature``
 - ``ForecastWind``
 - ``JSONValue``
+- ``NWSPaginationError``
 - ``ObservationStation``
+- ``PaginationInfo``
 - ``Point``
 - ``ProblemDetail``
 - ``QuantitativeValue``

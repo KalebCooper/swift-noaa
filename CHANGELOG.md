@@ -6,6 +6,13 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+### Added
+
+- Validated observation-station queries with identifiers, state codes, page limits, and initial cursors.
+- Lazy station page and feature sequences with reusable requests, independent iterators, exact
+  continuation links, cancellation checks, and typed pagination errors before invalid pages are yielded.
+- Portable pagination metadata and continuation validation for custom networking stacks.
+
 ## [0.1.0]
 
 ### Added

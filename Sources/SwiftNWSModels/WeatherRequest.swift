@@ -31,6 +31,10 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Then fetch that station's latest observation. Do not fetch additional pages, filter
     /// by age, or try another station on failure.
     case latestObservation(ObservationSource)
+
+    /// Retrieve a station-directory page, with continuation semantics in sequence executors.
+    /// Only requests returning FeatureCollection<ObservationStation> carry this resolution.
+    case observationStations(ObservationStationQuery)
   }
 
   /// The description an executor interprets, without any SDK or transport dependency.
@@ -45,6 +49,15 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
 
   private init(resolution: Resolution) {
     self.resolution = resolution
+  }
+}
+
+extension WeatherRequest where Response == FeatureCollection<ObservationStation> {
+  /// Describes a station-directory query with optional continuation.
+  /// - Parameter query: The validated filters and initial cursor.
+  /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
+  public static func observationStations(query: ObservationStationQuery) -> Self {
+    Self(resolution: .observationStations(query))
   }
 }
 

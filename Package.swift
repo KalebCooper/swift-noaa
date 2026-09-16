@@ -32,7 +32,7 @@ let package = Package(
     // enabled, so the AsyncHTTPClient and SwiftNIO packages behind it are resolved for no one else.
     .package(
       url: "https://github.com/KalebCooper/swifty-networking.git",
-      from: "1.0.0",
+      from: "1.1.0",
       traits: [.trait(name: "HTTPPortable", condition: .when(traits: ["HTTPPortable"]))]
     ),
   ],

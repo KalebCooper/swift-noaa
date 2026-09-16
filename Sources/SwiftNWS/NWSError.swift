@@ -21,6 +21,7 @@ import SwiftNWSModels
 ///   case .invalidRedirect: report("The API returned an invalid redirect.")
 ///   case .invalidStationIdentifier: report("A station identifier is required.")
 ///   case .noObservationStation: report("No station reports near here.")
+///   case .pagination(let failure): report("Pagination failed: \(failure)")
 ///   case .problem(let problem): report(problem.title)
 ///   case .tooManyRedirects: report("The API redirected too many times.")
 ///   case .transport(let failure): report(failure.description)
@@ -44,6 +45,9 @@ public enum NWSError: Error {
 
   /// The point lists no observation station to read conditions from.
   case noObservationStation
+
+  /// A collection could not continue because its pagination metadata was unusable.
+  case pagination(NWSPaginationError)
 
   /// The API refused the request and explained why.
   case problem(ProblemDetail)

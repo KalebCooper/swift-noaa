@@ -47,11 +47,17 @@ public struct FeatureCollection<Properties> {
   /// The features in the collection, in the order the API listed them.
   public var features: [Feature<Properties>]
 
+  /// The unvalidated continuation metadata, or nil when the collection is terminal.
+  public var pagination: PaginationInfo?
+
   /// Creates a feature collection.
   ///
-  /// - Parameter features: The features in the collection.
-  public init(features: [Feature<Properties>]) {
+  /// - Parameters:
+  ///   - features: The features in the collection.
+  ///   - pagination: The unvalidated continuation metadata, or nil for a terminal collection.
+  public init(features: [Feature<Properties>], pagination: PaginationInfo? = nil) {
     self.features = features
+    self.pagination = pagination
   }
 }
 

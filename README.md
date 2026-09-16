@@ -12,10 +12,10 @@ send through any networking stack, plus an SDK that sends them for you through
 ## Status
 
 The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
-point caching, and active alerts by coordinate, area, zone, and CAP filters. WMO readings can be
-converted with Foundation. The release is not tagged yet.
+point caching, active alerts by coordinate, area, zone, and CAP filters, and lazy station-directory
+pagination. WMO readings can be converted with Foundation. The release is not tagged yet.
 
-Alert history, raw grid data, general zone and office endpoints, automatic pagination, and retries
+Alert history, raw grid data, general zone and office endpoints, alert pagination, and retries
 are outside this release.
 
 ## Usage
@@ -101,6 +101,38 @@ let endpoint = Endpoint<FeatureCollection<WeatherAlert>>.activeAlerts(inArea: Ap
 
 Only GeoJSON is supported; lists are not automatically paginated.
 The client follows at most five redirects within the HTTPS API origin and rejects loops and unsafe links.
+
+### Observation stations
+
+```swift
+let query = try ObservationStationQuery(limit: 100, states: [.texas])
+let request = WeatherRequest.observationStations(query: query)
+
+// Read a single page at either access level.
+let page = try await weather.value(for: request)
+let direct = try await weather.send(.observationStations(query: query))
+
+// Or follow pages on demand, retaining each station's GeoJSON metadata.
+for try await station in weather.observationStations(query: query) {
+  print(station.id as Any, station.properties.stationIdentifier)
+  break
+}
+let pages = weather.observationStationPages(for: request)
+```
+
+Queries accept an initial opaque cursor, station identifiers, a limit from 1 through 500 (default 500),
+and state or territory codes. Empty arrays omit filters. Page and item sequences perform no I/O until
+read, do not prefetch, and start independently for each iterator. Items are
+`Feature<ObservationStation>`; pages are `FeatureCollection<ObservationStation>`.
+
+Continuation links retain the service's exact encoded path and query. Missing or invalid next values,
+and repeated or cyclic links, throw `NWSError.pagination` before that page is yielded. Any error ends
+the iterator; cancellation is checked even while items are buffered. An empty page with a next link
+continues, and the service does not guarantee finite traversal, so stop when you have enough.
+
+`observationStationPages(for:)` and `observationStations(for:)` follow links only for the library's
+station-query resolution. A custom `WeatherRequest(endpoint:)` remains one page. Single-page
+`value(for:)`, direct `send`, and nearest-observation lookups retain their existing scope.
 
 ### Point caching
 

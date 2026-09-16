@@ -169,6 +169,13 @@ extension Endpoint where Response == FeatureCollection<ObservationStation> {
   public static func observationStations(near point: Point) -> Endpoint? {
     Endpoint(link: point.observationStations)
   }
+
+  /// The station-directory page described by a validated query.
+  /// - Parameter query: Filters, page size, and optional initial cursor.
+  /// - Returns: One endpoint for the directory page.
+  public static func observationStations(query: ObservationStationQuery) -> Self {
+    Self(path: "/stations" + query.query)
+  }
 }
 
 extension Endpoint where Response == Feature<Point> {

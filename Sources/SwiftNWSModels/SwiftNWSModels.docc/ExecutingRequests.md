@@ -54,6 +54,30 @@ the first listed station is geographically closest. To match the SDK, do not add
 filtering, fallback stations, or automatic pagination, and check cancellation before
 each HTTP call.
 
+## Traverse station-directory pages
+
+```swift
+let query = try ObservationStationQuery(limit: 100, states: [.texas])
+let request = WeatherRequest.observationStations(query: query)
+let endpoint = Endpoint.observationStations(query: query)
+
+// After your networking stack decodes a FeatureCollection<ObservationStation>:
+if let pagination = page.pagination {
+  let next = try pagination.nextEndpoint(after: endpoint)
+  print(next.path)
+}
+```
+
+The station-query resolution supports one-page execution and opt-in continuation. A custom endpoint
+resolution remains one HTTP operation. Queries validate limits from 1 through 500 and preserve an
+initial cursor. Empty identifier and state arrays omit their filters.
+
+``PaginationInfo/nextEndpoint(after:)`` preserves encoded continuation paths, queries, Accept, and
+Feature-Flags. It throws ``NWSPaginationError`` for missing or disallowed next links; absent collection
+pagination is terminal. Empty pages can still continue. An executor matching the SDK also detects
+repeated and cyclic endpoint paths before yielding their page, checks cancellation on every read,
+and ends its iterator after any failure. Do not reconstruct later links from the original query.
+
 ## Extend the vocabulary
 
 Constrained extensions can return existing request factories. A custom single-HTTP operation can
