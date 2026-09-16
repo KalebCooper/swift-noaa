@@ -13,6 +13,10 @@ representation flags. Provider-enumerated codes are open values: named static me
 live schema while `rawValue` preserves additions. String-backed consumer enums can be passed to
 request options and endpoints. Active alert factories support geographic and CAP filters.
 
+Station-directory and active-alert requests declare when a custom executor may follow collection
+continuations. ``PaginationInfo`` validates a returned NWS link without adding an SDK or networking
+dependency. A plain endpoint request remains one response.
+
 Quantities preserve their WMO unit code and nullable value without conversion. The optional
 `SwiftNWS` SDK adds Foundation measurement conversion and percentage fractions; these models do
 not require full Foundation or a networking stack.
@@ -59,12 +63,15 @@ not require full Foundation or a networking stack.
 - ``ForecastTemperature``
 - ``ForecastWind``
 - ``JSONValue``
-- ``NWSPaginationError``
 - ``ObservationStation``
-- ``PaginationInfo``
 - ``Point``
 - ``ProblemDetail``
 - ``QuantitativeValue``
 - ``WeatherAlert``
 - ``WeatherForecast``
 - ``WeatherObservation``
+
+### Pagination
+
+- ``NWSPaginationError``
+- ``PaginationInfo``

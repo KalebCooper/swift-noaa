@@ -8,8 +8,10 @@ and signatures are settled when each piece is built, against the live OpenAPI sp
 
 The 0.1.0 implementation includes observations, linked twelve-hour and hourly forecasts,
 bounded point caching, active-alert filters and canonical endpoints, individual alerts, and
-WMO measurement conversion. Every HTTP operation has an endpoint, reusable request, and client
-surface. Recorded fixtures, tests, both DocC catalogs, and the demo cover these features.
+WMO measurement conversion. The station directory and active alerts provide lazy page and item
+sequences while preserving single-page endpoint and request execution. Every HTTP operation has an
+endpoint, reusable request, and client surface. Recorded fixtures, tests, both DocC catalogs, and the
+demo cover these features.
 
 Release validation runs locally before publication. The Android and hosted CI lanes must pass
 on the pushed release commit before approving the 0.1.0 tag. Tagging and pushing require owner approval.
@@ -91,17 +93,21 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   `/gridpoints/{wfo}/{x},{y}/stations`.
 - **Stations:** `/stations` and `/stations/{stationId}`, observation history
   (`/stations/{stationId}/observations` with `start`, `end`, and `limit`), and
-  `/stations/{stationId}/observations/{time}`.
+  `/stations/{stationId}/observations/{time}`. Observation history ships with single-page endpoint
+  and request access plus page and item sequences in its first vertical slice.
 - **Zones:** `/zones`, `/zones/{type}`, `/zones/{type}/{zoneId}`, the zone forecast, and a forecast
   zone's observations and stations.
 - **Offices:** `/offices/{officeId}`, headlines, and briefings.
 - **Alerts, complete:** alert history on `/alerts` with its time and status filters,
-  `/alerts/active/count`, `/alerts/active/region/{region}`, and `/alerts/types`.
+  `/alerts/active/count`, `/alerts/active/region/{region}`, and `/alerts/types`. Alert history ships
+  with single-page endpoint and request access plus page and item sequences in its first vertical
+  slice.
 - **Products:** `/products`, product types and locations, the latest product for a type and
   location, and a single product.
 - **Glossary:** `/glossary`.
-- **Pagination:** `cursor` and `limit`, following `pagination.next`, exposed as a way to walk pages
-  that stops on the API's last page or a consumer's limit.
+- **Pagination:** verified cursor-based collections follow `pagination.next` through lazy page and
+  item sequences while retaining single-page access. Products, zones, and other lists known only to
+  accept `limit` remain outside this claim until their provider continuation behavior is verified.
 - **Media types:** CAP XML and Atom for alerts, and `application/pdf` for office briefings, each
   either supported or listed as not supported. No endpoint is left in an unstated state.
 - **Out of scope, stated as such:** `/radar`, `/aviation` (SIGMETs, center weather advisories,

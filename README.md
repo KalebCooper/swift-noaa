@@ -13,9 +13,9 @@ send through any networking stack, plus an SDK that sends them for you through
 
 The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
 point caching, active alerts by coordinate, area, zone, and CAP filters, and lazy station-directory
-pagination. WMO readings can be converted with Foundation. The release is not tagged yet.
+and active-alert pagination. WMO readings can be converted with Foundation. The release is not tagged yet.
 
-Alert history, raw grid data, general zone and office endpoints, alert pagination, and retries
+Alert history, raw grid data, general zone and office endpoints, and retries
 are outside this release.
 
 ## Usage
@@ -85,7 +85,31 @@ if let identifier = alerts.features.first?.properties.id {
 }
 ```
 
-Active queries return `FeatureCollection<WeatherAlert>`; single-alert methods unwrap `WeatherAlert`.
+Awaited active queries return one `FeatureCollection<WeatherAlert>`; single-alert methods unwrap
+`WeatherAlert`. Follow pages or features explicitly when needed:
+
+```swift
+let filter = ActiveAlertFilter(location: .areas([.texas]), severity: [.severe])
+let firstPage = try await weather.activeAlerts(matching: filter)
+for try await alert in weather.activeAlerts(matching: filter) {
+  print(alert.id as Any, alert.properties.headline ?? alert.properties.event)
+  break
+}
+for try await page in weather.activeAlertPages(for: .activeAlerts(inZone: "TXZ192")) {
+  print(page.features.count)
+  break
+}
+```
+
+`ActiveAlertPageSequence` returns whole collections; `ActiveAlertSequence` returns
+`Feature<WeatherAlert>` values. Both are lazy, independently iterable, and do not prefetch. An empty
+page can continue. Missing, invalid, or repeated continuation links throw `NWSError.pagination`
+before yielding their page, and any failure ends that iterator. Values already yielded are partial
+results, not a complete result set. Stop when you have enough; the service does not guarantee finite
+traversal or a stable snapshot, and the client does not deduplicate values. Custom
+`WeatherRequest(endpoint:)` requests remain one page even when their response contains pagination
+metadata.
+
 Filters cover the live spec, with one geographic choice preventing incompatible combinations.
 `AreaCode`, `MarineRegionCode`, and CAP fields expose known values without rejecting future
 `rawValue`s. Zone identifiers, event names, and event codes remain open strings.
@@ -117,7 +141,10 @@ for try await station in weather.observationStations(query: query) {
   print(station.id as Any, station.properties.stationIdentifier)
   break
 }
-let pages = weather.observationStationPages(for: request)
+for try await page in weather.observationStationPages(for: request) {
+  print(page.features.count)
+  break
+}
 ```
 
 Queries accept an initial opaque cursor, station identifiers, a limit from 1 through 500 (default 500),
@@ -125,10 +152,12 @@ and state or territory codes. Empty arrays omit filters. Page and item sequences
 read, do not prefetch, and start independently for each iterator. Items are
 `Feature<ObservationStation>`; pages are `FeatureCollection<ObservationStation>`.
 
-Continuation links retain the service's exact encoded path and query. Missing or invalid next values,
-and repeated or cyclic links, throw `NWSError.pagination` before that page is yielded. Any error ends
-the iterator; cancellation is checked even while items are buffered. An empty page with a next link
-continues, and the service does not guarantee finite traversal, so stop when you have enough.
+The station directory is the package's canonical page and item implementation. Continuation links
+retain the service's exact encoded path and query. Missing or invalid next values, and repeated or
+cyclic links, throw `NWSError.pagination` before that page is yielded. Any error ends the iterator;
+values already yielded are partial results, and cancellation is checked even while items are
+buffered. An empty page with a next link continues. The service does not guarantee finite traversal
+or a stable snapshot, and the client does not deduplicate values, so stop when you have enough.
 
 `observationStationPages(for:)` and `observationStations(for:)` follow links only for the library's
 station-query resolution. A custom `WeatherRequest(endpoint:)` remains one page. Single-page
@@ -229,7 +258,9 @@ as the endpoint's response type. Use
 `Endpoint(accept:featureFlags:link:)` to validate service-provided links before following them.
 
 `WeatherRequest.resolution` is also public and transport-independent: `.endpoint` describes one
-HTTP call; `.latestObservation` describes an `ObservationSource`; forecast cases describe a coordinate and options, and `.alert` describes an identifier. A custom executor can interpret
+HTTP call; `.latestObservation` describes an `ObservationSource`; forecast cases describe a coordinate
+and options; `.alert` describes an identifier. `.activeAlerts` contains its initial typed endpoint,
+and `.observationStations` contains a station query; both support opt-in sequence traversal. A custom executor can interpret
 the source using the lookup rules above. Requests contain no SDK or transport closures.
 
 Direct endpoints preserve the existing GeoJSON wrappers, including `Feature.id` and
@@ -240,7 +271,8 @@ quality codes are typed open values that preserve unknown `rawValue`s.
 ### Errors and migration
 
 The client throws `NWSError`: NWS problem details, transport or decoding failures, invalid
-service links or redirects, excess redirect hops, empty station or alert identifiers, or a station list with no stations. Cancellation is
+service links or redirects, excess redirect hops, invalid pagination, empty station or alert identifiers,
+or a station list with no stations. Cancellation is
 `NWSError.transport(.cancelled)`, with a cancellation check before each HTTP call.
 
 The unreleased coordinate overloads have been replaced:
@@ -271,7 +303,7 @@ A consumer with its own networking stack adds only `SwiftNWSModels` and fetches 
 
 - Swift 6.2 or later.
 - iOS, macOS, tvOS, visionOS, and watchOS 26 or later, Linux, or Android.
-- `SwiftNWS` depends on [swifty-networking](https://github.com/KalebCooper/swifty-networking) 1.0.0 or
+- `SwiftNWS` depends on [swifty-networking](https://github.com/KalebCooper/swifty-networking) 1.1.0 or
   later and [swift-http-types](https://github.com/apple/swift-http-types) 1.6.0 or later. On Apple
   platforms it sends through `URLSession`. On Linux and Android, enable the off-by-default
   `HTTPPortable` trait, which pulls in AsyncHTTPClient and SwiftNIO, and pass swifty-networking's

@@ -1,27 +1,26 @@
 import SwiftNWSModels
 
-/// A lazy sequence of station-directory features, preserving GeoJSON metadata and service order.
+/// A lazy sequence of active-alert features, preserving GeoJSON metadata and service order.
 /// Fetches another page only after the current page's features have been consumed.
 /// Each iterator starts independently. Any error ends its traversal.
 ///
 /// ```swift
-/// let query = try ObservationStationQuery(states: [.texas])
-/// for try await station in client.observationStations(query: query) {
-///   print(station.properties.stationIdentifier)
+/// for try await alert in client.activeAlerts(matching: .init(severity: [.severe])) {
+///   print(alert.properties.headline ?? alert.properties.event)
 ///   break
 /// }
 /// ```
-public struct ObservationStationSequence: AsyncSequence, Sendable {
+public struct ActiveAlertSequence: AsyncSequence, Sendable {
   /// One feature with its GeoJSON metadata.
-  public typealias Element = Feature<ObservationStation>
+  public typealias Element = Feature<WeatherAlert>
   /// A failure retrieving or validating a page.
   public typealias Failure = NWSError
 
   /// An independent traversal retaining only the current page's features.
   public struct Iterator: AsyncIteratorProtocol {
-    private var features: CollectionFeatureSequence<ObservationStation>.Iterator
+    private var features: CollectionFeatureSequence<WeatherAlert>.Iterator
 
-    init(_ pages: ObservationStationPageSequence) {
+    init(_ pages: ActiveAlertPageSequence) {
       self.features = CollectionFeatureSequence(pages: pages.pages).makeAsyncIterator()
     }
 
@@ -32,9 +31,9 @@ public struct ObservationStationSequence: AsyncSequence, Sendable {
     }
   }
 
-  private let pages: ObservationStationPageSequence
+  private let pages: ActiveAlertPageSequence
 
-  init(pages: ObservationStationPageSequence) { self.pages = pages }
+  init(pages: ActiveAlertPageSequence) { self.pages = pages }
 
   /// Creates an independent iterator without sending a request.
   public func makeAsyncIterator() -> Iterator { Iterator(pages) }

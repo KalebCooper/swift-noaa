@@ -18,6 +18,10 @@ let observation = try await weather.value(for: request)
 The equivalent everyday call is `weather.latestObservation(from: .station("KATT"))`.
 Both calls share link checks, request sequencing, headers, cancellation, decoding, and errors.
 
+Single-response conveniences delegate through `value(for:)`, whose executor sends endpoints through
+`send(_:)`. Paginated conveniences instead delegate to request-based page and item sequence executors
+so sequence creation remains lazy. See <doc:PaginatingCollections>.
+
 Add a reusable name by extending the request for a concrete response:
 
 ```swift

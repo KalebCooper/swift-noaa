@@ -8,10 +8,17 @@ All notable changes are documented here, following
 
 ### Added
 
+- Lazy active-alert page and feature sequences for existing filters and specialized requests, preserving
+  one-page async methods, canonical redirect validation, and GeoJSON feature metadata.
 - Validated observation-station queries with identifiers, state codes, page limits, and initial cursors.
 - Lazy station page and feature sequences with reusable requests, independent iterators, exact
   continuation links, cancellation checks, and typed pagination errors before invalid pages are yielded.
 - Portable pagination metadata and continuation validation for custom networking stacks.
+
+### Changed
+
+- Document the station directory as the pagination reference, including request-based page and item
+  traversal, early termination, cancellation, partial-result failures, and changing-data semantics.
 
 ## [0.1.0]
 

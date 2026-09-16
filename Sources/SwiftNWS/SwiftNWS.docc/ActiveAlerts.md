@@ -25,13 +25,49 @@ The area overloads on `NWSClient`, `WeatherRequest`, and `Endpoint` also accept 
 String-backed enum directly. `alert(identifier:)` retrieves an individual alert's properties. Equivalent `WeatherRequest`
 factories perform no work until executed. `Endpoint` factories retain the GeoJSON envelopes.
 
+## Traverse pages and features
+
+Awaiting `activeAlerts(matching:)` retrieves one page. Iterating its synchronous overload follows
+validated continuation links and returns `Feature<WeatherAlert>` values:
+
+```swift
+let filter = ActiveAlertFilter(location: .areas([.texas]), severity: [.severe])
+let firstPage = try await weather.activeAlerts(matching: filter)
+for try await alert in weather.activeAlerts(matching: filter) {
+  print(alert.properties.headline ?? alert.properties.event)
+  break
+}
+for try await page in weather.activeAlertPages(matching: filter) {
+  print(page.features.count)
+  break
+}
+```
+
+Use `activeAlertPages(for:)` or synchronous `activeAlerts(for:)` with any library alert request,
+including `.activeAlerts(for: home)`, `.activeAlerts(inArea: .texas)`, and
+`.activeAlerts(inZone: "TXZ192")`. Their initial endpoint paths are unchanged.
+`WeatherRequest(endpoint:)` remains a single-page operation even when its response contains pagination.
+
+``ActiveAlertPageSequence`` and ``ActiveAlertSequence`` send nothing until read and start independently
+for each iterator. Pages preserve service order; features preserve their GeoJSON metadata. The
+iterator fetches another page only after the buffered features are consumed. Empty pages with a
+continuation still advance, and no finite traversal is guaranteed. See <doc:PaginatingCollections>
+for the shared sequence contract.
+
+Absent pagination is terminal. Missing, invalid, repeated, or cyclic next links throw
+`NWSError.pagination` before their page is yielded. Cancellation is checked on every read,
+including buffered items, and any error ends the iterator. Earlier values are partial results rather
+than a complete collection. Later paths and queries come from validated service links rather than the
+original filter. The traversal is not a stable snapshot and does not deduplicate alerts returned by
+the service.
+
 ## Preserve the source
 
 Known CAP codes use typed open values with named constants, and unknown raw values round-trip.
 Nullable dates,
 instructions, and headlines remain optional. Parameters and event codes retain their JSON values.
-Lists retain service order and stop after one returned collection; CAP XML, Atom, history, and
-automatic pagination are outside this release.
+Awaited queries retain service order and stop after one returned collection. Page and feature
+sequences follow links only on demand. CAP XML, Atom, and alert history are outside this release.
 
 ## Redirect policy
 

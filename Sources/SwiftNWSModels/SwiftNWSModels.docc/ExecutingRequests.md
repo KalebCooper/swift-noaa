@@ -39,8 +39,10 @@ Constructing or inspecting it sends nothing.
   or hourly link using the corresponding endpoint factory, then return the feature's properties.
   Preserve the endpoint's units query and feature flags.
 - An alert resolution contains an identifier. Reject an empty identifier, send `Endpoint.alert(identifier:)`,
-  and return the feature's properties. Active-alert factories use an endpoint resolution and retain
-  the returned collection. Follow canonical redirects only after validating their origin.
+  and return the feature's properties.
+- Active-alert factories use an `activeAlerts` resolution containing the typed initial endpoint.
+  One-page execution retains the returned collection. Sequence execution follows validated pagination
+  links. Follow canonical redirects only after validating their origin.
 - A latest-observation resolution contains ``ObservationSource`` and is only created for
   ``WeatherObservation`` responses. For an explicit station, reject an empty identifier,
   send `Endpoint.latestObservation(stationIdentifier:)`, and return the feature's properties.
@@ -54,7 +56,7 @@ the first listed station is geographically closest. To match the SDK, do not add
 filtering, fallback stations, or automatic pagination, and check cancellation before
 each HTTP call.
 
-## Traverse station-directory pages
+## Traverse collection pages
 
 ```swift
 let query = try ObservationStationQuery(limit: 100, states: [.texas])
@@ -68,15 +70,22 @@ if let pagination = page.pagination {
 }
 ```
 
-The station-query resolution supports one-page execution and opt-in continuation. A custom endpoint
+The station-query and active-alert resolutions support one-page execution and opt-in continuation. A custom endpoint
 resolution remains one HTTP operation. Queries validate limits from 1 through 500 and preserve an
 initial cursor. Empty identifier and state arrays omit their filters.
+
+For active alerts, `WeatherRequest.activeAlerts(matching:)`, coordinate, area, and zone factories
+retain their existing initial endpoints inside the `activeAlerts` resolution. Decode each response as
+`FeatureCollection<WeatherAlert>` and apply the same continuation validation below. A custom
+`WeatherRequest(endpoint:)` never opts into continuation, even if pagination metadata is present.
 
 ``PaginationInfo/nextEndpoint(after:)`` preserves encoded continuation paths, queries, Accept, and
 Feature-Flags. It throws ``NWSPaginationError`` for missing or disallowed next links; absent collection
 pagination is terminal. Empty pages can still continue. An executor matching the SDK also detects
 repeated and cyclic endpoint paths before yielding their page, checks cancellation on every read,
-and ends its iterator after any failure. Do not reconstruct later links from the original query.
+and ends its iterator after any failure. Earlier values are partial results, not a complete result
+set. Do not reconstruct later links from the original query, deduplicate values, or assume the
+provider returns a stable snapshot.
 
 ## Extend the vocabulary
 

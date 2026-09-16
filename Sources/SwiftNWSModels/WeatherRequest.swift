@@ -8,6 +8,10 @@
 public struct WeatherRequest<Response>: Hashable, Sendable {
   /// The transport-independent work required to obtain a request's response.
   public enum Resolution: Hashable, Sendable {
+    /// Retrieve an active-alert page, with continuation semantics in sequence executors.
+    /// Only requests returning FeatureCollection<WeatherAlert> carry this resolution.
+    case activeAlerts(Endpoint<Response>)
+
     /// Retrieve an alert by identifier and return the GeoJSON properties.
     /// Only requests returning WeatherAlert carry this resolution.
     case alert(identifier: String)
@@ -66,14 +70,14 @@ extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
   /// - Parameter location: The coordinate to filter.
   /// - Returns: A reusable request for a GeoJSON collection.
   public static func activeAlerts(for location: WeatherCoordinate) -> Self {
-    Self(endpoint: .activeAlerts(for: location))
+    Self(resolution: .activeAlerts(.activeAlerts(for: location)))
   }
 
   /// Describes active alerts in a provider area.
   /// - Parameter area: A state, territory, or marine area code.
   /// - Returns: A reusable request for a GeoJSON collection.
   public static func activeAlerts(inArea area: AreaCode) -> Self {
-    Self(endpoint: .activeAlerts(inArea: area))
+    Self(resolution: .activeAlerts(.activeAlerts(inArea: area)))
   }
 
   /// Describes active alerts using a consumer-defined area enum.
@@ -88,14 +92,14 @@ extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
   /// - Parameter zone: A nonempty zone identifier.
   /// - Returns: A reusable request for a GeoJSON collection.
   public static func activeAlerts(inZone zone: String) -> Self {
-    Self(endpoint: .activeAlerts(inZone: zone))
+    Self(resolution: .activeAlerts(.activeAlerts(inZone: zone)))
   }
 
   /// Describes an active-alert query.
   /// - Parameter filter: The supported filters.
   /// - Returns: A reusable request for a GeoJSON collection.
   public static func activeAlerts(matching filter: ActiveAlertFilter = .init()) -> Self {
-    Self(endpoint: .activeAlerts(matching: filter))
+    Self(resolution: .activeAlerts(.activeAlerts(matching: filter)))
   }
 }
 

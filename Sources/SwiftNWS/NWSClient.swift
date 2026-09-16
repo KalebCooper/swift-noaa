@@ -35,6 +35,41 @@ public struct NWSClient: Sendable {
     self.client = HTTPClient(baseURL: Self.baseURL, redirectPolicy: .never, transport: transport)
   }
 
+  /// Creates a lazy page traversal for a reusable active-alert request.
+  /// - Parameter request: A library active-alert query or a custom one-page endpoint request.
+  /// - Returns: An independent, demand-driven page sequence.
+  public func activeAlertPages(
+    for request: WeatherRequest<FeatureCollection<WeatherAlert>>
+  ) -> ActiveAlertPageSequence {
+    switch request.resolution {
+    case .activeAlerts(let endpoint):
+      ActiveAlertPageSequence(client: self, endpoint: endpoint, followsLinks: true)
+    case .endpoint(let endpoint):
+      ActiveAlertPageSequence(client: self, endpoint: endpoint, followsLinks: false)
+    default:
+      preconditionFailure(
+        "Only active-alert and endpoint resolutions can describe alert collections.")
+    }
+  }
+
+  /// Creates a lazy page traversal for supported active-alert filters.
+  /// - Parameter filter: The geographic and CAP restrictions.
+  /// - Returns: Alert pages in service order.
+  public func activeAlertPages(matching filter: ActiveAlertFilter = .init())
+    -> ActiveAlertPageSequence
+  {
+    activeAlertPages(for: .activeAlerts(matching: filter))
+  }
+
+  /// Creates a lazy feature traversal for a reusable active-alert request.
+  /// - Parameter request: A library active-alert query or a custom one-page endpoint request.
+  /// - Returns: Alert features with their GeoJSON metadata.
+  public func activeAlerts(
+    for request: WeatherRequest<FeatureCollection<WeatherAlert>>
+  ) -> ActiveAlertSequence {
+    ActiveAlertSequence(pages: activeAlertPages(for: request))
+  }
+
   /// Retrieves active alerts at a coordinate.
   /// - Parameter location: The coordinate to filter.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
@@ -73,6 +108,13 @@ public struct NWSClient: Sendable {
     WeatherAlert
   > {
     try await value(for: .activeAlerts(inZone: zone))
+  }
+
+  /// Creates a lazy feature traversal for supported active-alert filters.
+  /// - Parameter filter: The geographic and CAP restrictions.
+  /// - Returns: Alert features in service order. Use the async overload to retrieve one page.
+  public func activeAlerts(matching filter: ActiveAlertFilter = .init()) -> ActiveAlertSequence {
+    activeAlerts(for: .activeAlerts(matching: filter))
   }
 
   /// Retrieves active alerts using supported filters.
@@ -222,6 +264,8 @@ public struct NWSClient: Sendable {
   ) async throws(NWSError) -> Value {
     guard !Task.isCancelled else { throw .transport(.cancelled) }
     switch request.resolution {
+    case .activeAlerts(let endpoint):
+      return try await send(endpoint)
     case .alert(let identifier):
       guard !identifier.isEmpty else { throw .invalidAlertIdentifier(identifier) }
       let endpoint = Endpoint.alert(identifier: identifier)
@@ -272,6 +316,22 @@ public struct NWSClient: Sendable {
     }
   }
 
+  func collectionPages<Properties: Decodable & Sendable>(
+    endpoint: Endpoint<FeatureCollection<Properties>>, followsLinks: Bool
+  ) -> PageSequence<FeatureCollection<Properties>> {
+    client.pages(
+      request(for: endpoint, redirectPolicy: .never), as: FeatureCollection<Properties>.self
+    ) { page, request in
+      guard followsLinks,
+        let next = try? CollectionPageSequence<Properties>.continuation(
+          page.value.pagination, from: endpoint)
+      else { return nil }
+      var request = request
+      request.path = next.path
+      return .request(request)
+    }
+  }
+
   func redirectEndpoint<Value>(
     after error: TransportError, from endpoint: Endpoint<Value>
   ) throws(NWSError) -> Endpoint<Value>? {
@@ -287,22 +347,6 @@ public struct NWSClient: Sendable {
         accept: endpoint.accept, featureFlags: endpoint.featureFlags, link: link)
     else { throw .invalidLink(link) }
     return next
-  }
-
-  func stationPages(
-    endpoint: Endpoint<FeatureCollection<ObservationStation>>, followsLinks: Bool
-  ) -> PageSequence<FeatureCollection<ObservationStation>> {
-    client.pages(
-      request(for: endpoint, redirectPolicy: .never), as: FeatureCollection<ObservationStation>.self
-    ) { page, request in
-      guard followsLinks,
-        let next = try? ObservationStationPageSequence.continuation(
-          page.value.pagination, from: endpoint)
-      else { return nil }
-      var request = request
-      request.path = next.path
-      return .request(request)
-    }
   }
 
   private func point(for location: WeatherCoordinate) async throws(NWSError) -> Point {

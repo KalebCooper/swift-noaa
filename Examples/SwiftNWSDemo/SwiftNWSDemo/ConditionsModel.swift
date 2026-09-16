@@ -83,6 +83,7 @@ final class ConditionsModel {
     case .invalidRedirect: "The weather service returned an invalid redirect."
     case .invalidStationIdentifier: "The weather service returned an empty station identifier."
     case .noObservationStation: "No weather station reports near this location."
+    case .pagination: "The weather service returned an invalid next page. Try again later."
     case .problem(let problem): "\(problem.title): \(problem.detail)"
     case .tooManyRedirects: "The weather service redirected too many times. Try again later."
     case .transport(let failure): failure.description
