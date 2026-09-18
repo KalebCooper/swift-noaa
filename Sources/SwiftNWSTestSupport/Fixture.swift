@@ -43,9 +43,20 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/stations/KATT/observations/latest`, the latest observation from Austin Camp Mabry.
   case observation = "Observation"
 
+  /// `/stations/KATT/observations/2026-09-18T01:51:00Z`, the Austin Camp Mabry observation made at
+  /// that exact instant.
+  case observationAtTimestamp = "ObservationAtTimestamp"
+
   /// `/stations/KATT/observations?end=2026-09-17T00:00:00Z&limit=2&start=2026-09-16T00:00:00Z`,
   /// one page of Austin Camp Mabry observation history with its continuation link.
   case observationHistory = "ObservationHistory"
+
+  /// `/stations/KATT/observations/2026-09-18T01:50:00Z`, the `404` problem details the API answers
+  /// an instant with no observation with.
+  case observationNotFound = "ObservationNotFound"
+
+  /// `/stations/KATT`, the metadata for Austin Camp Mabry.
+  case observationStation = "ObservationStation"
 
   /// `/gridpoints/EWX/156,91/stations`, the 64 stations near downtown Austin, nearest first.
   case observationStations = "ObservationStations"

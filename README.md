@@ -14,7 +14,8 @@ send through any networking stack, plus an SDK that sends them for you through
 The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
 point caching, active alerts by coordinate, area, marine region, zone, and CAP filters, active alert
 counts, the recognized alert event types, alert history with a time
-window, a station's observation history, and lazy station-directory, active-alert, alert-history,
+window, a station's observation history, one station's metadata, the observation a station made at
+an exact instant, and lazy station-directory, active-alert, alert-history,
 and observation-history pagination. WMO readings can be converted with Foundation. The release is
 not tagged yet.
 
@@ -214,6 +215,21 @@ or a stable snapshot, and the client does not deduplicate values, so stop when y
 station-query resolution. A custom `WeatherRequest(endpoint:)` remains one page. Single-page
 `value(for:)`, direct `send`, and nearest-observation lookups retain their existing scope.
 
+One station's metadata comes from `/stations/{stationId}` in one request:
+
+```swift
+let station = try await weather.observationStation(identifier: "KATT")
+print(station.name, station.provider ?? "", station.forecast as Any)
+```
+
+`ObservationStation` carries the name, identifier, elevation, time zone, provider and sub-provider,
+and links to the forecast, county, and fire weather zones containing the station, each present only
+when the service sends it; list responses relative to a location add a distance and bearing. The
+matching `WeatherRequest.observationStation(identifier:)` returns the same properties, and
+`Endpoint.observationStation(identifier:)` keeps the GeoJSON envelope. An empty identifier throws
+`NWSError.invalidStationIdentifier` before any request; an unknown station is the service's `404`
+problem.
+
 ### Point caching
 
 Coordinate forecasts and observations share a `PointCache`: up to 128 mappings for 24 hours, with
@@ -316,6 +332,22 @@ follow the same lazy, single-traversal contract as the station sequences, and ea
 properties are the same `WeatherObservation` that `latestObservation(from:)` returns.
 `Endpoint.observations(query:)` describes one page for another networking stack.
 
+To read one observation again, pass its exact timestamp:
+
+```swift
+if let timestamp = firstPage.features.first?.properties.timestamp {
+  let observation = try await weather.observation(stationIdentifier: "KATT", timestamp: timestamp)
+  print(observation.temperature?.value ?? .nan)
+}
+```
+
+`observation(stationIdentifier:timestamp:)` sends one request to
+`/stations/{stationId}/observations/{time}`, with the instant in ISO 8601 form in UTC at
+whole-second precision. The service returns an observation only when the instant matches one
+exactly; any other instant, including one between two observations, is the service's `404` problem,
+and the client does not look for the nearest observation. `WeatherRequest.observation(stationIdentifier:timestamp:)`
+and `Endpoint.observation(stationIdentifier:timestamp:)` describe the same lookup.
+
 ### Direct endpoints and other networking stacks
 
 ```swift
@@ -334,13 +366,15 @@ as the endpoint's response type. Use
 
 `WeatherRequest.resolution` is also public and transport-independent: `.endpoint` describes one
 HTTP call; `.latestObservation` describes an `ObservationSource`; forecast cases describe a coordinate
-and options; `.alert` describes an identifier. `.activeAlerts` contains its initial typed endpoint,
+and options; `.alert` describes an identifier; `.observationStation` describes a station identifier;
+`.observation` describes a station identifier and an exact timestamp. `.activeAlerts` contains its initial typed endpoint,
 `.alerts` contains an alert-history query, `.observationStations` contains a station query, and
 `.observations` contains an observation-history query; all four support opt-in sequence traversal. A custom executor can interpret the source using the lookup
 rules above. Requests contain no SDK or transport closures.
 
 Direct endpoints preserve the existing GeoJSON wrappers, including `Feature.id` and
-`Feature.properties`. Everyday observation methods return `WeatherObservation` directly.
+`Feature.properties`. Everyday observation methods return `WeatherObservation` directly, and the
+station lookup returns `ObservationStation`.
 Measurements can be absent or have a null value. WMO unit identifiers remain strings; enumerated
 quality codes are typed open values that preserve unknown `rawValue`s.
 

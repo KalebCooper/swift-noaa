@@ -50,6 +50,24 @@ is checked before requests and before returning buffered features. Later paths a
 validated service links rather than the original query. See <doc:PaginatingCollections> for the
 shared sequence contract.
 
+## Read one observation by its timestamp
+
+```swift
+let timestamp = firstPage.features[0].properties.timestamp
+let observation = try await weather.observation(stationIdentifier: "KATT", timestamp: timestamp)
+let reusable = WeatherRequest.observation(stationIdentifier: "KATT", timestamp: timestamp)
+let direct = try await weather.send(.observation(stationIdentifier: "KATT", timestamp: timestamp))
+```
+
+``NWSClient/observation(stationIdentifier:timestamp:)`` sends one request to
+`/stations/{stationId}/observations/{time}` and returns the feature's `WeatherObservation`
+properties. The instant is sent in ISO 8601 form in UTC with whole-second precision. The service
+returns an observation only when the instant matches an observation's timestamp exactly, so take it
+from observation history or from an earlier observation. Any other instant, including one between two
+observations or older than the service keeps, throws ``NWSError/problem(_:)`` with `404` details; the
+client does not look for the nearest observation or try another instant. An empty station identifier
+throws ``NWSError/invalidStationIdentifier(_:)`` before any request.
+
 ## Custom endpoints and latest observations
 
 A `WeatherRequest(endpoint:)` passed to the observation sequence executors yields only that

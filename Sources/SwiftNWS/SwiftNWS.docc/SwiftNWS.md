@@ -30,7 +30,9 @@ old observations, try fallback stations, or fetch more station pages. Coordinate
 Twelve-hour and hourly forecasts follow the point's links. Active alerts support coordinates,
 areas, marine regions, zones, and provider filters, with a national count and the list of
 recognized event types, and alert history adds a time window, page size, and cursor. Observation history
-reads a station's past observations over a window. Active-alert, alert-history, station-directory,
+reads a station's past observations over a window. ``NWSClient/observationStation(identifier:)`` reads
+one station's metadata, and ``NWSClient/observation(stationIdentifier:timestamp:)`` reads the
+observation a station made at an exact instant. Active-alert, alert-history, station-directory,
 and observation-history page and feature sequences follow validated continuation links on demand.
 The station directory is the canonical implementation. Existing single-page methods do not
 automatically paginate.

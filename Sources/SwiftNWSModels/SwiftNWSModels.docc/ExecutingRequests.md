@@ -52,6 +52,14 @@ Constructing or inspecting it sends nothing.
 - A latest-observation resolution contains ``ObservationSource`` and is only created for
   ``WeatherObservation`` responses. For an explicit station, reject an empty identifier,
   send `Endpoint.latestObservation(stationIdentifier:)`, and return the feature's properties.
+- An `observation` resolution contains a station identifier and a timestamp and is only created for
+  ``WeatherObservation`` responses. Reject an empty identifier, send
+  `Endpoint.observation(stationIdentifier:timestamp:)`, and return the feature's properties. The
+  service answers an instant that matches no observation with `404` problem details; do not substitute
+  the nearest observation.
+- An `observationStation` resolution contains a station identifier and is only created for
+  ``ObservationStation`` responses. Reject an empty identifier, send
+  `Endpoint.observationStation(identifier:)`, and return the feature's properties.
 - For a coordinate source, send `Endpoint.point(for:)`, then validate and follow
   `point.properties.observationStations` using `Endpoint.observationStations(near:)`.
   Select the first station from the returned page; an empty list is an error. Retrieve its

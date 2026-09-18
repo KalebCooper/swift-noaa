@@ -89,9 +89,16 @@ struct RecordedResponseTests {
     #expect(
       stations.features.first?.properties
         == ObservationStation(
+          bearing: QuantitativeValue(unitCode: "wmoUnit:degree_(angle)", value: 339),
+          county: URL(string: "https://api.weather.gov/zones/county/TXC453"),
+          distance: QuantitativeValue(unitCode: "wmoUnit:m", value: 5975.7495213949),
           elevation: QuantitativeValue(unitCode: "wmoUnit:m", value: 199.9488),
+          fireWeatherZone: URL(string: "https://api.weather.gov/zones/fire/TXZ192"),
+          forecast: URL(string: "https://api.weather.gov/zones/forecast/TXZ192"),
           name: "Austin City Austin Camp Mabry",
+          provider: "ASOS",
           stationIdentifier: "KATT",
+          subProvider: "",
           timeZone: "America/Chicago"
         ))
   }

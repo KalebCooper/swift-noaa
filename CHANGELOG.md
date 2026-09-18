@@ -8,6 +8,13 @@ All notable changes are documented here, following
 
 ### Added
 
+- Station metadata on `/stations/{stationId}` through `observationStation(identifier:)`, with a
+  reusable request and a typed endpoint.
+- The observation a station made at an exact instant on `/stations/{stationId}/observations/{time}`
+  through `observation(stationIdentifier:timestamp:)`, with a reusable request and a typed endpoint.
+  The service answers an instant with no matching observation with `404` problem details.
+- `ObservationStation` decodes the provider, sub-provider, forecast, county, and fire weather zone
+  links, and the distance and bearing that location-relative station lists include.
 - Active alerts for a marine region on `/alerts/active/region/{region}` through `MarineRegionCode` or
   a String-backed enum, with a client method, reusable request, typed endpoint, and the existing
   active-alert page and feature sequences.

@@ -257,6 +257,29 @@ public struct NWSClient: Sendable {
     try await value(for: .latestObservation(from: source))
   }
 
+  /// Retrieves the observation a station made at an exact instant.
+  ///
+  /// Sends one request. The instant must be an observation's timestamp, such as one from
+  /// observation history; the service answers any other instant with `404`
+  /// problem details rather than the nearest observation, and no fallback is applied.
+  ///
+  /// ```swift
+  /// let observation = try await client.observation(stationIdentifier: "KATT", timestamp: timestamp)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - stationIdentifier: The station's identifier, such as `KATT`.
+  ///   - timestamp: The observation's exact timestamp, sent with whole-second precision.
+  /// - Returns: The observation, including any missing measurements.
+  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier,
+  ///   ``NWSError/problem(_:)`` for an unknown station or an instant with no observation, or any
+  ///   other error from ``value(for:)``.
+  public func observation(
+    stationIdentifier: String, timestamp: Date
+  ) async throws(NWSError) -> WeatherObservation {
+    try await value(for: .observation(stationIdentifier: stationIdentifier, timestamp: timestamp))
+  }
+
   /// Creates a lazy page traversal for a reusable observation-history request.
   /// - Parameter request: An observation query or a custom one-page endpoint request.
   /// - Returns: An independent, demand-driven page sequence.
@@ -280,6 +303,23 @@ public struct NWSClient: Sendable {
   /// - Returns: Observation pages in service order.
   public func observationPages(query: ObservationQuery) -> ObservationPageSequence {
     observationPages(for: .observations(query: query))
+  }
+
+  /// Retrieves the metadata for one observation station.
+  ///
+  /// Sends one request and returns the station's properties, including its zone links and provider
+  /// when the service lists them.
+  ///
+  /// ```swift
+  /// let station = try await client.observationStation(identifier: "KATT")
+  /// ```
+  ///
+  /// - Parameter identifier: The station's identifier, such as `KATT`.
+  /// - Returns: The station's metadata.
+  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier,
+  ///   ``NWSError/problem(_:)`` for an unknown station, or any other error from ``value(for:)``.
+  public func observationStation(identifier: String) async throws(NWSError) -> ObservationStation {
+    try await value(for: .observationStation(identifier: identifier))
   }
 
   /// Creates a lazy page traversal for a reusable station request.
@@ -385,7 +425,8 @@ public struct NWSClient: Sendable {
   /// Executes a reusable weather request.
   ///
   /// Endpoint requests decode directly as `Value`. Latest-observation requests resolve their
-  /// source and return the observation's properties. Coordinate resolutions reuse the point cache. Direct endpoints bypass it. No automatic pagination is applied.
+  /// source and return the observation's properties. Station and timed-observation lookups send one
+  /// request and return its properties. Coordinate resolutions reuse the point cache. Direct endpoints bypass it. No automatic pagination is applied.
   ///
   /// - Parameter request: The portable description to execute.
   /// - Returns: The concrete response selected by the request's factory or endpoint.
@@ -447,6 +488,23 @@ public struct NWSClient: Sendable {
       let feature = try await send(
         Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path))
       return feature.properties
+    case .observation(let stationIdentifier, let timestamp):
+      guard !stationIdentifier.isEmpty else {
+        throw .invalidStationIdentifier(stationIdentifier)
+      }
+      let endpoint = Endpoint.observation(
+        stationIdentifier: stationIdentifier, timestamp: timestamp)
+      // Only WeatherRequest<WeatherObservation> can be created with this resolution.
+      return try await send(
+        Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path)
+      ).properties
+    case .observationStation(let identifier):
+      guard !identifier.isEmpty else { throw .invalidStationIdentifier(identifier) }
+      let endpoint = Endpoint.observationStation(identifier: identifier)
+      // Only WeatherRequest<ObservationStation> can be created with this resolution.
+      return try await send(
+        Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path)
+      ).properties
     case .observationStations(let query):
       let endpoint = Endpoint.observationStations(query: query)
       return try await send(Endpoint<Value>(path: endpoint.path))

@@ -1,8 +1,30 @@
 # Reading observation stations
 
-Traverse the station directory one page or one feature at a time.
+Look up one station, or traverse the station directory one page or one feature at a time.
 
-## Overview
+## Look up one station
+
+```swift
+import SwiftNWS
+import SwiftNWSModels
+
+let weather = NWSClient(userAgent: "(example.com, contact@example.com)")
+let station = try await weather.observationStation(identifier: "KATT")
+print(station.name, station.provider ?? "", station.forecast as Any)
+
+let reusable = try await weather.value(for: .observationStation(identifier: "KATT"))
+let direct = try await weather.send(.observationStation(identifier: "KATT"))
+```
+
+``NWSClient/observationStation(identifier:)`` sends one request to `/stations/{stationId}` and
+returns the feature's `ObservationStation` properties: the name, identifier, elevation, time zone,
+provider and sub-provider, and links to the forecast, county, and fire weather zones containing the
+station, each present only when the service sends it. The direct endpoint keeps the GeoJSON envelope.
+An empty identifier throws ``NWSError/invalidStationIdentifier(_:)`` before any request, and an
+identifier the service does not recognize throws ``NWSError/problem(_:)`` with its `404` details. The
+identifier is encoded as one path segment and otherwise passed to the service unchanged.
+
+## Traverse the directory
 
 ```swift
 import SwiftNWS

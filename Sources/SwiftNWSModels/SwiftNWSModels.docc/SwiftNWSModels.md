@@ -14,7 +14,8 @@ live schema while `rawValue` preserves additions. String-backed consumer enums c
 request options and endpoints. Active alert factories support geographic and CAP filters and the
 area, marine region, and zone paths, and alert-history queries add a time window, page size, and
 cursor. ``ActiveAlertCount`` and ``AlertTypes`` decode the JSON-LD count and event-type resources. Observation-history queries name a
-station and a window.
+station and a window. Station and timed-observation endpoints read one station's metadata and the
+observation a station made at an exact instant.
 
 Station-directory, active-alert, alert-history, and observation-history requests declare when a
 custom executor may follow collection continuations. ``PaginationInfo`` validates a returned NWS link without adding an SDK or networking

@@ -159,6 +159,45 @@ extension Endpoint where Response == Feature<WeatherObservation> {
     }.joined()
     return Endpoint(path: "/stations/\(encoded)/observations/latest")
   }
+
+  /// The observation a station made at an exact instant, `/stations/{stationId}/observations/{time}`.
+  ///
+  /// The instant is sent in ISO 8601 form in UTC with whole-second precision. The service returns
+  /// an observation only when one has exactly that timestamp, such as a `timestamp` from observation
+  /// history; any other instant, including one between two observations, answers `404` problem
+  /// details rather than the nearest observation.
+  ///
+  /// ```swift
+  /// let timestamp = Date(timeIntervalSince1970: 1_789_696_260)
+  /// Endpoint.observation(stationIdentifier: "KATT", timestamp: timestamp).path
+  /// // "/stations/KATT/observations/2026-09-18T01:51:00Z"
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - stationIdentifier: The station's identifier, such as `KATT`. It is encoded as one path
+  ///     segment. Callers of this low-level factory must supply a nonempty identifier.
+  ///   - timestamp: The observation's exact timestamp.
+  /// - Returns: The endpoint.
+  public static func observation(stationIdentifier: String, timestamp: Date) -> Endpoint {
+    Endpoint(
+      path: "/stations/" + encodedSegment(stationIdentifier) + "/observations/"
+        + timestamp.formatted(.iso8601))
+  }
+}
+
+extension Endpoint where Response == Feature<ObservationStation> {
+  /// The metadata for one observation station, `/stations/{stationId}`.
+  ///
+  /// ```swift
+  /// Endpoint.observationStation(identifier: "KATT").path  // "/stations/KATT"
+  /// ```
+  ///
+  /// - Parameter identifier: The station's identifier, such as `KATT`. It is encoded as one path
+  ///   segment. Callers of this low-level factory must supply a nonempty identifier.
+  /// - Returns: The endpoint.
+  public static func observationStation(identifier: String) -> Self {
+    Self(path: "/stations/" + encodedSegment(identifier))
+  }
 }
 
 extension Endpoint where Response == FeatureCollection<WeatherObservation> {

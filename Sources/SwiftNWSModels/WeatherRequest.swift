@@ -1,3 +1,9 @@
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 /// A reusable, typed description of a weather lookup.
 ///
 /// Creating a request performs no I/O. Inspect ``resolution`` to execute it with your own
@@ -40,6 +46,20 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// by age, or try another station on failure.
     case latestObservation(ObservationSource)
 
+    /// Retrieve the observation a station made at an exact instant and return its GeoJSON
+    /// properties.
+    ///
+    /// Only requests returning ``WeatherObservation`` carry this resolution. An empty identifier is
+    /// a failure before any request. The instant must match an observation's timestamp; the service
+    /// does not select the nearest observation, and no other instant or station is tried.
+    case observation(stationIdentifier: String, timestamp: Date)
+
+    /// Retrieve one station's metadata and return its GeoJSON properties.
+    ///
+    /// Only requests returning ``ObservationStation`` carry this resolution. An empty identifier is
+    /// a failure before any request.
+    case observationStation(identifier: String)
+
     /// Retrieve a station-directory page, with continuation semantics in sequence executors.
     /// Only requests returning FeatureCollection<ObservationStation> carry this resolution.
     case observationStations(ObservationStationQuery)
@@ -61,6 +81,20 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
 
   private init(resolution: Resolution) {
     self.resolution = resolution
+  }
+}
+
+extension WeatherRequest where Response == ObservationStation {
+  /// Describes the metadata for one observation station.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.observationStation(identifier: "KATT")
+  /// ```
+  ///
+  /// - Parameter identifier: The station's identifier, such as `KATT`.
+  /// - Returns: A reusable request returning the station's properties.
+  public static func observationStation(identifier: String) -> Self {
+    Self(resolution: .observationStation(identifier: identifier))
   }
 }
 
@@ -203,5 +237,23 @@ extension WeatherRequest where Response == WeatherObservation {
   /// - Returns: A request that performs no work until executed.
   public static func latestObservation(from source: ObservationSource) -> Self {
     Self(resolution: .latestObservation(source))
+  }
+
+  /// Describes the observation a station made at an exact instant.
+  ///
+  /// The instant must be an observation's timestamp, such as one from observation history. The
+  /// service answers any other instant with `404` problem details rather than the nearest
+  /// observation, and no fallback is applied.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.observation(stationIdentifier: "KATT", timestamp: timestamp)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - stationIdentifier: The station's identifier, such as `KATT`.
+  ///   - timestamp: The observation's exact timestamp, sent with whole-second precision.
+  /// - Returns: A request that performs no work until executed.
+  public static func observation(stationIdentifier: String, timestamp: Date) -> Self {
+    Self(resolution: .observation(stationIdentifier: stationIdentifier, timestamp: timestamp))
   }
 }

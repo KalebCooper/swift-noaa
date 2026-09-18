@@ -40,7 +40,7 @@ public enum NWSError: Error {
   /// A redirect Location could not be interpreted as a URL.
   case invalidRedirect(String)
 
-  /// The station identifier is empty, so no observation request was sent.
+  /// The station identifier is empty, so no station or observation request was sent.
   case invalidStationIdentifier(String)
 
   /// The point lists no observation station to read conditions from.
