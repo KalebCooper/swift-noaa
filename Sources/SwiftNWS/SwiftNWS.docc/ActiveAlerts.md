@@ -20,8 +20,9 @@ geographic combinations the service rejects. Empty arrays omit a filter. `AreaCo
 `MarineRegionCode` name the live schema values while retaining unknown raw values. Zone identifiers,
 event names, and event codes remain open strings.
 
-Use `activeAlerts(inArea:)` or `activeAlerts(inZone:)` for canonical area or zone paths.
-The area overloads on `NWSClient`, `WeatherRequest`, and `Endpoint` also accept a consumer-defined
+Use `activeAlerts(inArea:)`, `activeAlerts(inRegion:)`, or `activeAlerts(inZone:)` for canonical
+area, marine region, or zone paths. An unrecognized region code is sent as given, and the service
+answers with problem details. The area and region overloads on `NWSClient`, `WeatherRequest`, and `Endpoint` also accept a consumer-defined
 String-backed enum directly. `alert(identifier:)` retrieves an individual alert's properties. Equivalent `WeatherRequest`
 factories perform no work until executed. `Endpoint` factories retain the GeoJSON envelopes.
 
@@ -44,8 +45,8 @@ for try await page in weather.activeAlertPages(matching: filter) {
 ```
 
 Use `activeAlertPages(for:)` or synchronous `activeAlerts(for:)` with any library alert request,
-including `.activeAlerts(for: home)`, `.activeAlerts(inArea: .texas)`, and
-`.activeAlerts(inZone: "TXZ192")`. Their initial endpoint paths are unchanged.
+including `.activeAlerts(for: home)`, `.activeAlerts(inArea: .texas)`,
+`.activeAlerts(inRegion: .gulfOfMexico)`, and `.activeAlerts(inZone: "TXZ192")`. Their initial endpoint paths are unchanged.
 `WeatherRequest(endpoint:)` remains a single-page operation even when its response contains pagination.
 
 ``ActiveAlertPageSequence`` and ``ActiveAlertSequence`` send nothing until read and start independently
@@ -60,6 +61,28 @@ including buffered items, and any error ends the iterator. Earlier values are pa
 than a complete collection. Later paths and queries come from validated service links rather than the
 original filter. The traversal is not a stable snapshot and does not deduplicate alerts returned by
 the service.
+
+## Count active alerts and list event types
+
+```swift
+let count = try await weather.activeAlertCount()
+print(count.total, count.land, count.marine)
+print(count.areas[.texas] ?? 0, count.regions[.gulfOfMexico] ?? 0, count.zones["TXZ192"] ?? 0)
+
+let types = try await weather.alertTypes()
+let filter = ActiveAlertFilter(event: types.eventTypes.filter { $0.hasSuffix("Warning") })
+```
+
+`activeAlertCount()` returns `ActiveAlertCount` as the service reported it. The area, region, and
+zone breakdowns overlap: one alert counts once in every area and zone it affects, so a breakdown can
+sum to more than the total. Only codes with at least one active alert appear, and unknown codes are
+kept as keys. `alertTypes()` returns `AlertTypes`, the recognized event names in service order; the
+list is not a statement that any event is active. Neither resource is paginated.
+
+Both methods send one request through `value(for:)` with `WeatherRequest.activeAlertCount` or
+`WeatherRequest.alertTypes`, which wrap `Endpoint.activeAlertCount` and `Endpoint.alertTypes`. The
+service offers these resources only as JSON-LD, so their endpoints ask for `application/ld+json`.
+Counts are a snapshot and need not match a later alert query.
 
 ## Preserve the source
 

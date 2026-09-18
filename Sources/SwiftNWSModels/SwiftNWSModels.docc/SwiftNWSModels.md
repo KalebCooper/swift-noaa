@@ -11,8 +11,9 @@ single-HTTP ``Endpoint`` values, and portable response models.
 Current conditions and forecasts are available. Forecast requests carry explicit typed units and
 representation flags. Provider-enumerated codes are open values: named static members cover the
 live schema while `rawValue` preserves additions. String-backed consumer enums can be passed to
-request options and endpoints. Active alert factories support geographic and CAP filters, and
-alert-history queries add a time window, page size, and cursor. Observation-history queries name a
+request options and endpoints. Active alert factories support geographic and CAP filters and the
+area, marine region, and zone paths, and alert-history queries add a time window, page size, and
+cursor. ``ActiveAlertCount`` and ``AlertTypes`` decode the JSON-LD count and event-type resources. Observation-history queries name a
 station and a window.
 
 Station-directory, active-alert, alert-history, and observation-history requests declare when a
@@ -54,11 +55,13 @@ not require full Foundation or a networking stack.
 
 ### Response models
 
+- ``ActiveAlertCount``
 - ``AlertCertainty``
 - ``AlertMessageType``
 - ``AlertReference``
 - ``AlertSeverity``
 - ``AlertStatus``
+- ``AlertTypes``
 - ``AlertUrgency``
 - ``Feature``
 - ``FeatureCollection``

@@ -27,6 +27,26 @@ extension Endpoint where Response == FeatureCollection<WeatherAlert> {
     activeAlerts(inArea: AreaCode(area))
   }
 
+  /// Lists active alerts for a marine region, `/alerts/active/region/{region}`.
+  ///
+  /// ```swift
+  /// Endpoint.activeAlerts(inRegion: .gulfOfMexico).path  // "/alerts/active/region/GM"
+  /// ```
+  ///
+  /// - Parameter region: A marine region code, encoded as one path segment.
+  /// - Returns: The GeoJSON collection endpoint.
+  public static func activeAlerts(inRegion region: MarineRegionCode) -> Self {
+    Self(path: "/alerts/active/region/" + encodedSegment(region.rawValue))
+  }
+
+  /// Lists active alerts using a consumer-defined marine region enum.
+  /// - Parameter region: A String-backed marine region code.
+  /// - Returns: The GeoJSON collection endpoint.
+  public static func activeAlerts<Region>(inRegion region: Region) -> Self
+  where Region: RawRepresentable, Region.RawValue == String {
+    activeAlerts(inRegion: MarineRegionCode(region))
+  }
+
   /// Lists active alerts for a forecast or county zone.
   /// - Parameter zone: A nonempty provider zone identifier, encoded as one path segment.
   /// - Returns: The GeoJSON collection endpoint.
@@ -48,6 +68,34 @@ extension Endpoint where Response == FeatureCollection<WeatherAlert> {
   /// - Returns: The GeoJSON collection endpoint, which may redirect to a canonical URL.
   public static func alerts(matching query: AlertQuery) -> Self {
     Self(path: "/alerts" + query.query)
+  }
+}
+
+extension Endpoint where Response == ActiveAlertCount {
+  /// Counts active alerts by region type, marine region, area, and zone, `/alerts/active/count`.
+  ///
+  /// The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD``.
+  ///
+  /// ```swift
+  /// Endpoint.activeAlertCount.path  // "/alerts/active/count"
+  /// ```
+  public static var activeAlertCount: Self {
+    Self(accept: .jsonLD, path: "/alerts/active/count")
+  }
+}
+
+extension Endpoint where Response == AlertTypes {
+  /// Lists the alert event names the service recognizes, `/alerts/types`.
+  ///
+  /// The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD``.
+  ///
+  /// ```swift
+  /// Endpoint.alertTypes.path  // "/alerts/types"
+  /// ```
+  public static var alertTypes: Self {
+    Self(accept: .jsonLD, path: "/alerts/types")
   }
 }
 

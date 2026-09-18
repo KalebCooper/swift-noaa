@@ -8,6 +8,14 @@ All notable changes are documented here, following
 
 ### Added
 
+- Active alerts for a marine region on `/alerts/active/region/{region}` through `MarineRegionCode` or
+  a String-backed enum, with a client method, reusable request, typed endpoint, and the existing
+  active-alert page and feature sequences.
+- Active alert counts on `/alerts/active/count` as `ActiveAlertCount`, with total, land, and marine
+  counts and breakdowns keyed by area code, marine region code, and zone identifier.
+- The recognized alert event names on `/alerts/types` as `AlertTypes`.
+- `MediaType.jsonLD` for endpoints the service offers only as JSON-LD.
+- `AreaCode` and `MarineRegionCode` conform to `CodingKeyRepresentable`, so they key JSON objects.
 - Alert history on `/alerts` through validated `AlertQuery` values combining the active-alert
   filter with a time window, page size, and initial cursor, with one-page methods, reusable
   requests, typed endpoints, and lazy `AlertPageSequence` and `AlertSequence` traversal.

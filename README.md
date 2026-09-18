@@ -12,7 +12,8 @@ send through any networking stack, plus an SDK that sends them for you through
 ## Status
 
 The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
-point caching, active alerts by coordinate, area, zone, and CAP filters, alert history with a time
+point caching, active alerts by coordinate, area, marine region, zone, and CAP filters, active alert
+counts, the recognized alert event types, alert history with a time
 window, a station's observation history, and lazy station-directory, active-alert, alert-history,
 and observation-history pagination. WMO readings can be converted with Foundation. The release is
 not tagged yet.
@@ -124,7 +125,32 @@ let reusable = WeatherRequest.activeAlerts(inArea: AppArea.home)
 let endpoint = Endpoint<FeatureCollection<WeatherAlert>>.activeAlerts(inArea: AppArea.home)
 ```
 
-Only GeoJSON is supported; lists are not automatically paginated.
+Marine regions have their own path, and a String-backed region enum works the same way:
+
+```swift
+let gulf = try await weather.activeAlerts(inRegion: .gulfOfMexico)
+for try await page in weather.activeAlertPages(for: .activeAlerts(inRegion: .atlantic)) {
+  print(page.features.count)
+}
+```
+
+`activeAlertCount()` returns `ActiveAlertCount`: the total, land and marine counts, and breakdowns
+keyed by `AreaCode`, `MarineRegionCode`, and zone identifier. The breakdowns overlap, since one
+alert counts once in every area and zone it affects, and list only codes with an active alert.
+`alertTypes()` returns the event names the service recognizes, in service order, for use in the
+`event` filter:
+
+```swift
+let count = try await weather.activeAlertCount()
+print(count.total, count.areas[.texas] ?? 0, count.regions[.gulfOfMexico] ?? 0)
+let types = try await weather.alertTypes()
+print(types.eventTypes.contains("Heat Advisory"))
+```
+
+Both are one request each, with matching `WeatherRequest.activeAlertCount` and
+`WeatherRequest.alertTypes` values and `Endpoint.activeAlertCount` and `Endpoint.alertTypes`
+endpoints. The service offers them only as JSON-LD, so those endpoints ask for `MediaType.jsonLD`.
+Alert collections are GeoJSON only; awaited lists are not automatically paginated.
 The client follows at most five redirects within the HTTPS API origin and rejects loops and unsafe links.
 
 ### Alert history

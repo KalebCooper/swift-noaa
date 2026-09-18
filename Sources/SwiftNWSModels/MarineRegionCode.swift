@@ -1,7 +1,9 @@
-/// An extensible marine-region code accepted by NWS active-alert filters.
+/// An extensible marine-region code used by NWS active-alert filters, paths, and counts.
 ///
 /// Named values match the live NWS schema. Unknown values remain available in ``rawValue``.
-public struct MarineRegionCode: Codable, Hashable, RawRepresentable, Sendable {
+public struct MarineRegionCode: Codable, CodingKeyRepresentable, Hashable, RawRepresentable,
+  Sendable
+{
   /// Alaska waters.
   public static let alaska = Self(rawValue: "AL")
 
@@ -20,12 +22,21 @@ public struct MarineRegionCode: Codable, Hashable, RawRepresentable, Sendable {
   /// Pacific Islands waters.
   public static let pacificIslands = Self(rawValue: "PI")
 
+  /// The service's exact code, used as the key when a code keys a JSON object.
+  public var codingKey: any CodingKey { Key(stringValue: rawValue) }
+
   /// The service's exact code.
   public let rawValue: String
 
   /// Creates a code from a consumer-defined String-backed value.
   public init<Value>(_ value: Value) where Value: RawRepresentable, Value.RawValue == String {
     self.init(rawValue: value.rawValue)
+  }
+
+  /// Creates a code from a JSON object key; every key is accepted as an exact service code.
+  /// - Parameter codingKey: The key whose string value is the service's code.
+  public init?<T: CodingKey>(codingKey: T) {
+    self.init(rawValue: codingKey.stringValue)
   }
 
   /// Creates a code without restricting future service values.
@@ -40,5 +51,14 @@ public struct MarineRegionCode: Codable, Hashable, RawRepresentable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     try container.encode(rawValue)
+  }
+
+  private struct Key: CodingKey {
+    var intValue: Int? { nil }
+    let stringValue: String
+
+    init(stringValue: String) { self.stringValue = stringValue }
+
+    init?(intValue: Int) { nil }
   }
 }

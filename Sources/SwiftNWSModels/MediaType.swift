@@ -21,4 +21,8 @@ public struct MediaType: Hashable, RawRepresentable, Sendable {
 extension MediaType {
   /// GeoJSON, `application/geo+json`, the API's default representation.
   public static let geoJSON = MediaType(rawValue: "application/geo+json")
+
+  /// JSON-LD, `application/ld+json`, the only representation of some endpoints, such as
+  /// `/alerts/active/count` and `/alerts/types`.
+  public static let jsonLD = MediaType(rawValue: "application/ld+json")
 }

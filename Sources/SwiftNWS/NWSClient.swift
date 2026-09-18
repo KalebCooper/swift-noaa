@@ -35,6 +35,17 @@ public struct NWSClient: Sendable {
     self.client = HTTPClient(baseURL: Self.baseURL, redirectPolicy: .never, transport: transport)
   }
 
+  /// Retrieves the number of active alerts by region type, marine region, area, and zone.
+  ///
+  /// Sends one request for a JSON-LD body. The breakdowns overlap and list only codes with an
+  /// active alert; see `ActiveAlertCount`.
+  ///
+  /// - Returns: The counts as the service reported them.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func activeAlertCount() async throws(NWSError) -> ActiveAlertCount {
+    try await value(for: .activeAlertCount)
+  }
+
   /// Creates a lazy page traversal for a reusable alert request.
   /// - Parameter request: A library active-alert or alert-history request, which follows links,
   ///   or a custom one-page endpoint request.
@@ -93,6 +104,27 @@ public struct NWSClient: Sendable {
     WeatherAlert
   > where Area: RawRepresentable, Area.RawValue == String {
     try await activeAlerts(inArea: AreaCode(area))
+  }
+
+  /// Retrieves active alerts for a marine region.
+  /// - Parameter region: A marine region code.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``, including ``NWSError/problem(_:)`` for a
+  ///   code the service does not recognize.
+  public func activeAlerts(inRegion region: MarineRegionCode) async throws(NWSError)
+    -> FeatureCollection<WeatherAlert>
+  {
+    try await value(for: .activeAlerts(inRegion: region))
+  }
+
+  /// Retrieves active alerts using a consumer-defined marine region enum.
+  /// - Parameter region: A String-backed marine region code.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func activeAlerts<Region>(inRegion region: Region) async throws(NWSError)
+    -> FeatureCollection<WeatherAlert>
+  where Region: RawRepresentable, Region.RawValue == String {
+    try await activeAlerts(inRegion: MarineRegionCode(region))
   }
 
   /// Retrieves active alerts for a provider zone.
@@ -174,6 +206,16 @@ public struct NWSClient: Sendable {
     -> FeatureCollection<WeatherAlert>
   {
     try await value(for: .alerts(matching: query))
+  }
+
+  /// Retrieves the alert event names the service recognizes.
+  ///
+  /// Sends one request for a JSON-LD body. Names keep the service's order and spelling.
+  ///
+  /// - Returns: The recognized event names.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func alertTypes() async throws(NWSError) -> AlertTypes {
+    try await value(for: .alertTypes)
   }
 
   /// Retrieves the twelve-hour forecast for a coordinate.

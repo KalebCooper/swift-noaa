@@ -7,7 +7,8 @@ and signatures are settled when each piece is built, against the live OpenAPI sp
 ## Built today
 
 The 0.1.0 implementation includes observations, linked twelve-hour and hourly forecasts,
-bounded point caching, active-alert filters and canonical endpoints, individual alerts, and
+bounded point caching, active-alert filters and canonical area, marine region, and zone endpoints,
+individual alerts, active alert counts, the recognized alert event types, and
 WMO measurement conversion. The station directory, active alerts, alert history, and observation
 history provide lazy page and item sequences while preserving single-page endpoint and request
 execution. Every HTTP operation has an

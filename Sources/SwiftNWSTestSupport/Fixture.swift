@@ -9,6 +9,9 @@ import Foundation
 /// let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
 /// ```
 package enum Fixture: String, CaseIterable, Sendable {
+  /// `/alerts/active/count`, requested as `application/ld+json`, with every breakdown populated.
+  case activeAlertCount = "ActiveAlertCount"
+
   /// `/alerts/active?point=30.2672,-97.7431`, covering typed CAP codes at downtown Austin.
   case activeAlerts = "ActiveAlerts"
 
@@ -18,6 +21,9 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/alerts?area=TX&end=2026-09-17T00:00:00Z&limit=2&start=2026-09-16T00:00:00Z&status=actual`,
   /// one page of Texas alert history with its continuation link.
   case alertHistory = "AlertHistory"
+
+  /// `/alerts/types`, requested as `application/ld+json`, the recognized event names.
+  case alertTypes = "AlertTypes"
 
   /// `/alerts/active/area/TX`, covering the typed Texas area path and CAP codes.
   case areaAlerts = "AreaAlerts"
@@ -49,6 +55,9 @@ package enum Fixture: String, CaseIterable, Sendable {
 
   /// `/points/0,0`, the `404` problem details the API answers a point outside its coverage with.
   case problemDetail = "ProblemDetail"
+
+  /// `/alerts/active/region/AT`, active alerts in the Atlantic marine region.
+  case regionAlerts = "RegionAlerts"
 
   /// `/alerts/active/zone/TXZ192`, active alerts in the Travis forecast zone.
   case zoneAlerts = "ZoneAlerts"

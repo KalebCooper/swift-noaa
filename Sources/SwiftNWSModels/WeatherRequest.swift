@@ -105,6 +105,21 @@ extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
     activeAlerts(inArea: AreaCode(area))
   }
 
+  /// Describes active alerts in a marine region.
+  /// - Parameter region: A marine region code.
+  /// - Returns: A reusable request for a GeoJSON collection.
+  public static func activeAlerts(inRegion region: MarineRegionCode) -> Self {
+    Self(resolution: .activeAlerts(.activeAlerts(inRegion: region)))
+  }
+
+  /// Describes active alerts using a consumer-defined marine region enum.
+  /// - Parameter region: A String-backed marine region code.
+  /// - Returns: A reusable request for a GeoJSON collection.
+  public static func activeAlerts<Region>(inRegion region: Region) -> Self
+  where Region: RawRepresentable, Region.RawValue == String {
+    activeAlerts(inRegion: MarineRegionCode(region))
+  }
+
   /// Describes active alerts in a provider zone.
   /// - Parameter zone: A nonempty zone identifier.
   /// - Returns: A reusable request for a GeoJSON collection.
@@ -124,6 +139,24 @@ extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
   /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
   public static func alerts(matching query: AlertQuery) -> Self {
     Self(resolution: .alerts(query))
+  }
+}
+
+extension WeatherRequest where Response == ActiveAlertCount {
+  /// Describes the count of active alerts by region type, marine region, area, and zone.
+  ///
+  /// The request sends ``Endpoint/activeAlertCount`` and returns its body unchanged.
+  public static var activeAlertCount: Self {
+    Self(endpoint: .activeAlertCount)
+  }
+}
+
+extension WeatherRequest where Response == AlertTypes {
+  /// Describes the list of alert event names the service recognizes.
+  ///
+  /// The request sends ``Endpoint/alertTypes`` and returns its body unchanged.
+  public static var alertTypes: Self {
+    Self(endpoint: .alertTypes)
   }
 }
 

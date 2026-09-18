@@ -1,7 +1,7 @@
 /// An extensible state, territory, or marine-area code accepted by NWS alert endpoints.
 ///
 /// Named values match the live NWS schema. Unknown values remain available in ``rawValue``.
-public struct AreaCode: Codable, Hashable, RawRepresentable, Sendable {
+public struct AreaCode: Codable, CodingKeyRepresentable, Hashable, RawRepresentable, Sendable {
   // MARK: Land areas
 
   /// Alabama.
@@ -156,12 +156,21 @@ public struct AreaCode: Codable, Hashable, RawRepresentable, Sendable {
   /// The western Pacific Ocean.
   public static let westernPacificOcean = Self(rawValue: "PM")
 
+  /// The service's exact code, used as the key when a code keys a JSON object.
+  public var codingKey: any CodingKey { Key(stringValue: rawValue) }
+
   /// The service's exact code.
   public let rawValue: String
 
   /// Creates a code from a consumer-defined String-backed value.
   public init<Value>(_ value: Value) where Value: RawRepresentable, Value.RawValue == String {
     self.init(rawValue: value.rawValue)
+  }
+
+  /// Creates a code from a JSON object key; every key is accepted as an exact service code.
+  /// - Parameter codingKey: The key whose string value is the service's code.
+  public init?<T: CodingKey>(codingKey: T) {
+    self.init(rawValue: codingKey.stringValue)
   }
 
   /// Creates a code without restricting future service values.
@@ -176,5 +185,14 @@ public struct AreaCode: Codable, Hashable, RawRepresentable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     try container.encode(rawValue)
+  }
+
+  private struct Key: CodingKey {
+    var intValue: Int? { nil }
+    let stringValue: String
+
+    init(stringValue: String) { self.stringValue = stringValue }
+
+    init?(intValue: Int) { nil }
   }
 }

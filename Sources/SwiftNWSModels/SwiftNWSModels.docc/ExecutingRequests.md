@@ -34,7 +34,8 @@ type that match their intended operation.
 Constructing or inspecting it sends nothing.
 
 - An endpoint resolution contains `Endpoint<Response>`. Decode the complete body as
-  `Response`, without adding or removing a GeoJSON wrapper.
+  `Response`, without adding or removing a GeoJSON wrapper. `WeatherRequest.activeAlertCount` and
+  `WeatherRequest.alertTypes` use this resolution with endpoints that ask for ``MediaType/jsonLD``.
 - Forecast resolutions contain a coordinate and options. Resolve the point, validate its forecast
   or hourly link using the corresponding endpoint factory, then return the feature's properties.
   Preserve the endpoint's units query and feature flags.
@@ -81,7 +82,7 @@ Queries validate limits from 1 through 500 and preserve an initial cursor; an ob
 omits the limit when none is given and rejects an empty station identifier. Empty identifier and
 state arrays omit their filters, and window bounds are sent as whole-second ISO 8601 instants.
 
-For active alerts, `WeatherRequest.activeAlerts(matching:)`, coordinate, area, and zone factories
+For active alerts, `WeatherRequest.activeAlerts(matching:)`, coordinate, area, marine region, and zone factories
 retain their existing initial endpoints inside the `activeAlerts` resolution. Decode each response as
 `FeatureCollection<WeatherAlert>` and apply the same continuation validation below. A custom
 `WeatherRequest(endpoint:)` never opts into continuation, even if pagination metadata is present.
