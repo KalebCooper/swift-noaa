@@ -82,7 +82,7 @@ struct AlertSummaryClientTests {
   func anUnrecognizedRegionIsThrownAsTheServicesProblem(useRequest: Bool) async throws {
     let transport = MockTransport()
     try answer(
-      transport, path: "/alerts/active/region/XX", status: .notFound, with: .problemDetail)
+      transport, path: "/alerts/active/region/XX", status: .notFound, with: .unknownRegionProblem)
     let client = makeClient(transport)
     let region = MarineRegionCode(rawValue: "XX")
     let failure = await #expect(throws: NWSError.self) {
@@ -97,6 +97,12 @@ struct AlertSummaryClientTests {
       return
     }
     #expect(problem.status == 404)
+    #expect(
+      problem.parameterErrors == [
+        ProblemDetail.ParameterError(
+          message: #"Does not have a value in the enumeration ["AL","AT","GL","GM","PA","PI"]"#,
+          parameter: "path.region")
+      ])
     #expect(transport.requests.map(\.request.path) == ["/alerts/active/region/XX"])
   }
 

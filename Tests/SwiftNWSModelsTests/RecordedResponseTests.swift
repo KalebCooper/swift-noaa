@@ -119,6 +119,28 @@ struct RecordedResponseTests {
         ))
   }
 
+  @Test("Problem details keep every parameter error the service listed")
+  func problemDetailsKeepEveryParameterErrorTheServiceListed() throws {
+    let problem = try JSONDecoder().decode(
+      ProblemDetail.self, from: Fixture.unknownRegionProblem.data())
+
+    #expect(
+      problem
+        == ProblemDetail(
+          correlationId: "124b9aed",
+          detail: "Not Found",
+          instance: "https://api.weather.gov/requests/124b9aed",
+          parameterErrors: [
+            ProblemDetail.ParameterError(
+              message: #"Does not have a value in the enumeration ["AL","AT","GL","GM","PA","PI"]"#,
+              parameter: "path.region")
+          ],
+          status: 404,
+          title: "Not Found",
+          type: "https://api.weather.gov/problems/NotFound"
+        ))
+  }
+
   @Test("Unknown unit and quality codes survive decoding with a missing measurement")
   func unknownUnitAndQualityCodesSurviveDecodingWithAMissingMeasurement() throws {
     let body = Data(

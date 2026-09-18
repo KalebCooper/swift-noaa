@@ -398,6 +398,8 @@ The client throws `NWSError`: NWS problem details, transport or decoding failure
 service links or redirects, excess redirect hops, invalid pagination, empty station or alert identifiers,
 or a station list with no stations. Cancellation is
 `NWSError.transport(.cancelled)`, with a cancellation check before each HTTP call.
+When the service rejects a request parameter, such as an unknown marine region, the thrown
+`ProblemDetail` lists each rejection in `parameterErrors`, including the values it accepts.
 
 The unreleased coordinate overloads have been replaced:
 

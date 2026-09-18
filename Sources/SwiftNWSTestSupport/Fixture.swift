@@ -75,6 +75,10 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/alerts/active/region/AT`, active alerts in the Atlantic marine region.
   case regionAlerts = "RegionAlerts"
 
+  /// `/alerts/active/region/XX`, the `404` problem details the API answers an unknown marine region
+  /// with, listing the valid region codes in its parameter errors.
+  case unknownRegionProblem = "UnknownRegionProblem"
+
   /// `/alerts/active/zone/TXZ192`, active alerts in the Travis forecast zone.
   case zoneAlerts = "ZoneAlerts"
 

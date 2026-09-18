@@ -15,6 +15,8 @@ All notable changes are documented here, following
 - `WeatherPhenomenon` for a decoded METAR present weather group, with open
   `WeatherPhenomenonIntensity`, `WeatherPhenomenonModifier`, and `WeatherPhenomenonKind` codes.
 - `CloudLayer` for a reported cloud layer's base and open `CloudLayerAmount` sky coverage code.
+- `ProblemDetail.parameterErrors`, the request parameters the service rejected, such as an unknown
+  marine region, with the values it accepts.
 - Station metadata on `/stations/{stationId}` through `observationStation(identifier:)`, with a
   reusable request and a typed endpoint.
 - The observation a station made at an exact instant on `/stations/{stationId}/observations/{time}`
