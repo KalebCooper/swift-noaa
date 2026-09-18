@@ -51,6 +51,20 @@ guarantee that the first station is geographically closest. An uncached lookup t
 It does not filter stale observations, try a fallback station, or fetch additional pages.
 Use the result's `stationId` and `timestamp` to assess its source and freshness.
 
+A `WeatherObservation` carries every field the service's observation schema defines, including
+the raw METAR message, 24-hour temperature extremes, precipitation totals, the decoded present
+weather, and cloud layers. Readings keep the service's unit, fields the station did not report stay
+`nil`, and weather and sky coverage codes keep unknown values in `rawValue`.
+
+```swift
+for phenomenon in observation.presentWeather ?? [] {
+  print(phenomenon.rawString, phenomenon.intensity?.rawValue ?? "", phenomenon.weather.rawValue)
+}
+for layer in observation.cloudLayers ?? [] {
+  print(layer.amount.rawValue, layer.base.value ?? .nan, layer.base.unitCode)
+}
+```
+
 ### Forecasts
 
 ```swift
@@ -404,7 +418,7 @@ package itself closed in Xcode, since Xcode lets a local package be open in only
 
 | Product | What it is | Depends on |
 |---|---|---|
-| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `AlertQuery`, `ObservationQuery`, `ObservationStationQuery`, `WeatherRequest`, `Endpoint`, and portable response models: `Point`, `ObservationStation`, `WeatherObservation`, `WeatherForecast`, `WeatherAlert`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
+| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `AlertQuery`, `ObservationQuery`, `ObservationStationQuery`, `WeatherRequest`, `Endpoint`, and portable response models: `Point`, `ObservationStation`, `WeatherObservation` with its `WeatherPhenomenon` and `CloudLayer` values, `WeatherForecast`, `WeatherAlert`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
 | `SwiftNWS` | `NWSClient`, which sends endpoints and follows the links between responses, with `NWSConfiguration` and one typed error, `NWSError`. It re-exports swifty-networking's `HTTPCore`, so `Transport` and `TransportError` need no import of their own. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
 
 A consumer with its own networking stack adds only `SwiftNWSModels` and fetches no dependency at all.

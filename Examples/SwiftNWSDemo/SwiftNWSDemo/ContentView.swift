@@ -43,6 +43,12 @@ struct ContentView: View {
         LabeledContent("Temperature", value: observation.temperature.displayText)
         LabeledContent("Humidity", value: observation.relativeHumidity.displayText)
         LabeledContent("Wind", value: observation.windSpeed.displayText)
+        if let weather = observation.presentWeather, !weather.isEmpty {
+          LabeledContent("Present Weather", value: weather.map(\.rawString).joined(separator: " "))
+        }
+        if let layers = observation.cloudLayers, !layers.isEmpty {
+          LabeledContent("Sky", value: layers.map(\.amount.rawValue).joined(separator: " "))
+        }
         LabeledContent("Station", value: observation.stationName ?? observation.stationId)
         LabeledContent("Observed") {
           Text(observation.timestamp, format: .dateTime.hour().minute())

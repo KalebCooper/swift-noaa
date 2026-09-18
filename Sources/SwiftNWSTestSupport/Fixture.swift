@@ -61,6 +61,11 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/gridpoints/EWX/156,91/stations`, the 64 stations near downtown Austin, nearest first.
   case observationStations = "ObservationStations"
 
+  /// `/stations/KPWM/observations/2026-09-18T02:50:00Z`, a Portland International Jetport
+  /// observation reporting heavy rain and mist under three cloud layers, with an empty raw message
+  /// and no one-hour or six-hour precipitation fields.
+  case observationWithWeather = "ObservationWithWeather"
+
   /// `/points/30.2672,-97.7431`, downtown Austin.
   case point = "Point"
 

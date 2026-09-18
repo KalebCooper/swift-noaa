@@ -22,6 +22,10 @@ The short initializer uses the shared URL session on Apple platforms. For a cust
 transport, use a configuration-based initializer. A User-Agent identifying your application and
 a contact is required; there is no default identity.
 
+Every observation method returns the full `WeatherObservation`, including present weather,
+cloud layers, the raw METAR message, and precipitation totals, exactly as the service reported
+them.
+
 Coordinate lookups follow the point's station-list link, then fetch the first listed station's
 latest observation. The service does not guarantee distance ordering. The client does not reject
 old observations, try fallback stations, or fetch more station pages. Coordinate lookups share

@@ -8,6 +8,13 @@ All notable changes are documented here, following
 
 ### Added
 
+- `WeatherObservation` decodes every field of the service's observation schema: `elevation`,
+  `station`, `rawMessage`, `icon`, `seaLevelPressure`, `maxTemperatureLast24Hours`,
+  `minTemperatureLast24Hours`, `precipitationLastHour`, `precipitationLast3Hours`,
+  `precipitationLast6Hours`, `presentWeather`, and `cloudLayers`.
+- `WeatherPhenomenon` for a decoded METAR present weather group, with open
+  `WeatherPhenomenonIntensity`, `WeatherPhenomenonModifier`, and `WeatherPhenomenonKind` codes.
+- `CloudLayer` for a reported cloud layer's base and open `CloudLayerAmount` sky coverage code.
 - Station metadata on `/stations/{stationId}` through `observationStation(identifier:)`, with a
   reusable request and a typed endpoint.
 - The observation a station made at an exact instant on `/stations/{stationId}/observations/{time}`
@@ -39,6 +46,7 @@ All notable changes are documented here, following
 
 ### Changed
 
+- `WeatherObservation`'s memberwise initializer takes the new fields in alphabetical order.
 - Document the station directory as the pagination reference, including request-based page and item
   traversal, early termination, cancellation, partial-result failures, and changing-data semantics.
 
