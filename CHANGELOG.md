@@ -6,8 +6,28 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+## [0.1.0] - 2026-09-18
+
 ### Added
 
+- Current observations from an explicit station or the first service-listed station for a coordinate.
+- Twelve-hour and hourly forecasts that follow the point's links, with explicit US/SI units and
+  quantitative-value feature flags.
+- Active alerts by coordinate, area, zone, and the supported CAP filters, plus individual alerts.
+- Portable forecast and CAP models with nullable readings and dates, unknown response codes, and
+  recorded fixtures for every supported endpoint.
+- Bounded point caching with an injected clock, expiry, least-recently-used eviction, clearing,
+  and opt-out. Client copies share the cache.
+- WMO-to-Foundation measurement conversion and percentage fractions for display.
+- Three equivalent access levels: everyday `NWSClient` methods, reusable and inspectable
+  `WeatherRequest<Response>` values, and transport-independent `Endpoint<Response>` values.
+- Validated coordinates, origin-checked links, bounded same-origin redirects, cancellation checks,
+  and typed NWS problem-detail and transport errors.
+- Apple URLSession integration and an optional `HTTPPortable` trait for Linux and Android.
+- DocC catalogs for both products, README examples, and an iOS demo with observations, forecasts,
+  alerts, and shared measurement formatting.
+- Fixture-backed Swift Testing coverage, Linux tests under both trait sets, Android and iOS CI,
+  strict lint, and documentation checks that fail on warnings.
 - The observation stations near a coordinate as one page through `observationStations(near:)` and
   a reusable `WeatherRequest.observationStations(near:)` request, alongside the existing
   `Endpoint.observationStations(near:)`. Station page and feature sequences accept the request and
@@ -64,45 +84,19 @@ All notable changes are documented here, following
 
 ### Changed
 
-- `WeatherForecast.validTimes` is a `ValidTimeInterval` rather than a `String`. Its text remains
-  available as `validTimes.rawValue`.
-- `WeatherObservation`'s memberwise initializer takes the new fields in alphabetical order.
-- Document the station directory as the pagination reference, including request-based page and item
-  traversal, early termination, cancellation, partial-result failures, and changing-data semantics.
-
-## [0.1.0]
-
-### Added
-
-- Current observations from an explicit station or the first service-listed station for a coordinate.
-- Twelve-hour and hourly forecasts that follow the point's links, with explicit US/SI units and
-  quantitative-value feature flags.
-- Active alerts by coordinate, area, zone, and the supported CAP filters, plus individual alerts.
-- Portable forecast and CAP models with nullable readings and dates, unknown response codes, and
-  recorded fixtures for every supported endpoint.
-- Bounded point caching with an injected clock, expiry, least-recently-used eviction, clearing,
-  and opt-out. Client copies share the cache.
-- WMO-to-Foundation measurement conversion and percentage fractions for display.
-- Three equivalent access levels: everyday `NWSClient` methods, reusable and inspectable
-  `WeatherRequest<Response>` values, and transport-independent `Endpoint<Response>` values.
-- Validated coordinates, origin-checked links, bounded same-origin redirects, cancellation checks,
-  and typed NWS problem-detail and transport errors.
-- Apple URLSession integration and an optional `HTTPPortable` trait for Linux and Android.
-- DocC catalogs for both products, README examples, and an iOS demo with observations, forecasts,
-  alerts, and shared measurement formatting.
-- Fixture-backed Swift Testing coverage, Linux tests under both trait sets, Android and iOS CI,
-  strict lint, and documentation checks that fail on warnings.
-
-### Changed
-
 - Rename the package from `swift-nws` to `swift-noaa`, retaining `SwiftNWS` and `SwiftNWSModels`.
 - Replace prerelease raw-coordinate overloads with `WeatherCoordinate` and `ObservationSource`.
 - Replace provider-enumerated alert, forecast, and measurement strings with forward-compatible
   typed code values, including direct interoperability with consumer-defined String-backed enums.
 - Add named state, territory, marine-area, and marine-region codes for alert queries while retaining
   unknown values and keeping zone identifiers and event vocabulary open.
-- Keep station ordering, freshness assessment, fallback, pagination, and retries under consumer
-  control; no provider guarantee is inferred.
+- Keep station ordering, freshness assessment, fallback, and retries under consumer control, and make
+  pagination opt-in; no provider guarantee is inferred.
+- `WeatherForecast.validTimes` is a `ValidTimeInterval` rather than a `String`. Its text remains
+  available as `validTimes.rawValue`.
+- `WeatherObservation`'s memberwise initializer takes the new fields in alphabetical order.
+- Document the station directory as the pagination reference, including request-based page and item
+  traversal, early termination, cancellation, partial-result failures, and changing-data semantics.
 
 ### Fixed
 

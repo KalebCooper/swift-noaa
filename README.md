@@ -11,14 +11,13 @@ send through any networking stack, plus an SDK that sends them for you through
 
 ## Status
 
-The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
+The 0.1.0 release implements current observations, twelve-hour and hourly forecasts,
 raw forecast grid data with every layer and parsed valid times, the stations near a coordinate,
 point caching, active alerts by coordinate, area, marine region, zone, and CAP filters, active alert
 counts, the recognized alert event types, alert history with a time
 window, a station's observation history, one station's metadata, the observation a station made at
 an exact instant, and lazy station-directory, active-alert, alert-history,
-and observation-history pagination. WMO readings can be converted with Foundation. The release is
-not tagged yet.
+and observation-history pagination. WMO readings can be converted with Foundation.
 
 General zone and office endpoints, and retries, are outside this release.
 
