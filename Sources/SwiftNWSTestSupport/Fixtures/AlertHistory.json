@@ -1,0 +1,242 @@
+{
+    "@context": [
+        "https://geojson.org/geojson-ld/geojson-context.jsonld",
+        {
+            "@version": "1.1",
+            "wx": "https://api.weather.gov/ontology#",
+            "@vocab": "https://api.weather.gov/ontology#"
+        }
+    ],
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.abf8ed90a1a1996b0dbf98af785749b5194a112c.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -105.62,
+                            31.75
+                        ],
+                        [
+                            -105.81,
+                            31.68
+                        ],
+                        [
+                            -105.99,
+                            31.9
+                        ],
+                        [
+                            -105.69,
+                            32.01
+                        ],
+                        [
+                            -105.62,
+                            31.75
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.abf8ed90a1a1996b0dbf98af785749b5194a112c.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.abf8ed90a1a1996b0dbf98af785749b5194a112c.001.1",
+                "areaDesc": "Otero Mesa; Northern Hudspeth Highlands/Hueco Mountains",
+                "geocode": {
+                    "SAME": [
+                        "035035",
+                        "048141",
+                        "048229"
+                    ],
+                    "UGC": [
+                        "NMZ417",
+                        "TXZ420"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/NMZ417",
+                    "https://api.weather.gov/zones/forecast/TXZ420"
+                ],
+                "references": [],
+                "sent": "2026-09-16T17:46:00-06:00",
+                "effective": "2026-09-16T17:46:00-06:00",
+                "onset": "2026-09-16T17:46:00-06:00",
+                "expires": "2026-09-16T18:15:00-06:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS El Paso Tx/Santa Teresa NM",
+                "headline": "Special Weather Statement issued September 16 at 5:46PM MDT by NWS El Paso Tx/Santa Teresa NM",
+                "description": "At 545 PM MDT, Doppler radar was tracking a strong thunderstorm 11\nmiles east of Desert Haven, moving north at 25 mph.\n\nHAZARD...Wind gusts up to 40 mph and half inch hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects. Minor hail damage to vegetation is\npossible.\n\nLocations impacted include...\nLoma Linda and Desert Haven.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.\n\nTorrential rainfall is also occurring with this storm and may lead to\nlocalized flooding. Do not drive your vehicle through flooded\nroadways.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSEPZ"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS84 KEPZ 162346"
+                    ],
+                    "NWSheadline": [
+                        "A STRONG THUNDERSTORM WILL IMPACT SOUTHERN OTERO AND NORTHWESTERN HUDSPETH COUNTIES THROUGH 615 PM MDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-16T23:45:00-00:00...storm...157DEG...22KT...31.79,-105.75"
+                    ],
+                    "maxWindGust": [
+                        "40 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.50"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1c95109ed9f19d6dbcff0b1e3fa0289701c6d18c.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -106.05,
+                            32
+                        ],
+                        [
+                            -106,
+                            31.99
+                        ],
+                        [
+                            -106,
+                            31.92
+                        ],
+                        [
+                            -106.02,
+                            31.92
+                        ],
+                        [
+                            -106.08,
+                            31.96
+                        ],
+                        [
+                            -106.08,
+                            32
+                        ],
+                        [
+                            -106.05,
+                            32
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1c95109ed9f19d6dbcff0b1e3fa0289701c6d18c.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.1c95109ed9f19d6dbcff0b1e3fa0289701c6d18c.001.1",
+                "areaDesc": "El Paso, TX",
+                "geocode": {
+                    "SAME": [
+                        "048141"
+                    ],
+                    "UGC": [
+                        "TXC141"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC141"
+                ],
+                "references": [],
+                "sent": "2026-09-16T17:39:00-06:00",
+                "effective": "2026-09-16T17:39:00-06:00",
+                "onset": "2026-09-16T17:39:00-06:00",
+                "expires": "2026-09-16T19:45:00-06:00",
+                "ends": "2026-09-16T19:45:00-06:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Flood Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS El Paso Tx/Santa Teresa NM",
+                "headline": "Flood Advisory issued September 16 at 5:39PM MDT until September 16 at 7:45PM MDT by NWS El Paso Tx/Santa Teresa NM",
+                "description": "* WHAT...Flooding caused by excessive rainfall is expected.\n\n* WHERE...Northeastern El Paso County in western Texas...\n\n* WHEN...Until 745 PM MDT.\n\n* IMPACTS...Minor flooding in low-lying and poor drainage areas.\nDangerous flows over low-water crossings. Water over roadways.\nOverflowing poor drainage areas. Some low-water crossings may\nbecome impassable.\n\n* ADDITIONAL DETAILS...\n- At 539 PM MDT, Doppler radar indicated heavy rain due to\nthunderstorms. Minor flooding is ongoing or expected to begin\nshortly in the advisory area. Up to 0.5 inches of rain have\nfallen.\n- Some locations that will experience flooding include...\nMainly rural areas of Northeastern El Paso County.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nBe aware of your surroundings and do not drive on flooded roads.\n\nStay away or be swept away. River banks and culverts can become\nunstable and unsafe.\n\nRemain alert for flooding even in locations not receiving rain.\nArroyos, streams, and rivers can become raging killer currents in a\nmatter of minutes, even from distant rainfall.\n\nFlooding is occurring or is imminent. It is important to know where\nyou are relative to streams, rivers, or creeks which can become\nkillers in heavy rains. Campers and hikers should avoid streams or\ncreeks.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSEPZ"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS84 KEPZ 162339"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD ADVISORY IN EFFECT UNTIL 745 PM MDT THIS EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KEPZ.FA.Y.0288.260916T2339Z-260917T0145Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-16T19:45:00-06:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "FAY"
+                    ]
+                },
+                "replacedBy": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4580a09a89a29982a52cede994268cca42cf3168.001.1",
+                "replacedAt": "2026-09-16T19:40:00-06:00"
+            }
+        }
+    ],
+    "title": "Watches, warnings, and advisories issued between Wed, Sep 16, 2026 12:00:00 AM +0000 and Thu, Sep 17, 2026 12:00:00 AM +0000 for Texas",
+    "updated": "2026-09-17T01:41:13+00:00",
+    "pagination": {
+        "next": "https://api.weather.gov/alerts?area%5B0%5D=TX&end=2026-09-17T00:00:00Z&limit=2&start=2026-09-16T00:00:00Z&status%5B0%5D=actual&cursor=eyJ0IjoxNzg5NjAxOTQwLCJpIjoidXJuOm9pZDoyLjQ5LjAuMS44NDAuMC4xYzk1MTA5ZWQ5ZjE5ZDZkYmNmZjBiMWUzZmEwMjg5NzAxYzZkMThjLjAwMS4xIn0%3D"
+    }
+}

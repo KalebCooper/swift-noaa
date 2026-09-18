@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- Alert history on `/alerts` through validated `AlertQuery` values combining the active-alert
+  filter with a time window, page size, and initial cursor, with one-page methods, reusable
+  requests, typed endpoints, and lazy `AlertPageSequence` and `AlertSequence` traversal.
 - Lazy active-alert page and feature sequences for existing filters and specialized requests, preserving
   one-page async methods, canonical redirect validation, and GeoJSON feature metadata.
 - Validated observation-station queries with identifiers, state codes, page limits, and initial cursors.

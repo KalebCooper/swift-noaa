@@ -27,6 +27,21 @@ struct AlertResponseTests {
         == alerts)
   }
 
+  @Test("Alert history decodes its features in service order with its continuation link")
+  func alertHistoryDecodesItsFeaturesInServiceOrderWithItsContinuationLink() throws {
+    let history = try JSONDecoder().decode(
+      FeatureCollection<WeatherAlert>.self, from: Fixture.alertHistory.data())
+    #expect(
+      history.features.map(\.properties.event) == ["Special Weather Statement", "Flood Advisory"])
+    #expect(history.features.allSatisfy { $0.properties.status == .actual })
+    #expect(
+      history.pagination?.next
+        == "https://api.weather.gov/alerts?area%5B0%5D=TX&end=2026-09-17T00:00:00Z&limit=2"
+        + "&start=2026-09-16T00:00:00Z&status%5B0%5D=actual&cursor=eyJ0IjoxNzg5NjAxOTQwLCJpIjoidXJu"
+        + "Om9pZDoyLjQ5LjAuMS44NDAuMC4xYzk1MTA5ZWQ5ZjE5ZDZkYmNmZjBiMWUzZmEwMjg5NzAxYzZkMThjLjAwMS4xIn0%3D"
+    )
+  }
+
   @Test("Alert timestamps retain milliseconds when encoded")
   func alertTimestampsRetainMillisecondsWhenEncoded() throws {
     var alert = try JSONDecoder().decode(Feature<WeatherAlert>.self, from: Fixture.alert.data())

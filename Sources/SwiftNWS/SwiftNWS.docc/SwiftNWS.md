@@ -28,9 +28,10 @@ old observations, try fallback stations, or fetch more station pages. Coordinate
 ``PointCache``; direct endpoint requests bypass it.
 
 Twelve-hour and hourly forecasts follow the point's links. Active alerts support coordinates and
-provider filters. Active-alert and station-directory page and feature sequences follow validated
-continuation links on demand. The station directory is the canonical implementation. Existing
-single-page methods do not automatically paginate.
+provider filters, and alert history adds a time window, page size, and cursor. Active-alert,
+alert-history, and station-directory page and feature sequences follow validated continuation links
+on demand. The station directory is the canonical implementation. Existing single-page methods do
+not automatically paginate.
 
 ## Topics
 
@@ -38,6 +39,8 @@ single-page methods do not automatically paginate.
 
 - ``ActiveAlertPageSequence``
 - ``ActiveAlertSequence``
+- ``AlertPageSequence``
+- ``AlertSequence``
 - ``NWSClient``
 - ``NWSConfiguration``
 - ``NWSError``
@@ -48,6 +51,7 @@ single-page methods do not automatically paginate.
 ### Request execution
 
 - <doc:ActiveAlerts>
+- <doc:AlertHistory>
 - <doc:Forecasts>
 - <doc:ObservationStations>
 - <doc:PaginatingCollections>

@@ -16,6 +16,10 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Only requests returning WeatherAlert carry this resolution.
     case alert(identifier: String)
 
+    /// Retrieve an alert-history page, with continuation semantics in sequence executors.
+    /// Only requests returning FeatureCollection<WeatherAlert> carry this resolution.
+    case alerts(AlertQuery)
+
     /// Send one endpoint and decode its body directly as `Response`.
     case endpoint(Endpoint<Response>)
 
@@ -100,6 +104,13 @@ extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
   /// - Returns: A reusable request for a GeoJSON collection.
   public static func activeAlerts(matching filter: ActiveAlertFilter = .init()) -> Self {
     Self(resolution: .activeAlerts(.activeAlerts(matching: filter)))
+  }
+
+  /// Describes an alert-history query with optional continuation.
+  /// - Parameter query: The validated filters, window, page size, and initial cursor.
+  /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
+  public static func alerts(matching query: AlertQuery) -> Self {
+    Self(resolution: .alerts(query))
   }
 }
 

@@ -56,7 +56,9 @@ never prefetch, and each iterator starts an independent traversal. Item sequence
 page before asking for another. Breaking either loop prevents the next request.
 
 Active alerts offer the same two views through ``NWSClient/activeAlertPages(matching:)`` and the
-synchronous `activeAlerts(matching:)` overload. Await the other overload to retrieve one page.
+synchronous `activeAlerts(matching:)` overload, and alert history through
+``NWSClient/alertPages(matching:)`` and the synchronous `alerts(matching:)` overload. Await the
+other overload to retrieve one page.
 
 ## Handle cancellation and partial results
 
@@ -91,5 +93,6 @@ deduplicate, or buffer a complete result set. NWS does not promise that a traver
 snapshot, so records can change, appear, or repeat while later pages are being fetched. Apply any
 application-specific identity or snapshot policy after retrieval.
 
-Only station-directory and active-alert collections currently opt into continuation. Other endpoint
-groups remain single page until their provider continuation behavior is implemented and documented.
+Only station-directory, active-alert, and alert-history collections currently opt into continuation.
+Other endpoint groups remain single page until their provider continuation behavior is implemented
+and documented.

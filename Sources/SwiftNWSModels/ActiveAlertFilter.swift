@@ -101,6 +101,12 @@ public struct ActiveAlertFilter: Hashable, Sendable {
   }
 
   var query: String {
+    let values = queryValues
+    return URLComponents.nwsQuery(
+      values.keys.sorted().map { URLQueryItem(name: $0, value: values[$0]) })
+  }
+
+  var queryValues: [String: String] {
     var values: [String: String] = [:]
     func add(_ key: String, _ items: [String]) {
       if !items.isEmpty { values[key] = items.joined(separator: ",") }
@@ -121,8 +127,6 @@ public struct ActiveAlertFilter: Hashable, Sendable {
     case .zones(let zones): add("zone", zones)
     case nil: break
     }
-    var components = URLComponents()
-    components.queryItems = values.keys.sorted().map { URLQueryItem(name: $0, value: values[$0]) }
-    return components.percentEncodedQuery.map { $0.isEmpty ? "" : "?" + $0 } ?? ""
+    return values
   }
 }

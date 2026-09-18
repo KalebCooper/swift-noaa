@@ -15,6 +15,10 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// One `/alerts/{id}` response covering typed CAP codes and optional fields.
   case alert = "Alert"
 
+  /// `/alerts?area=TX&end=2026-09-17T00:00:00Z&limit=2&start=2026-09-16T00:00:00Z&status=actual`,
+  /// one page of Texas alert history with its continuation link.
+  case alertHistory = "AlertHistory"
+
   /// `/alerts/active/area/TX`, covering the typed Texas area path and CAP codes.
   case areaAlerts = "AreaAlerts"
 

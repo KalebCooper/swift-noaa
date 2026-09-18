@@ -35,21 +35,16 @@ public struct NWSClient: Sendable {
     self.client = HTTPClient(baseURL: Self.baseURL, redirectPolicy: .never, transport: transport)
   }
 
-  /// Creates a lazy page traversal for a reusable active-alert request.
-  /// - Parameter request: A library active-alert query or a custom one-page endpoint request.
+  /// Creates a lazy page traversal for a reusable alert request.
+  /// - Parameter request: A library active-alert or alert-history request, which follows links,
+  ///   or a custom one-page endpoint request.
   /// - Returns: An independent, demand-driven page sequence.
   public func activeAlertPages(
     for request: WeatherRequest<FeatureCollection<WeatherAlert>>
   ) -> ActiveAlertPageSequence {
-    switch request.resolution {
-    case .activeAlerts(let endpoint):
-      ActiveAlertPageSequence(client: self, endpoint: endpoint, followsLinks: true)
-    case .endpoint(let endpoint):
-      ActiveAlertPageSequence(client: self, endpoint: endpoint, followsLinks: false)
-    default:
-      preconditionFailure(
-        "Only active-alert and endpoint resolutions can describe alert collections.")
-    }
+    let collection = alertCollection(for: request)
+    return ActiveAlertPageSequence(
+      client: self, endpoint: collection.endpoint, followsLinks: collection.followsLinks)
   }
 
   /// Creates a lazy page traversal for supported active-alert filters.
@@ -133,6 +128,52 @@ public struct NWSClient: Sendable {
   /// - Throws: Any ``NWSError`` from ``value(for:)``.
   public func alert(identifier: String) async throws(NWSError) -> WeatherAlert {
     try await value(for: .alert(identifier: identifier))
+  }
+
+  /// Creates a lazy page traversal for a reusable alert request.
+  /// - Parameter request: A library alert-history or active-alert request, which follows links,
+  ///   or a custom one-page endpoint request.
+  /// - Returns: An independent, demand-driven page sequence.
+  public func alertPages(
+    for request: WeatherRequest<FeatureCollection<WeatherAlert>>
+  ) -> AlertPageSequence {
+    let collection = alertCollection(for: request)
+    return AlertPageSequence(
+      client: self, endpoint: collection.endpoint, followsLinks: collection.followsLinks)
+  }
+
+  /// Creates a lazy page traversal for an alert-history query.
+  /// - Parameter query: The validated filters, window, page size, and initial cursor.
+  /// - Returns: Alert pages in service order.
+  public func alertPages(matching query: AlertQuery) -> AlertPageSequence {
+    alertPages(for: .alerts(matching: query))
+  }
+
+  /// Creates a lazy feature traversal for a reusable alert request.
+  /// - Parameter request: A library alert-history or active-alert request, which follows links,
+  ///   or a custom one-page endpoint request.
+  /// - Returns: Alert features with their GeoJSON metadata.
+  public func alerts(
+    for request: WeatherRequest<FeatureCollection<WeatherAlert>>
+  ) -> AlertSequence {
+    AlertSequence(pages: alertPages(for: request))
+  }
+
+  /// Creates a lazy feature traversal for an alert-history query.
+  /// - Parameter query: The validated filters, window, page size, and initial cursor.
+  /// - Returns: Alert features in service order. Use the async overload to retrieve one page.
+  public func alerts(matching query: AlertQuery) -> AlertSequence {
+    alerts(for: .alerts(matching: query))
+  }
+
+  /// Retrieves one page of alert history.
+  /// - Parameter query: The validated filters, window, page size, and initial cursor.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func alerts(matching query: AlertQuery) async throws(NWSError)
+    -> FeatureCollection<WeatherAlert>
+  {
+    try await value(for: .alerts(matching: query))
   }
 
   /// Retrieves the twelve-hour forecast for a coordinate.
@@ -270,6 +311,9 @@ public struct NWSClient: Sendable {
       guard !identifier.isEmpty else { throw .invalidAlertIdentifier(identifier) }
       let endpoint = Endpoint.alert(identifier: identifier)
       return try await send(Endpoint<Feature<Value>>(path: endpoint.path)).properties
+    case .alerts(let query):
+      let endpoint = Endpoint.alerts(matching: query)
+      return try await send(Endpoint<Value>(path: endpoint.path))
     case .endpoint(let endpoint):
       return try await send(endpoint)
     case .forecast(let location, let options), .hourlyForecast(let location, let options):
@@ -313,6 +357,22 @@ public struct NWSClient: Sendable {
     case .observationStations(let query):
       let endpoint = Endpoint.observationStations(query: query)
       return try await send(Endpoint<Value>(path: endpoint.path))
+    }
+  }
+
+  private func alertCollection(
+    for request: WeatherRequest<FeatureCollection<WeatherAlert>>
+  ) -> (endpoint: Endpoint<FeatureCollection<WeatherAlert>>, followsLinks: Bool) {
+    switch request.resolution {
+    case .activeAlerts(let endpoint):
+      (endpoint, true)
+    case .alerts(let query):
+      (.alerts(matching: query), true)
+    case .endpoint(let endpoint):
+      (endpoint, false)
+    default:
+      preconditionFailure(
+        "Only active-alert, alert-history, and endpoint resolutions describe alert collections.")
     }
   }
 

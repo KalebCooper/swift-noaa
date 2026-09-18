@@ -42,6 +42,15 @@ extension Endpoint where Response == FeatureCollection<WeatherAlert> {
   }
 }
 
+extension Endpoint where Response == FeatureCollection<WeatherAlert> {
+  /// Lists alert history with the API's supported filters, time window, page size, and cursor.
+  /// - Parameter query: The validated filters, window, page size, and initial cursor.
+  /// - Returns: The GeoJSON collection endpoint, which may redirect to a canonical URL.
+  public static func alerts(matching query: AlertQuery) -> Self {
+    Self(path: "/alerts" + query.query)
+  }
+}
+
 extension Endpoint where Response == Feature<WeatherAlert> {
   /// Retrieves one alert by its provider identifier.
   /// - Parameter identifier: A nonempty alert identifier, encoded as one path segment.

@@ -55,10 +55,6 @@ public struct ObservationStationQuery: Hashable, Sendable {
       items.append(
         URLQueryItem(name: "state", value: states.map(\.rawValue).joined(separator: ",")))
     }
-    var components = URLComponents()
-    components.queryItems = items
-    return components.percentEncodedQuery.map {
-      "?" + $0.split(separator: "+", omittingEmptySubsequences: false).joined(separator: "%2B")
-    } ?? ""
+    return URLComponents.nwsQuery(items)
   }
 }

@@ -67,7 +67,8 @@ Known CAP codes use typed open values with named constants, and unknown raw valu
 Nullable dates,
 instructions, and headlines remain optional. Parameters and event codes retain their JSON values.
 Awaited queries retain service order and stop after one returned collection. Page and feature
-sequences follow links only on demand. CAP XML, Atom, and alert history are outside this release.
+sequences follow links only on demand. Alert history with a time window is described in
+<doc:AlertHistory>. CAP XML and Atom are outside this release.
 
 ## Redirect policy
 
