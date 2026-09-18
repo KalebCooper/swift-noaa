@@ -52,6 +52,14 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// by age, or try another station on failure.
     case latestObservation(ObservationSource)
 
+    /// Fetch a point, follow its observation-stations link, and return that one page.
+    ///
+    /// Only requests returning FeatureCollection<ObservationStation> carry this resolution. The
+    /// page's continuation link is never followed, in value or sequence execution: the service's
+    /// link for this list names every station for the grid again at a later offset and leads only
+    /// to empty pages.
+    case nearbyObservationStations(location: WeatherCoordinate)
+
     /// Retrieve the observation a station made at an exact instant and return its GeoJSON
     /// properties.
     ///
@@ -105,6 +113,20 @@ extension WeatherRequest where Response == ObservationStation {
 }
 
 extension WeatherRequest where Response == FeatureCollection<ObservationStation> {
+  /// Describes the observation stations the service lists for a coordinate's grid cell.
+  ///
+  /// The list is one page in the service's order, which does not guarantee distance order.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.observationStations(near: home)
+  /// ```
+  ///
+  /// - Parameter location: The validated coordinate.
+  /// - Returns: A reusable request; value and sequence execution both return one page.
+  public static func observationStations(near location: WeatherCoordinate) -> Self {
+    Self(resolution: .nearbyObservationStations(location: location))
+  }
+
   /// Describes a station-directory query with optional continuation.
   /// - Parameter query: The validated filters and initial cursor.
   /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.

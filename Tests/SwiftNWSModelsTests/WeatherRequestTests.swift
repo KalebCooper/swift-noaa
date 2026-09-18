@@ -37,6 +37,17 @@ struct WeatherRequestTests {
     #expect(WeatherRequest.forecastGrid(for: home) != .forecastGrid(for: other))
   }
 
+  @Test("A nearby station request describes its coordinate without I/O")
+  func aNearbyStationRequestDescribesItsCoordinateWithoutIO() throws {
+    let home = try WeatherCoordinate(latitude: 30.26721, longitude: -97.74306)
+    let request = WeatherRequest.observationStations(near: home)
+    guard case .nearbyObservationStations(let location) = request.resolution else {
+      Issue.record("Expected a nearby-station resolution")
+      return
+    }
+    #expect(location == home)
+  }
+
   @Test("A nearest observation exposes its normalized coordinate")
   func aNearestObservationExposesItsNormalizedCoordinate() throws {
     let home = try WeatherCoordinate(latitude: 30.26721, longitude: -97.74306)

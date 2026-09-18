@@ -8,6 +8,11 @@ All notable changes are documented here, following
 
 ### Added
 
+- The observation stations near a coordinate as one page through `observationStations(near:)` and
+  a reusable `WeatherRequest.observationStations(near:)` request, alongside the existing
+  `Endpoint.observationStations(near:)`. Station page and feature sequences accept the request and
+  yield that one page; the page's continuation link is not followed because it does not continue
+  the list.
 - Raw forecast grid lookups through `forecastGrid(for:)`, a reusable
   `WeatherRequest.forecastGrid(for:)` request, and `Endpoint.forecastGrid(for:)`, which follows a
   point's grid data link. Grid lookups share the point cache; grids themselves are not cached.

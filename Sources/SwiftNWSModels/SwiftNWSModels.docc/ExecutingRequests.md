@@ -64,6 +64,11 @@ Constructing or inspecting it sends nothing.
 - An `observationStation` resolution contains a station identifier and is only created for
   ``ObservationStation`` responses. Reject an empty identifier, send
   `Endpoint.observationStation(identifier:)`, and return the feature's properties.
+- A `nearbyObservationStations` resolution contains a coordinate and is only created for
+  `FeatureCollection<ObservationStation>` responses. Resolve the point, validate its
+  observation-stations link with `Endpoint.observationStations(near:)`, and return that one page.
+  Do not follow its `pagination.next`, in one-page or sequence execution: for this list the link
+  names every station for the grid again at a later offset and leads only to empty pages.
 - For a coordinate source, send `Endpoint.point(for:)`, then validate and follow
   `point.properties.observationStations` using `Endpoint.observationStations(near:)`.
   Select the first station from the returned page; an empty list is an error. Retrieve its
@@ -89,7 +94,7 @@ if let pagination = page.pagination {
 ```
 
 The station-query, active-alert, alert-history, and observation-history resolutions support
-one-page execution and opt-in continuation. A custom endpoint resolution remains one HTTP operation.
+one-page execution and opt-in continuation. The nearby-station resolution is always one page. A custom endpoint resolution remains one HTTP operation.
 Queries validate limits from 1 through 500 and preserve an initial cursor; an observation query
 omits the limit when none is given and rejects an empty station identifier. Empty identifier and
 state arrays omit their filters, and window bounds are sent as whole-second ISO 8601 instants.

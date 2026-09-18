@@ -1,6 +1,7 @@
 # Reading observation stations
 
-Look up one station, or traverse the station directory one page or one feature at a time.
+Look up one station, list the stations near a coordinate, or traverse the station directory one
+page or one feature at a time.
 
 ## Look up one station
 
@@ -23,6 +24,31 @@ station, each present only when the service sends it. The direct endpoint keeps 
 An empty identifier throws ``NWSError/invalidStationIdentifier(_:)`` before any request, and an
 identifier the service does not recognize throws ``NWSError/problem(_:)`` with its `404` details. The
 identifier is encoded as one path segment and otherwise passed to the service unchanged.
+
+## List stations near a coordinate
+
+```swift
+let nearby = try await weather.observationStations(near: home)
+for station in nearby.features {
+  print(station.properties.stationIdentifier, station.properties.distance?.value ?? .nan)
+}
+
+let reusable = try await weather.value(for: .observationStations(near: home))
+for try await station in weather.observationStations(for: .observationStations(near: home)) {
+  print(station.properties.name)
+}
+```
+
+``NWSClient/observationStations(near:)`` resolves the coordinate's point, through ``PointCache``,
+and follows its validated `observationStations` link to `/gridpoints/{wfo}/{x},{y}/stations`. The
+result is one page in the service's order, which does not guarantee distance order. The direct
+endpoint is `Endpoint.observationStations(near:)`, which follows the link from a decoded point.
+
+The list is always one page. The page carries a continuation link, but that link does not continue
+the list: it names every station for the grid again at a later offset, and following it yields only
+empty pages, each with another link. The client therefore never follows it. Page and feature
+sequences built from `WeatherRequest.observationStations(near:)` resolve the point on the first read,
+yield that one page, and finish.
 
 ## Traverse the directory
 

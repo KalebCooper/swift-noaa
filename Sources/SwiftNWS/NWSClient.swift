@@ -342,7 +342,13 @@ public struct NWSClient: Sendable {
   }
 
   /// Creates a lazy page traversal for a reusable station request.
-  /// - Parameter request: A station query or a custom one-page endpoint request.
+  ///
+  /// A station-directory query follows continuation links. A nearby-station request resolves the
+  /// coordinate's point on the first read and yields exactly one page. A custom endpoint request
+  /// yields one page.
+  ///
+  /// - Parameter request: A station query, a nearby-station request, or a custom one-page endpoint
+  ///   request.
   /// - Returns: An independent, demand-driven page sequence.
   public func observationStationPages(
     for request: WeatherRequest<FeatureCollection<ObservationStation>>
@@ -350,12 +356,15 @@ public struct NWSClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       ObservationStationPageSequence(client: self, endpoint: endpoint, followsLinks: false)
+    case .nearbyObservationStations(let location):
+      ObservationStationPageSequence(client: self, nearby: location)
     case .observationStations(let query):
       ObservationStationPageSequence(
         client: self, endpoint: .observationStations(query: query), followsLinks: true)
     default:
       preconditionFailure(
-        "Only endpoint and station-query resolutions can describe station collections.")
+        "Only endpoint, nearby-station, and station-query resolutions describe station collections."
+      )
     }
   }
 
@@ -369,12 +378,37 @@ public struct NWSClient: Sendable {
   }
 
   /// Creates a lazy feature traversal for a reusable station request.
-  /// - Parameter request: A station query or a custom one-page endpoint request.
+  /// - Parameter request: A station query, which follows links, or a nearby-station or custom
+  ///   endpoint request, which yields one page.
   /// - Returns: Station features with their GeoJSON metadata.
   public func observationStations(
     for request: WeatherRequest<FeatureCollection<ObservationStation>>
   ) -> ObservationStationSequence {
     ObservationStationSequence(pages: observationStationPages(for: request))
+  }
+
+  /// Retrieves the observation stations the service lists for a coordinate's grid cell.
+  ///
+  /// An uncached coordinate sends two requests: the point, then its observation-stations link. The
+  /// result is one page in the service's order, which does not guarantee distance order. The page's
+  /// continuation link is not followed, because it does not continue this list: it names every
+  /// station for the grid again at a later offset and leads only to empty pages.
+  ///
+  /// ```swift
+  /// let stations = try await client.observationStations(near: home)
+  /// for station in stations.features {
+  ///   print(station.properties.stationIdentifier)
+  /// }
+  /// ```
+  ///
+  /// - Parameter location: The coordinate to look up.
+  /// - Returns: The station list, with each station's GeoJSON metadata.
+  /// - Throws: ``NWSError/invalidLink(_:)`` for a disallowed station link, or any error from
+  ///   ``send(_:)``.
+  public func observationStations(near location: WeatherCoordinate) async throws(NWSError)
+    -> FeatureCollection<ObservationStation>
+  {
+    try await value(for: .observationStations(near: location))
   }
 
   /// Creates a lazy feature traversal for a station query.
@@ -445,7 +479,8 @@ public struct NWSClient: Sendable {
   ///
   /// Endpoint requests decode directly as `Value`. Latest-observation requests resolve their
   /// source and return the observation's properties. Forecast and grid requests follow the point's
-  /// link and return the feature's properties. Station and timed-observation lookups send one
+  /// link and return the feature's properties. Nearby-station requests follow the point's station
+  /// link and return that one page. Station and timed-observation lookups send one
   /// request and return its properties. Coordinate resolutions reuse the point cache. Direct endpoints bypass it. No automatic pagination is applied.
   ///
   /// - Parameter request: The portable description to execute.
@@ -500,10 +535,7 @@ public struct NWSClient: Sendable {
       let identifier: String
       switch source {
       case .nearest(let location):
-        let point = try await point(for: location)
-        guard let stationsEndpoint = Endpoint.observationStations(near: point) else {
-          throw .invalidLink(point.observationStations)
-        }
+        let stationsEndpoint = try await nearbyObservationStationsEndpoint(for: location)
         guard let station = try await send(stationsEndpoint).features.first?.properties else {
           throw .noObservationStation
         }
@@ -518,6 +550,13 @@ public struct NWSClient: Sendable {
       let feature = try await send(
         Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path))
       return feature.properties
+    case .nearbyObservationStations(let location):
+      let endpoint = try await nearbyObservationStationsEndpoint(for: location)
+      // Only WeatherRequest<FeatureCollection<ObservationStation>> can be created with this
+      // resolution. The page's continuation link is not followed.
+      return try await send(
+        Endpoint<Value>(
+          accept: endpoint.accept, featureFlags: endpoint.featureFlags, path: endpoint.path))
     case .observation(let stationIdentifier, let timestamp):
       guard !stationIdentifier.isEmpty else {
         throw .invalidStationIdentifier(stationIdentifier)
@@ -558,6 +597,17 @@ public struct NWSClient: Sendable {
       preconditionFailure(
         "Only active-alert, alert-history, and endpoint resolutions describe alert collections.")
     }
+  }
+
+  /// Resolves a coordinate's point and validates its observation-stations link.
+  func nearbyObservationStationsEndpoint(
+    for location: WeatherCoordinate
+  ) async throws(NWSError) -> Endpoint<FeatureCollection<ObservationStation>> {
+    let point = try await point(for: location)
+    guard let endpoint = Endpoint.observationStations(near: point) else {
+      throw .invalidLink(point.observationStations)
+    }
+    return endpoint
   }
 
   func collectionPages<Properties: Decodable & Sendable>(

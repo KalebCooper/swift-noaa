@@ -12,7 +12,8 @@ send through any networking stack, plus an SDK that sends them for you through
 ## Status
 
 The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
-raw forecast grid data with every layer and parsed valid times, point caching, active alerts by coordinate, area, marine region, zone, and CAP filters, active alert
+raw forecast grid data with every layer and parsed valid times, the stations near a coordinate,
+point caching, active alerts by coordinate, area, marine region, zone, and CAP filters, active alert
 counts, the recognized alert event types, alert history with a time
 window, a station's observation history, one station's metadata, the observation a station made at
 an exact instant, and lazy station-directory, active-alert, alert-history,
@@ -267,6 +268,21 @@ or a stable snapshot, and the client does not deduplicate values, so stop when y
 station-query resolution. A custom `WeatherRequest(endpoint:)` remains one page. Single-page
 `value(for:)`, direct `send`, and nearest-observation lookups retain their existing scope.
 
+The stations the service lists for a coordinate's grid cell come from the point's station link:
+
+```swift
+let nearby = try await weather.observationStations(near: home)
+let reusable = WeatherRequest.observationStations(near: home)
+for try await station in weather.observationStations(for: reusable) {
+  print(station.properties.stationIdentifier)
+}
+```
+
+This list is always one page, in the service's order, which does not guarantee distance order. Its
+continuation link names every station for the grid again at a later offset and leads only to empty
+pages, so neither the one-page methods nor the sequences follow it. The point comes from the point
+cache.
+
 One station's metadata comes from `/stations/{stationId}` in one request:
 
 ```swift
@@ -284,10 +300,10 @@ problem.
 
 ### Point caching
 
-Coordinate forecasts, forecast grids, and observations share a `PointCache`: up to 128 mappings for 24 hours, with
-least-recently-used eviction and monotonic expiry. Client copies share it. Forecast, grid, and
-observation responses are fetched each time; direct `send` calls bypass the point cache. Concurrent misses may
-make independent requests.
+Coordinate forecasts, forecast grids, nearby station lists, and observations share a `PointCache`:
+up to 128 mappings for 24 hours, with least-recently-used eviction and monotonic expiry. Client
+copies share it. Forecast, grid, and observation responses are fetched each time; direct `send`
+calls bypass the point cache. Concurrent misses may make independent requests.
 
 ```swift
 weather.pointCache?.removeAll()
