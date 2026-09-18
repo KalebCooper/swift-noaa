@@ -33,6 +33,12 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Only requests returning WeatherForecast carry this resolution.
     case forecast(location: WeatherCoordinate, options: ForecastOptions)
 
+    /// Fetch a point, follow its raw forecast grid data link, and return the properties.
+    ///
+    /// Only requests returning ``ForecastGrid`` carry this resolution. The grid request sends no
+    /// units query or feature flags, and a disallowed link is a failure rather than a rebuilt path.
+    case forecastGrid(location: WeatherCoordinate)
+
     /// Fetch a point, follow its hourly forecast link with the options, and return the properties.
     /// Only requests returning WeatherForecast carry this resolution.
     case hourlyForecast(location: WeatherCoordinate, options: ForecastOptions)
@@ -224,6 +230,23 @@ extension WeatherRequest where Response == WeatherForecast {
     for location: WeatherCoordinate, options: ForecastOptions = .init()
   ) -> Self {
     Self(resolution: .hourlyForecast(location: location, options: options))
+  }
+}
+
+extension WeatherRequest where Response == ForecastGrid {
+  /// Describes the raw forecast grid data for a coordinate.
+  ///
+  /// Executing the request resolves the coordinate's point and follows its grid data link. The
+  /// grid is never cached; the point is, by the SDK's point cache.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.forecastGrid(for: home)
+  /// ```
+  ///
+  /// - Parameter location: The validated coordinate.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func forecastGrid(for location: WeatherCoordinate) -> Self {
+    Self(resolution: .forecastGrid(location: location))
   }
 }
 

@@ -38,6 +38,30 @@ struct EndpointTests {
         == "/stations/A%2FB?cursor=a%2Bb")
   }
 
+  @Test("A grid data link from another origin is refused")
+  func aGridDataLinkFromAnotherOriginIsRefused() throws {
+    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+    point.forecastGridData = try #require(URL(string: "https://example.com/gridpoints/EWX/156,91"))
+    #expect(Endpoint.forecastGrid(for: point) == nil)
+  }
+
+  @Test("A grid data link keeps its encoded query")
+  func aGridDataLinkKeepsItsEncodedQuery() throws {
+    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+    point.forecastGridData = try #require(
+      URL(string: "https://api.weather.gov/gridpoints/EWX/156,91?future=a%2Bb"))
+    #expect(Endpoint.forecastGrid(for: point)?.path == "/gridpoints/EWX/156,91?future=a%2Bb")
+  }
+
+  @Test("The grid endpoint follows the point's grid data link")
+  func theGridEndpointFollowsThePointsGridDataLink() throws {
+    let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    let endpoint = try #require(Endpoint.forecastGrid(for: point.properties))
+    #expect(endpoint.path == "/gridpoints/EWX/156,91")
+    #expect(endpoint.accept == .geoJSON)
+    #expect(endpoint.featureFlags.isEmpty)
+  }
+
   @Test("latestObservation(stationIdentifier:) names the station's latest observation")
   func latestObservationNamesTheStationsLatestObservation() {
     #expect(

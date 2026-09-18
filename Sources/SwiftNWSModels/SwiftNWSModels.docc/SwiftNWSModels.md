@@ -26,7 +26,11 @@ the station's elevation and link, the raw METAR message, 24-hour temperature ext
 three-, and six-hour precipitation, the decoded present weather as ``WeatherPhenomenon`` values,
 and the reported ``CloudLayer`` values. A field the service omits stays `nil`.
 
-Forecast validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
+``ForecastGrid`` decodes a grid cell's raw forecast data: every quantitative layer keyed by an
+open ``ForecastGridLayerName``, typed weather and hazards layers, and any layer or property the
+package does not know yet. See <doc:ForecastGridData>.
+
+Forecast and grid validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
 ``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
 one. The exact text stays available as `rawValue`.
 
@@ -93,6 +97,20 @@ not require full Foundation or a networking stack.
 - ``WeatherForecast``
 - ``WeatherObservation``
 - ``WeatherPhenomenon``
+
+### Forecast grids
+
+- <doc:ForecastGridData>
+- ``ForecastGrid``
+- ``ForecastGridLayer``
+- ``ForecastGridLayerName``
+- ``ForecastGridValue``
+- ``ForecastHazard``
+- ``ForecastWeather``
+- ``ForecastWeatherAttribute``
+- ``ForecastWeatherCoverage``
+- ``ForecastWeatherIntensity``
+- ``ForecastWeatherPhenomenon``
 
 ### Time intervals
 

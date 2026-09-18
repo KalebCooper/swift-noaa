@@ -137,6 +137,24 @@ extension Endpoint where Response == Feature<WeatherForecast> {
   }
 }
 
+extension Endpoint where Response == Feature<ForecastGrid> {
+  /// Follows a point's raw forecast grid data link, `/gridpoints/{wfo}/{x},{y}`.
+  ///
+  /// The endpoint asks for GeoJSON and sends no units query or feature flags: the service accepts
+  /// neither for grid data and answers a `units` query with `400`. The link's path is kept exactly;
+  /// the office identifier in it is case sensitive.
+  ///
+  /// ```swift
+  /// Endpoint.forecastGrid(for: point)?.path  // "/gridpoints/EWX/156,91"
+  /// ```
+  ///
+  /// - Parameter point: The point whose grid data to retrieve.
+  /// - Returns: The endpoint, or `nil` when the link is rejected by ``init(accept:featureFlags:link:)-(_,[NWSFeatureFlag],_)``.
+  public static func forecastGrid(for point: Point) -> Self? {
+    Self(link: point.forecastGridData)
+  }
+}
+
 extension Endpoint where Response == Feature<WeatherObservation> {
   /// The most recent observation from a station, `/stations/{stationId}/observations/latest`.
   ///

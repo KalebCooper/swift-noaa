@@ -31,7 +31,8 @@ latest observation. The service does not guarantee distance ordering. The client
 old observations, try fallback stations, or fetch more station pages. Coordinate lookups share
 ``PointCache``; direct endpoint requests bypass it.
 
-Twelve-hour and hourly forecasts follow the point's links. Active alerts support coordinates,
+Twelve-hour and hourly forecasts follow the point's links, and
+``NWSClient/forecastGrid(for:)`` follows its raw grid data link to every forecast layer. Active alerts support coordinates,
 areas, marine regions, zones, and provider filters, with a national count and the list of
 recognized event types, and alert history adds a time window, page size, and cursor. Observation history
 reads a station's past observations over a window. ``NWSClient/observationStation(identifier:)`` reads
@@ -62,6 +63,7 @@ automatically paginate.
 
 - <doc:ActiveAlerts>
 - <doc:AlertHistory>
+- <doc:ForecastGrids>
 - <doc:Forecasts>
 - <doc:ObservationHistory>
 - <doc:ObservationStations>

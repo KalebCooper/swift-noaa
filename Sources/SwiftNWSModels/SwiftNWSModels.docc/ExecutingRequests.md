@@ -39,6 +39,10 @@ Constructing or inspecting it sends nothing.
 - Forecast resolutions contain a coordinate and options. Resolve the point, validate its forecast
   or hourly link using the corresponding endpoint factory, then return the feature's properties.
   Preserve the endpoint's units query and feature flags.
+- A `forecastGrid` resolution contains a coordinate and is only created for ``ForecastGrid``
+  responses. Resolve the point, validate its grid data link with `Endpoint.forecastGrid(for:)`,
+  send it without a units query or feature flags, and return the feature's properties. A disallowed
+  link is a failure; do not rebuild the path.
 - An alert resolution contains an identifier. Reject an empty identifier, send `Endpoint.alert(identifier:)`,
   and return the feature's properties.
 - Active-alert factories use an `activeAlerts` resolution containing the typed initial endpoint.
@@ -122,4 +126,4 @@ The SDK remembers up to 128 point mappings for 24 hours with least-recently-used
 Expiry uses a monotonic clock. Client copies share the cache, which callers can clear or disable.
 Only successful coordinate resolutions populate it; direct endpoint requests bypass it.
 This is SDK policy rather than part of request construction. A custom executor chooses its own
-cache policy. Forecast and observation responses are not cached by the point cache.
+cache policy. Forecast, grid, and observation responses are not cached by the point cache.

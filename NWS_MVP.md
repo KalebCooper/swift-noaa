@@ -9,7 +9,8 @@ and signatures are settled when each piece is built, against the live OpenAPI sp
 The 0.1.0 implementation includes observations, linked twelve-hour and hourly forecasts,
 bounded point caching, active-alert filters and canonical area, marine region, and zone endpoints,
 individual alerts, active alert counts, the recognized alert event types, station metadata, the
-observation at an exact instant, and WMO measurement conversion. The station directory, active alerts, alert history, and observation
+observation at an exact instant, raw forecast grid data with every layer and parsed valid times, the
+stations listed for a coordinate's grid cell as one page, and WMO measurement conversion. The station directory, active alerts, alert history, and observation
 history provide lazy page and item sequences while preserving single-page endpoint and request
 execution. Every HTTP operation has an
 endpoint, reusable request, and client surface. Recorded fixtures, tests, both DocC catalogs, and the
@@ -92,7 +93,9 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
 - **Points:** `/points/{latitude},{longitude}/stations` and `/points/{latitude},{longitude}/radio`.
 - **Grid data:** raw `/gridpoints/{wfo}/{x},{y}` with every layer, each value carrying its ISO 8601
   `validTime` interval (`2026-09-13T12:00:00+00:00/PT3H`) parsed into a start and a duration, plus
-  `/gridpoints/{wfo}/{x},{y}/stations`.
+  `/gridpoints/{wfo}/{x},{y}/stations`. Built. The grid station list is one page: its
+  `pagination.next` names every station for the grid again at a later offset and leads only to empty
+  pages, so it does not continue the list and is never followed.
 - **Stations:** `/stations` and `/stations/{stationId}`, observation history
   (`/stations/{stationId}/observations` with `start`, `end`, and `limit`), and
   `/stations/{stationId}/observations/{time}`. Observation history ships with single-page endpoint
@@ -110,6 +113,7 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
 - **Pagination:** verified cursor-based collections follow `pagination.next` through lazy page and
   item sequences while retaining single-page access. Products, zones, and other lists known only to
   accept `limit` remain outside this claim until their provider continuation behavior is verified.
+  Grid station lists are one page, because their continuation link is verified not to continue them.
 - **Media types:** CAP XML and Atom for alerts, and `application/pdf` for office briefings, each
   either supported or listed as not supported. No endpoint is left in an unstated state.
 - **Out of scope, stated as such:** `/radar`, `/aviation` (SIGMETs, center weather advisories,

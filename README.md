@@ -12,14 +12,14 @@ send through any networking stack, plus an SDK that sends them for you through
 ## Status
 
 The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
-point caching, active alerts by coordinate, area, marine region, zone, and CAP filters, active alert
+raw forecast grid data with every layer and parsed valid times, point caching, active alerts by coordinate, area, marine region, zone, and CAP filters, active alert
 counts, the recognized alert event types, alert history with a time
 window, a station's observation history, one station's metadata, the observation a station made at
 an exact instant, and lazy station-directory, active-alert, alert-history,
 and observation-history pagination. WMO readings can be converted with Foundation. The release is
 not tagged yet.
 
-Raw grid data, general zone and office endpoints, and retries are outside this release.
+General zone and office endpoints, and retries, are outside this release.
 
 ## Usage
 
@@ -81,12 +81,50 @@ let appOptions = ForecastOptions(units: AppUnits.metric)
 ```
 
 Both methods follow the point's service links. `WeatherForecast` retains periods in service order,
-ISO 8601 dates, and the original validity interval. Temperature and wind retain either their legacy
+ISO 8601 dates, and its validity interval as a `ValidTimeInterval`. Temperature and wind retain either their legacy
 values or quantitative objects, including ranges and missing measurements. No conversion or period
 filtering is implicit. Direct `Endpoint.forecast(for:options:)` and
 `Endpoint.hourlyForecast(for:options:)` factories accept a decoded point. Forecast units,
 feature flags, temperature units and trends, wind directions, and measurement quality flags are
 typed open values: known schema codes have named static members, while `rawValue` retains additions.
+
+### Forecast grids
+
+```swift
+let grid = try await weather.forecastGrid(for: home)
+for entry in grid[.temperature]?.values ?? [] {
+  print(entry.validTime.start, entry.validTime.duration.hours, entry.value ?? .nan)
+}
+print(grid[.temperature]?.unitCode ?? "")  // "wmoUnit:degC"
+
+// Weather and hazards have their own types.
+for entry in grid.weather?.values ?? [] {
+  for weather in entry.value where weather.phenomenon != nil {
+    print(weather.coverage?.rawValue ?? "", weather.phenomenon?.rawValue ?? "")
+  }
+}
+let watches = grid.hazards?.values.flatMap(\.value) ?? []
+
+// The same lookup as a reusable request, or as one HTTP operation from a decoded point.
+let request = WeatherRequest.forecastGrid(for: home)
+let point = try await weather.send(.point(for: home)).properties
+if let endpoint = Endpoint.forecastGrid(for: point) {
+  let feature = try await weather.send(endpoint)  // Feature<ForecastGrid>
+}
+```
+
+`forecastGrid(for:)` follows the point's `forecastGridData` link to `/gridpoints/{wfo}/{x},{y}`.
+Every quantitative layer is keyed by an open `ForecastGridLayerName`: the named members cover the
+service's schema, and a layer the service adds later is kept under its own name. A layer the service
+omits has no entry, while a layer it sends with no values is present and empty. Values keep the
+service's order, intervals, and `null`s, and each layer keeps its WMO unit code, or `nil` when the
+service names none. Nothing is converted, sorted, or resampled; `quantity(unitCode:)` pairs a value
+with its unit for the WMO measurement adapter.
+
+Each `validTime` is a `ValidTimeInterval`: a start instant and an `ISO8601Duration` whose `end` is
+available when the duration has no years or months. The service takes no `units` query or feature
+flags for grid data, answers in the units each layer names, and updates the grid through the day;
+the client never caches it, and `updateTime` says when it last changed. Only GeoJSON is supported.
 
 ### Active alerts
 
@@ -246,9 +284,9 @@ problem.
 
 ### Point caching
 
-Coordinate forecasts and observations share a `PointCache`: up to 128 mappings for 24 hours, with
-least-recently-used eviction and monotonic expiry. Client copies share it. Forecast and observation
-responses are fetched each time; direct `send` calls bypass the point cache. Concurrent misses may
+Coordinate forecasts, forecast grids, and observations share a `PointCache`: up to 128 mappings for 24 hours, with
+least-recently-used eviction and monotonic expiry. Client copies share it. Forecast, grid, and
+observation responses are fetched each time; direct `send` calls bypass the point cache. Concurrent misses may
 make independent requests.
 
 ```swift

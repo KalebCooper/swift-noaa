@@ -15,6 +15,28 @@ struct WeatherRequestTests {
     #expect(actual == endpoint)
   }
 
+  @Test("A grid request describes its coordinate without I/O")
+  func aGridRequestDescribesItsCoordinateWithoutIO() throws {
+    let home = try WeatherCoordinate(latitude: 30.26721, longitude: -97.74306)
+    let request = WeatherRequest.forecastGrid(for: home)
+    guard case .forecastGrid(let location) = request.resolution else {
+      Issue.record("Expected a grid resolution")
+      return
+    }
+    #expect(location == home)
+  }
+
+  @Test("Equal grid requests are equal and hash alike")
+  func equalGridRequestsAreEqualAndHashAlike() throws {
+    let home = try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431)
+    let other = try WeatherCoordinate(latitude: 35.0844, longitude: -106.6504)
+    let requests: Set<WeatherRequest<ForecastGrid>> = [
+      .forecastGrid(for: home), .forecastGrid(for: home), .forecastGrid(for: other),
+    ]
+    #expect(requests.count == 2)
+    #expect(WeatherRequest.forecastGrid(for: home) != .forecastGrid(for: other))
+  }
+
   @Test("A nearest observation exposes its normalized coordinate")
   func aNearestObservationExposesItsNormalizedCoordinate() throws {
     let home = try WeatherCoordinate(latitude: 30.26721, longitude: -97.74306)

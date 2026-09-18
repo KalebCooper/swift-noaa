@@ -8,6 +8,14 @@ All notable changes are documented here, following
 
 ### Added
 
+- Raw forecast grid lookups through `forecastGrid(for:)`, a reusable
+  `WeatherRequest.forecastGrid(for:)` request, and `Endpoint.forecastGrid(for:)`, which follows a
+  point's grid data link. Grid lookups share the point cache; grids themselves are not cached.
+- `ForecastGrid`, the raw forecast grid data on `/gridpoints/{wfo}/{x},{y}`, with every
+  quantitative layer keyed by an extensible `ForecastGridLayerName`, `ForecastGridLayer` and
+  `ForecastGridValue` values over `ValidTimeInterval`s, typed `ForecastWeather` and `ForecastHazard`
+  layers with open weather codes, and preserved unknown layers and properties.
+  `ForecastGridValue.quantity(unitCode:)` pairs a value with its layer's unit.
 - `ValidTimeInterval` and `ISO8601Duration`, parsing ISO 8601 start-and-duration intervals into a
   start instant, the duration's calendar components, and an exact length and end when the duration
   has no years or months. The exact text is retained, and other interval forms are rejected.

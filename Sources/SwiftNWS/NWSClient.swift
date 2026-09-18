@@ -230,6 +230,25 @@ public struct NWSClient: Sendable {
     try await value(for: .forecast(for: location, options: options))
   }
 
+  /// Retrieves the raw forecast grid data for a coordinate.
+  ///
+  /// An uncached coordinate sends two requests: the point, then its grid data link. The point comes
+  /// from ``pointCache`` when it holds one; the grid itself is never cached, because the service
+  /// updates it through the day. Layers, values, and units are returned as the service sent them.
+  ///
+  /// ```swift
+  /// let grid = try await client.forecastGrid(for: home)
+  /// let temperatures = grid[.temperature]?.values ?? []
+  /// ```
+  ///
+  /// - Parameter location: The coordinate to look up.
+  /// - Returns: The grid cell's raw forecast data.
+  /// - Throws: ``NWSError/invalidLink(_:)`` for a disallowed grid data link, ``NWSError/problem(_:)``
+  ///   for a refusal with problem details, or any other error from ``send(_:)``.
+  public func forecastGrid(for location: WeatherCoordinate) async throws(NWSError) -> ForecastGrid {
+    try await value(for: .forecastGrid(for: location))
+  }
+
   /// Retrieves the hourly forecast for a coordinate.
   /// - Parameters:
   ///   - location: The coordinate to look up.
@@ -425,7 +444,8 @@ public struct NWSClient: Sendable {
   /// Executes a reusable weather request.
   ///
   /// Endpoint requests decode directly as `Value`. Latest-observation requests resolve their
-  /// source and return the observation's properties. Station and timed-observation lookups send one
+  /// source and return the observation's properties. Forecast and grid requests follow the point's
+  /// link and return the feature's properties. Station and timed-observation lookups send one
   /// request and return its properties. Coordinate resolutions reuse the point cache. Direct endpoints bypass it. No automatic pagination is applied.
   ///
   /// - Parameter request: The portable description to execute.
@@ -462,6 +482,16 @@ public struct NWSClient: Sendable {
         link = point.forecast
       }
       guard let endpoint else { throw .invalidLink(link) }
+      return try await send(
+        Endpoint<Feature<Value>>(
+          accept: endpoint.accept, featureFlags: endpoint.featureFlags, path: endpoint.path)
+      ).properties
+    case .forecastGrid(let location):
+      let point = try await point(for: location)
+      guard let endpoint = Endpoint.forecastGrid(for: point) else {
+        throw .invalidLink(point.forecastGridData)
+      }
+      // Only WeatherRequest<ForecastGrid> can be created with this resolution.
       return try await send(
         Endpoint<Feature<Value>>(
           accept: endpoint.accept, featureFlags: endpoint.featureFlags, path: endpoint.path)

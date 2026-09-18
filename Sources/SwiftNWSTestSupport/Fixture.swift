@@ -31,6 +31,14 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/gridpoints/EWX/156,91/forecast?units=us`, covering US units and legacy code values.
   case forecast = "Forecast"
 
+  /// `/gridpoints/EWX/156,91`, the raw forecast grid for downtown Austin that ``point`` links to,
+  /// with every layer the schema lists, empty layers, layers without a unit, and null values.
+  case forecastGrid = "ForecastGrid"
+
+  /// `/gridpoints/ABQ/80,183`, a raw forecast grid in New Mexico with a flood watch in its hazards
+  /// layer and heavy rain attributes in its weather layer.
+  case forecastGridHazards = "ForecastGridHazards"
+
   /// `/gridpoints/EWX/156,91/forecast?units=si`, covering SI units and both quantitative flags.
   case forecastQuantities = "ForecastQuantities"
 
