@@ -26,6 +26,10 @@ the station's elevation and link, the raw METAR message, 24-hour temperature ext
 three-, and six-hour precipitation, the decoded present weather as ``WeatherPhenomenon`` values,
 and the reported ``CloudLayer`` values. A field the service omits stays `nil`.
 
+Forecast validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
+``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
+one. The exact text stays available as `rawValue`.
+
 Quantities preserve their WMO unit code and nullable value without conversion. The optional
 `SwiftNWS` SDK adds Foundation measurement conversion and percentage fractions; these models do
 not require full Foundation or a networking stack.
@@ -89,6 +93,11 @@ not require full Foundation or a networking stack.
 - ``WeatherForecast``
 - ``WeatherObservation``
 - ``WeatherPhenomenon``
+
+### Time intervals
+
+- ``ISO8601Duration``
+- ``ValidTimeInterval``
 
 ### Pagination
 

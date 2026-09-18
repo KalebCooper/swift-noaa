@@ -17,7 +17,11 @@ struct ForecastResponseTests {
       .properties
     let first = try #require(forecast.periods.first)
     #expect(forecast.elevation == QuantitativeValue(unitCode: "wmoUnit:m", value: 155.1432))
-    #expect(forecast.validTimes == "2026-09-13T16:00:00+00:00/P7DT9H")
+    #expect(forecast.validTimes.rawValue == "2026-09-13T16:00:00+00:00/P7DT9H")
+    // 2026-09-13T16:00:00+00:00, lasting seven days and nine hours.
+    #expect(forecast.validTimes.start == Date(timeIntervalSince1970: 1_789_315_200))
+    #expect(forecast.validTimes.duration.days == 7)
+    #expect(forecast.validTimes.duration.hours == 9)
     #expect(first.endTime > first.startTime)
     #expect(first.temperatureTrend == nil)
     #expect(first.windDirection == .sse)

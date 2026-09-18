@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- `ValidTimeInterval` and `ISO8601Duration`, parsing ISO 8601 start-and-duration intervals into a
+  start instant, the duration's calendar components, and an exact length and end when the duration
+  has no years or months. The exact text is retained, and other interval forms are rejected.
 - `WeatherObservation` decodes every field of the service's observation schema: `elevation`,
   `station`, `rawMessage`, `icon`, `seaLevelPressure`, `maxTemperatureLast24Hours`,
   `minTemperatureLast24Hours`, `precipitationLastHour`, `precipitationLast3Hours`,
@@ -48,6 +51,8 @@ All notable changes are documented here, following
 
 ### Changed
 
+- `WeatherForecast.validTimes` is a `ValidTimeInterval` rather than a `String`. Its text remains
+  available as `validTimes.rawValue`.
 - `WeatherObservation`'s memberwise initializer takes the new fields in alphabetical order.
 - Document the station directory as the pagination reference, including request-based page and item
   traversal, early termination, cancellation, partial-result failures, and changing-data semantics.

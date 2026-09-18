@@ -30,8 +30,8 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
   /// When the underlying forecast data was updated.
   public var updateTime: Date
 
-  /// The ISO 8601 validity interval, retained without interpretation.
-  public var validTimes: String
+  /// The interval the forecast covers, with its exact text retained.
+  public var validTimes: ValidTimeInterval
 
   /// Creates a forecast from service values.
   ///
@@ -42,7 +42,7 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
   ///   - periods: The forecast periods in service order.
   ///   - units: The unit system reported by the service; unknown values are preserved.
   ///   - updateTime: When the underlying forecast data was updated.
-  ///   - validTimes: The ISO 8601 validity interval, retained without interpretation.
+  ///   - validTimes: The interval the forecast covers.
   public init(
     elevation: QuantitativeValue,
     forecastGenerator: String? = nil,
@@ -50,7 +50,7 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
     periods: [ForecastPeriod],
     units: ForecastUnits,
     updateTime: Date,
-    validTimes: String
+    validTimes: ValidTimeInterval
   ) {
     self.elevation = elevation
     self.forecastGenerator = forecastGenerator
@@ -63,7 +63,8 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
 
   /// Decodes service values, including ISO 8601 dates.
   /// - Parameter decoder: The decoder to read.
-  /// - Throws: `DecodingError` for missing or malformed required values.
+  /// - Throws: `DecodingError` for missing or malformed required values, including a `validTimes`
+  ///   that is not an ISO 8601 start and duration.
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.init(
@@ -73,7 +74,7 @@ public struct WeatherForecast: Codable, Hashable, Sendable {
       periods: try container.decode([ForecastPeriod].self, forKey: .periods),
       units: try container.decode(ForecastUnits.self, forKey: .units),
       updateTime: try container.decodeISO8601(forKey: .updateTime),
-      validTimes: try container.decode(String.self, forKey: .validTimes)
+      validTimes: try container.decode(ValidTimeInterval.self, forKey: .validTimes)
     )
   }
 
