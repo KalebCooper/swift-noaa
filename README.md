@@ -13,8 +13,9 @@ send through any networking stack, plus an SDK that sends them for you through
 
 The 0.1.0 release candidate implements current observations, twelve-hour and hourly forecasts,
 point caching, active alerts by coordinate, area, zone, and CAP filters, alert history with a time
-window, and lazy station-directory, active-alert, and alert-history pagination. WMO readings can be
-converted with Foundation. The release is not tagged yet.
+window, a station's observation history, and lazy station-directory, active-alert, alert-history,
+and observation-history pagination. WMO readings can be converted with Foundation. The release is
+not tagged yet.
 
 Raw grid data, general zone and office endpoints, and retries are outside this release.
 
@@ -265,6 +266,30 @@ print(identity.properties.stationId)
 The same initializer supports additional NWS endpoints when you supply their paths and response
 models. Arbitrary custom multi-step workflows belong in your own async functions.
 
+### Observation history
+
+```swift
+let query = try ObservationQuery(limit: 24, start: start, stationIdentifier: "KATT")
+let firstPage = try await weather.observations(query: query)
+for try await observation in weather.observations(query: query) {
+  print(observation.properties.timestamp, observation.properties.temperature?.value ?? .nan)
+  break
+}
+for try await page in weather.observationPages(for: .observations(query: query)) {
+  print(page.features.count)
+  break
+}
+```
+
+`ObservationQuery` names a station, an optional `start` and `end`, an optional page size from 1
+through 500, and an optional initial cursor. A nil limit omits the parameter so the service applies
+its own page size, and an empty station identifier is rejected at construction. The service decides
+which observations a window matches and how it orders them; recorded responses list the newest
+first, but that is not a documented guarantee. `ObservationPageSequence` and `ObservationSequence`
+follow the same lazy, single-traversal contract as the station sequences, and each feature's
+properties are the same `WeatherObservation` that `latestObservation(from:)` returns.
+`Endpoint.observations(query:)` describes one page for another networking stack.
+
 ### Direct endpoints and other networking stacks
 
 ```swift
@@ -284,8 +309,8 @@ as the endpoint's response type. Use
 `WeatherRequest.resolution` is also public and transport-independent: `.endpoint` describes one
 HTTP call; `.latestObservation` describes an `ObservationSource`; forecast cases describe a coordinate
 and options; `.alert` describes an identifier. `.activeAlerts` contains its initial typed endpoint,
-`.alerts` contains an alert-history query, and `.observationStations` contains a station query; all
-three support opt-in sequence traversal. A custom executor can interpret the source using the lookup
+`.alerts` contains an alert-history query, `.observationStations` contains a station query, and
+`.observations` contains an observation-history query; all four support opt-in sequence traversal. A custom executor can interpret the source using the lookup
 rules above. Requests contain no SDK or transport closures.
 
 Direct endpoints preserve the existing GeoJSON wrappers, including `Feature.id` and
@@ -319,7 +344,7 @@ package itself closed in Xcode, since Xcode lets a local package be open in only
 
 | Product | What it is | Depends on |
 |---|---|---|
-| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `AlertQuery`, `ObservationStationQuery`, `WeatherRequest`, `Endpoint`, and portable response models: `Point`, `ObservationStation`, `WeatherObservation`, `WeatherForecast`, `WeatherAlert`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
+| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `AlertQuery`, `ObservationQuery`, `ObservationStationQuery`, `WeatherRequest`, `Endpoint`, and portable response models: `Point`, `ObservationStation`, `WeatherObservation`, `WeatherForecast`, `WeatherAlert`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
 | `SwiftNWS` | `NWSClient`, which sends endpoints and follows the links between responses, with `NWSConfiguration` and one typed error, `NWSError`. It re-exports swifty-networking's `HTTPCore`, so `Transport` and `TransportError` need no import of their own. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
 
 A consumer with its own networking stack adds only `SwiftNWSModels` and fetches no dependency at all.

@@ -161,6 +161,23 @@ extension Endpoint where Response == Feature<WeatherObservation> {
   }
 }
 
+extension Endpoint where Response == FeatureCollection<WeatherObservation> {
+  /// The observation-history page described by a validated query,
+  /// `/stations/{stationId}/observations`.
+  ///
+  /// ```swift
+  /// let query = try ObservationQuery(limit: 24, stationIdentifier: "KATT")
+  /// Endpoint.observations(query: query).path  // "/stations/KATT/observations?limit=24"
+  /// ```
+  ///
+  /// - Parameter query: The station, window, page size, and optional initial cursor.
+  /// - Returns: One endpoint for the history page.
+  public static func observations(query: ObservationQuery) -> Self {
+    Self(
+      path: "/stations/" + encodedSegment(query.stationIdentifier) + "/observations" + query.query)
+  }
+}
+
 extension Endpoint where Response == FeatureCollection<ObservationStation> {
   /// The observation stations usable for a point, followed from the point's link.
   ///

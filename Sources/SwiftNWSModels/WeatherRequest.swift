@@ -43,6 +43,10 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Retrieve a station-directory page, with continuation semantics in sequence executors.
     /// Only requests returning FeatureCollection<ObservationStation> carry this resolution.
     case observationStations(ObservationStationQuery)
+
+    /// Retrieve an observation-history page, with continuation semantics in sequence executors.
+    /// Only requests returning FeatureCollection<WeatherObservation> carry this resolution.
+    case observations(ObservationQuery)
   }
 
   /// The description an executor interprets, without any SDK or transport dependency.
@@ -66,6 +70,15 @@ extension WeatherRequest where Response == FeatureCollection<ObservationStation>
   /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
   public static func observationStations(query: ObservationStationQuery) -> Self {
     Self(resolution: .observationStations(query))
+  }
+}
+
+extension WeatherRequest where Response == FeatureCollection<WeatherObservation> {
+  /// Describes an observation-history query with optional continuation.
+  /// - Parameter query: The validated station, window, page size, and initial cursor.
+  /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
+  public static func observations(query: ObservationQuery) -> Self {
+    Self(resolution: .observations(query))
   }
 }
 

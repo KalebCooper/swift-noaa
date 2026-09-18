@@ -215,6 +215,31 @@ public struct NWSClient: Sendable {
     try await value(for: .latestObservation(from: source))
   }
 
+  /// Creates a lazy page traversal for a reusable observation-history request.
+  /// - Parameter request: An observation query or a custom one-page endpoint request.
+  /// - Returns: An independent, demand-driven page sequence.
+  public func observationPages(
+    for request: WeatherRequest<FeatureCollection<WeatherObservation>>
+  ) -> ObservationPageSequence {
+    switch request.resolution {
+    case .endpoint(let endpoint):
+      ObservationPageSequence(client: self, endpoint: endpoint, followsLinks: false)
+    case .observations(let query):
+      ObservationPageSequence(
+        client: self, endpoint: .observations(query: query), followsLinks: true)
+    default:
+      preconditionFailure(
+        "Only endpoint and observation-query resolutions can describe observation collections.")
+    }
+  }
+
+  /// Creates a lazy page traversal for an observation-history query.
+  /// - Parameter query: The validated station, window, page size, and initial cursor.
+  /// - Returns: Observation pages in service order.
+  public func observationPages(query: ObservationQuery) -> ObservationPageSequence {
+    observationPages(for: .observations(query: query))
+  }
+
   /// Creates a lazy page traversal for a reusable station request.
   /// - Parameter request: A station query or a custom one-page endpoint request.
   /// - Returns: An independent, demand-driven page sequence.
@@ -256,6 +281,32 @@ public struct NWSClient: Sendable {
   /// - Returns: Station features in service order.
   public func observationStations(query: ObservationStationQuery) -> ObservationStationSequence {
     observationStations(for: .observationStations(query: query))
+  }
+
+  /// Creates a lazy feature traversal for a reusable observation-history request.
+  /// - Parameter request: An observation query or a custom one-page endpoint request.
+  /// - Returns: Observation features with their GeoJSON metadata.
+  public func observations(
+    for request: WeatherRequest<FeatureCollection<WeatherObservation>>
+  ) -> ObservationSequence {
+    ObservationSequence(pages: observationPages(for: request))
+  }
+
+  /// Creates a lazy feature traversal for an observation-history query.
+  /// - Parameter query: The validated station, window, page size, and initial cursor.
+  /// - Returns: Observation features in service order. Use the async overload to retrieve one page.
+  public func observations(query: ObservationQuery) -> ObservationSequence {
+    observations(for: .observations(query: query))
+  }
+
+  /// Retrieves one page of a station's observation history.
+  /// - Parameter query: The validated station, window, page size, and initial cursor.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func observations(query: ObservationQuery) async throws(NWSError)
+    -> FeatureCollection<WeatherObservation>
+  {
+    try await value(for: .observations(query: query))
   }
 
   /// Sends an endpoint and decodes its response.
@@ -356,6 +407,9 @@ public struct NWSClient: Sendable {
       return feature.properties
     case .observationStations(let query):
       let endpoint = Endpoint.observationStations(query: query)
+      return try await send(Endpoint<Value>(path: endpoint.path))
+    case .observations(let query):
+      let endpoint = Endpoint.observations(query: query)
       return try await send(Endpoint<Value>(path: endpoint.path))
     }
   }

@@ -4,7 +4,8 @@ import FoundationEssentials
 import Foundation
 #endif
 
-/// Conditions one station measured at one time, from `/stations/{stationId}/observations/latest`.
+/// Conditions one station measured at one time, from `/stations/{stationId}/observations/latest`
+/// or one feature of `/stations/{stationId}/observations`.
 ///
 /// Every measurement is optional twice over: a field the station does not report is absent, and a
 /// field it reports without a reading carries a ``QuantitativeValue`` whose `value` is `nil`.

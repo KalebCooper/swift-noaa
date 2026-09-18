@@ -46,6 +46,23 @@ struct RecordedResponseTests {
     #expect(json.contains(#""timestamp":"2026-09-13T19:51:00Z""#))
   }
 
+  @Test("Observation history decodes every observation in service order with its continuation link")
+  func observationHistoryDecodesEveryObservationInServiceOrderWithItsContinuationLink() throws {
+    let history = try JSONDecoder().decode(
+      FeatureCollection<WeatherObservation>.self, from: Fixture.observationHistory.data())
+    // 2026-09-16T23:51:00+00:00 then 2026-09-16T22:51:00+00:00, as the service listed them.
+    #expect(
+      history.features.map(\.properties.timestamp) == [
+        Date(timeIntervalSince1970: 1_789_602_660), Date(timeIntervalSince1970: 1_789_599_060),
+      ])
+    #expect(history.features.allSatisfy { $0.properties.stationId == "KATT" })
+    #expect(history.features.first?.properties.temperature?.value == 35.6)
+    #expect(
+      history.pagination?.next
+        == "https://api.weather.gov/stations/KATT/observations"
+        + "?cursor=eyJzIjoiMjAyNi0wOS0xNlQyMjo1MTowMCswMDowMCJ9")
+  }
+
   @Test("A point decodes its grid, links, and nearest city")
   func aPointDecodesItsGridLinksAndNearestCity() throws {
     let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())

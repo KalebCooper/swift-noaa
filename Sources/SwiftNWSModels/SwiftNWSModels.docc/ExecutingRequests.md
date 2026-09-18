@@ -45,6 +45,9 @@ Constructing or inspecting it sends nothing.
   links. Follow canonical redirects only after validating their origin.
 - An `alerts` resolution contains an ``AlertQuery``. Send `Endpoint.alerts(matching:)` for one page,
   and apply the same continuation and redirect rules as active alerts for a sequence.
+- An `observations` resolution contains an ``ObservationQuery``. Send
+  `Endpoint.observations(query:)` for one page, decode `FeatureCollection<WeatherObservation>`, and
+  apply the continuation rules below for a sequence.
 - A latest-observation resolution contains ``ObservationSource`` and is only created for
   ``WeatherObservation`` responses. For an explicit station, reject an empty identifier,
   send `Endpoint.latestObservation(stationIdentifier:)`, and return the feature's properties.
@@ -72,10 +75,11 @@ if let pagination = page.pagination {
 }
 ```
 
-The station-query, active-alert, and alert-history resolutions support one-page execution and
-opt-in continuation. A custom endpoint resolution remains one HTTP operation. Queries validate
-limits from 1 through 500 and preserve an initial cursor. Empty identifier and state arrays omit
-their filters, and alert-history window bounds are sent as whole-second ISO 8601 instants.
+The station-query, active-alert, alert-history, and observation-history resolutions support
+one-page execution and opt-in continuation. A custom endpoint resolution remains one HTTP operation.
+Queries validate limits from 1 through 500 and preserve an initial cursor; an observation query
+omits the limit when none is given and rejects an empty station identifier. Empty identifier and
+state arrays omit their filters, and window bounds are sent as whole-second ISO 8601 instants.
 
 For active alerts, `WeatherRequest.activeAlerts(matching:)`, coordinate, area, and zone factories
 retain their existing initial endpoints inside the `activeAlerts` resolution. Decode each response as

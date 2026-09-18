@@ -55,4 +55,5 @@ mapping, and transport behavior as direct endpoint requests.
 A `WeatherRequest(endpoint:)` passed to the station sequence executors yields only that endpoint's
 page, even if it contains pagination. Only the library-owned station-query resolution opts into
 continuation. Nearest-observation lookups still use the first station on their returned page, without
-additional pages, distance ordering, freshness filtering, or fallback.
+additional pages, distance ordering, freshness filtering, or fallback. A station's past observations
+are read through <doc:ObservationHistory>.
