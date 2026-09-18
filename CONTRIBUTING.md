@@ -7,7 +7,7 @@ Thanks for your interest. Contributions are welcome; every change to the public 
 
 1. Fork and clone the repository.
 2. Open the package directory in Xcode 26 or later.
-3. Build and run tests on the `swift-noaa` scheme (⌘U), or `swift test` from the command line.
+3. Build and run tests on Xcode's generated `swift-noaa-Package` scheme (⌘U), or `swift test` from the command line.
 
 ## Guidelines
 
@@ -35,10 +35,10 @@ Thanks for your interest. Contributions are welcome; every change to the public 
 
 ## Pull requests
 
-Before a release, run the package tests on the shared `swift-noaa` scheme, both Linux configurations
-with `Scripts/linux-test.sh`, strict lint, and `Scripts/verify.sh`. Build both DocC catalogs with
-warnings treated as errors, then merge and transform them for static hosting. Build and run the demo
-with the package window closed in Xcode.
+Before a release, run the package tests on Xcode's generated `swift-noaa-Package` scheme, both Linux
+configurations with `Scripts/linux-test.sh`, strict lint, and `Scripts/verify.sh`. Build both DocC
+catalogs with warnings treated as errors, then merge and transform them for static hosting. Build and
+run the demo with the package window closed in Xcode.
 
 After building `SwiftNWS` for an iOS simulator, use
 `bash Scripts/build-docs.sh /path/to/Debug-iphonesimulator /tmp/swift-noaa-docs` with a new output

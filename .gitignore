@@ -8,6 +8,7 @@ xcuserdata/
 DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.swiftpm/xcode/xcshareddata/xcschemes/
 .netrc
 
 # The demo resolves this package by local path; the root Package.resolved is the pin of record.
@@ -24,3 +25,4 @@ DerivedData/
 /.claude/
 /.codex/
 /.gemini/
+/.grok/
