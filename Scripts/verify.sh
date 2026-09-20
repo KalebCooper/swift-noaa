@@ -124,21 +124,30 @@ check_coordinates() {
   if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
 }
 
-# Prohibition. No em dashes anywhere user-facing.
+# Prohibition. No em dashes anywhere written here. A recorded response body is the provider's words
+# rather than this repository's, so the scan skips `.json`, the format every recording is saved in.
+# The exclusion is by extension rather than by the Fixtures directory because prose this repository
+# does write lives there too, such as a README naming what each recording holds, and excluding the
+# directory would drop it from the scan with nothing to say so. A recording saved in some other
+# format, and this service offers application/cap+xml, trips the check on the day it is added and
+# joins the exclusion then, which is the loud failure rather than the silent one.
 check_em_dash() {
-  local name="no em dash in Sources, Tests, Scripts, .github, Package.swift, .spi.yml, README, CHANGELOG, CONTRIBUTING"
+  local name="no em dash in Sources, Tests, Scripts, .github, Package.swift, .spi.yml, README, CHANGELOG, CONTRIBUTING, recordings aside"
   local hits dash
   dash=$(printf '\342\200\224')
-  hits=$(grep -rnH -- "$dash" "$ROOT/Sources" "$ROOT/Tests" "$ROOT/Scripts" "$ROOT/.github" "$ROOT/Package.swift" "$ROOT/.spi.yml" "$ROOT/README.md" "$ROOT/CHANGELOG.md" "$ROOT/CONTRIBUTING.md" 2>/dev/null || true)
+  hits=$(grep -rnH --exclude='*.json' -- "$dash" "$ROOT/Sources" "$ROOT/Tests" "$ROOT/Scripts" "$ROOT/.github" "$ROOT/Package.swift" "$ROOT/.spi.yml" "$ROOT/README.md" "$ROOT/CHANGELOG.md" "$ROOT/CONTRIBUTING.md" 2>/dev/null || true)
   if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
 }
 
 # Prohibition. Testing vocabulary: name the type, never "double", "the driver", or "the seam". The
-# em-dash check's scope minus Scripts, Package.swift, and .spi.yml, which carry no prose about tests.
+# em-dash check's scope minus Scripts, Package.swift, and .spi.yml, which carry no prose about tests,
+# and its `.json` exclusion for the reason stated there: the provider's own glossary defines seepage
+# through seams in a dam abutment and a hurricane's double-eye, and neither one is this repository
+# writing about its tests.
 check_test_jargon() {
-  local name="no test double, driver, or seam jargon in Sources, Tests, .github, README, CHANGELOG, CONTRIBUTING"
+  local name="no test double, driver, or seam jargon in Sources, Tests, .github, README, CHANGELOG, CONTRIBUTING, recordings aside"
   local hits
-  hits=$(grep -rnHwiE "test doubles?|doubles|(the|a|second|no) double|the driver|the seam|a seam|seams" "$ROOT/Sources" "$ROOT/Tests" "$ROOT/.github" "$ROOT/README.md" "$ROOT/CHANGELOG.md" "$ROOT/CONTRIBUTING.md" 2>/dev/null || true)
+  hits=$(grep -rnHwiE --exclude='*.json' "test doubles?|doubles|(the|a|second|no) double|the driver|the seam|a seam|seams" "$ROOT/Sources" "$ROOT/Tests" "$ROOT/.github" "$ROOT/README.md" "$ROOT/CHANGELOG.md" "$ROOT/CONTRIBUTING.md" 2>/dev/null || true)
   if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
 }
 
@@ -309,7 +318,11 @@ run_all() {
 write_clean_tree() {
   # $1: directory
   local d="$1"
-  mkdir -p "$d/Sources/SwiftNWSModels" "$d/Sources/SwiftNWS" "$d/Tests/SwiftNWSModelsTests" "$d/Tests/SwiftNWSTests" "$d/Scripts"
+  mkdir -p "$d/Sources/SwiftNWSModels" "$d/Sources/SwiftNWS" "$d/Sources/SwiftNWSTestSupport/Fixtures" "$d/Tests/SwiftNWSModelsTests" "$d/Tests/SwiftNWSTests" "$d/Scripts"
+  # A recorded response body, carrying the provider's own em dash and the provider's own "seams", so
+  # the clean arm fails if either scan stops skipping recordings. Written with an escape because the
+  # em-dash check reads this script too.
+  printf '{\n  "glossary": [\n    {\n      "term": "Abutment seepage",\n      "definition": "Water that moves through seams in the abutment \342\200\224 and exits downstream."\n    }\n  ]\n}\n' > "$d/Sources/SwiftNWSTestSupport/Fixtures/Glossary.json"
   # The doc comment names what the code may not, and the type name starts with an SDK module's name,
   # so the clean arm fails if either the comment filter or the word boundary stops holding.
   cat > "$d/Sources/SwiftNWSModels/MediaType.swift" <<'EOF'
@@ -468,6 +481,13 @@ plant_second_violation() {
     # A test file is as Darwin-only as a source file, and `@testable` is still an import.
     check_darwin_guard)
       printf '@testable import HTTPURLSession\nimport Testing\n' > "$d/Tests/SwiftNWSTests/Unguarded.swift" ;;
+    # Skipping recordings does not skip the Swift written beside them: a doc comment is user-facing
+    # prose, and `Sources` is where most of it lives.
+    check_em_dash)
+      printf '/// A summary \342\200\224 with an em dash in it.\n' >> "$d/Sources/SwiftNWSModels/MediaType.swift" ;;
+    # Same shape for the jargon scan, in the module whose vocabulary the rule is about.
+    check_test_jargon)
+      printf '/// Swap in a test double here.\n' >> "$d/Sources/SwiftNWS/Client.swift" ;;
     # A key indented into a step bounds that step, not the job, so the job is still unbounded.
     check_job_timeouts)
       printf 'name: Nested\n\non:\n  push:\n\njobs:\n  nested:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n        timeout-minutes: 5\n' > "$d/.github/workflows/nested.yml" ;;
