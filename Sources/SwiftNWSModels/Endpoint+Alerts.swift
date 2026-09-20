@@ -111,16 +111,3 @@ extension Endpoint where Response == Feature<WeatherAlert> {
     return Self(path: "/alerts/" + encodedSegment(identifier))
   }
 }
-
-extension Endpoint {
-  static func encodedSegment(_ value: String) -> String {
-    value.utf8.map { byte -> String in
-      switch byte {
-      case 45, 48...57, 65...90, 95, 97...122, 126:
-        String(UnicodeScalar(byte))
-      default:
-        "%" + (byte < 16 ? "0" : "") + String(byte, radix: 16, uppercase: true)
-      }
-    }.joined()
-  }
-}

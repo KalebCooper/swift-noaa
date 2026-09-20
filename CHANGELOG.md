@@ -6,17 +6,38 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+### Added
+
+- Zone directory and single-zone lookups at all three access levels: `zones(matching:types:)` for
+  `/zones`, `zones(matching:ofType:)` for `/zones/{type}`, and `zone(effective:identifier:type:)`
+  for `/zones/{type}/{zoneId}`, each also available as a `WeatherRequest` factory and an `Endpoint`.
+  The zone request factories are not optional; executing one reports an unusable type or identifier
+  as `NWSError.invalidZoneType` or `NWSError.invalidZoneIdentifier` before sending. Each list is one
+  request and one response: the service declares no cursor for the directory and the recorded
+  responses carry no continuation, so there are no zone sequences.
+- `WeatherZone`, decoding a forecast, county, fire weather, or marine zone with its office fields,
+  effective and expiration dates, station links, radar station, state, and time zones, keeping an
+  empty station list distinct from an absent radar station and an empty state code distinct from a
+  missing one. `ZoneType` and `ZoneRegionCode` are extensible codes whose `rawValue` preserves
+  values the service adds, and `ZoneQuery` carries the directory filters with a validated limit.
+- `Feature.geometry`, retaining the provider's GeoJSON geometry as raw `JSONValue` when the service
+  sends one, without validation, coordinate types, or spatial computation. A single zone carries a
+  polygon; directory responses send `null` geometry, so a zone list is nil there even when the
+  query asked for geometry. A zone forecast carries the zone's polygon as well.
+
 ### Changed
 
 - Make endpoint paths immutable and raw-path initializers failable, preserving accepted encoded text
   exactly while rejecting invalid paths and encoded traversal forms.
-- Make station, alert, area, region, and zone endpoint factories failable. Area, region, and zone
-  request factories also return optional requests; client methods reject invalid locations with
+- Make station, alert, area, region, and zone endpoint factories failable. Area, region, and alert
+  zone request factories also return optional requests; client methods reject invalid locations with
   `NWSError.invalidAlertLocation`. Station and alert execution retains its typed identifier errors.
 - Validate observation-query station paths, redirect paths before URL resolution, and forecast
   reconstruction. Forecast options safely encode custom units while preserving other query fields.
 - Page and feature iterators explicitly forward caller isolation through every wrapper and redirected
   page fetch. Iterators remain serial, independent traversals with typed errors.
+- Add the `invalidZoneIdentifier` and `invalidZoneType` cases to `NWSError`. This is a source break
+  for any consumer switching over `NWSError` exhaustively, which must handle the two new cases.
 
 ## [0.1.0] - 2026-09-18
 

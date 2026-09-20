@@ -51,6 +51,7 @@ not require full Foundation or a networking stack.
 - ``ObservationStationQuery``
 - ``WeatherCoordinate``
 - ``WeatherRequest``
+- ``ZoneQuery``
 - <doc:ExecutingRequests>
 
 ### Code values
@@ -70,6 +71,8 @@ not require full Foundation or a networking stack.
 - ``WeatherPhenomenonIntensity``
 - ``WeatherPhenomenonKind``
 - ``WeatherPhenomenonModifier``
+- ``ZoneRegionCode``
+- ``ZoneType``
 
 ### Response models
 
@@ -97,6 +100,8 @@ not require full Foundation or a networking stack.
 - ``WeatherForecast``
 - ``WeatherObservation``
 - ``WeatherPhenomenon``
+- ``WeatherZone``
+- <doc:ZoneData>
 
 ### Forecast grids
 

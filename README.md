@@ -423,6 +423,41 @@ exactly; any other instant, including one between two observations, is the servi
 and the client does not look for the nearest observation. `WeatherRequest.observation(stationIdentifier:timestamp:)`
 and `Endpoint.observation(stationIdentifier:timestamp:)` describe the same lookup.
 
+### Zones
+
+```swift
+let zone = try await weather.zone(identifier: "TXZ192", type: .forecast)
+print(zone.name, zone.type.rawValue, zone.radarStation ?? "")
+
+let query = try ZoneQuery(areas: [.texas], limit: 10)
+let forecastZones = try await weather.zones(matching: query, ofType: .forecast)
+let countiesAndFireZones = try await weather.zones(matching: query, types: [.county, .fire])
+```
+
+`zone(effective:identifier:type:)` reads `/zones/{type}/{zoneId}` and returns the feature's
+`WeatherZone` properties: the identifier, name, reported type, office fields, effective and
+expiration dates, observation station links, radar station, state, and time zones, each present only
+when the service sends it. The type in the route and the type a zone reports are different values.
+The `forecast` route answers zones reported as `public`, the `marine` route answers `coastal` and
+`offshore` zones, and the URL the service returns does not mirror the route asked on. An effective
+instant selects the definition in effect at that instant and is sent in ISO 8601 UTC at whole-second
+precision. `WeatherRequest.zone(effective:identifier:type:)` returns the same properties, and
+`Endpoint.zone(effective:identifier:type:)` keeps the GeoJSON envelope, so a zone's polygon stays
+available in `Feature.geometry`. An empty or unusable type throws `NWSError.invalidZoneType` and an
+unusable identifier throws `NWSError.invalidZoneIdentifier`, both before any request.
+
+`zones(matching:ofType:)` reads `/zones/{type}`, and `zones(matching:types:)` reads `/zones`, where
+the types are a query filter and an empty array asks for every type. `ZoneQuery` carries areas, an
+effective instant, identifiers, a geometry option, a limit, a point, and regions, and takes no
+arguments by default, so an unfiltered directory is `try ZoneQuery()`. The service declares no page
+size or cursor for the directory and the recorded responses carry no continuation, so each list is
+one request and one response capped by its limit; there are no zone sequences. The recorded lists
+also send `"geometry": null` for every zone, so the geometry option states what the request asks for
+rather than what comes back.
+
+Zone request factories always return a request, and execution reports an unusable type or
+identifier. Every level also accepts a `String`-backed type of your own in place of `ZoneType`.
+
 ### Direct endpoints and other networking stacks
 
 ```swift

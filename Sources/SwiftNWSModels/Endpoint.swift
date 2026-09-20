@@ -110,6 +110,19 @@ public struct Endpoint<Response>: Hashable, Sendable {
     self.init(accept: accept, featureFlags: converted, path: path)
   }
 
+  // Encodes one path argument as exactly one segment: only unreserved characters pass through, so
+  // a slash, question mark, or percent in an identifier cannot change the route.
+  static func encodedSegment(_ value: String) -> String {
+    value.utf8.map { byte -> String in
+      switch byte {
+      case 45, 48...57, 65...90, 95, 97...122, 126:
+        String(UnicodeScalar(byte))
+      default:
+        "%" + (byte < 16 ? "0" : "") + String(byte, radix: 16, uppercase: true)
+      }
+    }.joined()
+  }
+
   // Only fixed paths, validated domain values, and encoded queries use this construction.
   // Validation still runs so there is no alternate unchecked endpoint representation.
   static func builtIn(accept: MediaType = .geoJSON, path: String) -> Self {

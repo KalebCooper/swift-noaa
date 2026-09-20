@@ -21,6 +21,8 @@ import SwiftNWSModels
 ///   case .invalidLink(let link): report("Unexpected link: \(link)")
 ///   case .invalidRedirect: report("The API returned an invalid redirect.")
 ///   case .invalidStationIdentifier: report("A station identifier is required.")
+///   case .invalidZoneIdentifier: report("A zone identifier is required.")
+///   case .invalidZoneType: report("A zone type is required.")
 ///   case .noObservationStation: report("No station reports near here.")
 ///   case .pagination(let failure): report("Pagination failed: \(failure)")
 ///   case .problem(let problem): report(problem.title)
@@ -46,6 +48,12 @@ public enum NWSError: Error {
 
   /// The station identifier is empty or produces an invalid encoded path, so no station or observation request was sent.
   case invalidStationIdentifier(String)
+
+  /// The zone identifier is empty or produces an invalid encoded path, so no zone request was sent.
+  case invalidZoneIdentifier(String)
+
+  /// The zone type is empty or produces an invalid encoded path, so no zone request was sent.
+  case invalidZoneType(String)
 
   /// The point lists no observation station to read conditions from.
   case noObservationStation

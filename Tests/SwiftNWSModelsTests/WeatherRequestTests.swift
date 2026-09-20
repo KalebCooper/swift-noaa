@@ -70,4 +70,29 @@ struct WeatherRequestTests {
     #expect(identifier == "FUTURE-STATION")
     #expect(request == .latestObservation(from: .station("FUTURE-STATION")))
   }
+
+  @Test("Zone requests expose their resolutions without I/O")
+  func zoneRequestsExposeTheirResolutionsWithoutIO() throws {
+    let query = try ZoneQuery(areas: [.texas], limit: 2)
+    let stored = WeatherRequest.zones(matching: query, types: [.county, .fire])
+    #expect(stored.resolution == .endpoint(.zones(matching: query, types: [.county, .fire])))
+
+    let typed = WeatherRequest.zones(matching: query, ofType: .forecast)
+    #expect(typed.resolution == .zonesOfType(query: query, type: .forecast))
+    #expect(typed == .zones(matching: query, ofType: AppZoneType.forecast))
+
+    let detail = WeatherRequest.zone(identifier: "TXZ192", type: .forecast)
+    #expect(detail.resolution == .zone(effective: nil, identifier: "TXZ192", type: .forecast))
+    #expect(detail == .zone(identifier: "TXZ192", type: AppZoneType.forecast))
+    #expect(Set([detail, .zone(identifier: "TXZ192", type: .forecast)]).count == 1)
+
+    // An unusable type or identifier is a request value; only execution rejects it.
+    let unusable = WeatherRequest.zone(identifier: "", type: ZoneType(rawValue: ""))
+    #expect(
+      unusable.resolution == .zone(effective: nil, identifier: "", type: ZoneType(rawValue: "")))
+  }
+}
+
+private enum AppZoneType: String {
+  case forecast
 }

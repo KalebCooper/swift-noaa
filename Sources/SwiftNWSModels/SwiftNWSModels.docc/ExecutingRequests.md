@@ -88,6 +88,16 @@ Constructing or inspecting it sends nothing.
   observation-stations link with `Endpoint.observationStations(near:)`, and return that one page.
   Do not follow its `pagination.next`, in one-page or sequence execution: for this list the link
   names every station for the grid again at a later offset and leads only to empty pages.
+- A `zone` resolution contains an optional effective instant, an identifier, and a ``ZoneType``, and
+  is only created for ``WeatherZone`` responses. Reject an empty or unusable type before the
+  identifier, so the failure names which argument was unusable, then send
+  `Endpoint.zone(effective:identifier:type:)` and return the feature's properties. The feature's
+  geometry is reachable only through the endpoint, not through this resolution's result.
+- A `zonesOfType` resolution contains a ``ZoneQuery`` and a ``ZoneType``, and is only created for
+  `FeatureCollection<WeatherZone>` responses. Reject an empty or unusable type, send
+  `Endpoint.zones(matching:ofType:)`, and return that one response. The root directory uses an
+  endpoint resolution instead, because its path needs no type. Neither directory declares a cursor,
+  and neither recorded response carries a continuation, so do not synthesize one.
 - For a coordinate source, send `Endpoint.point(for:)`, then validate and follow
   `point.properties.observationStations` using `Endpoint.observationStations(near:)`.
   Select the first station from the returned page; an empty list is an error. Retrieve its
@@ -139,9 +149,11 @@ initializer for assigning arbitrary built-in resolutions to unrelated response t
 Custom multi-step workflows remain the consumer's own functions. Area factories at the endpoint,
 request, and client levels accept either `AreaCode` or a consumer-defined String-backed enum.
 
-The existing GeoJSON models retain `Feature.id`, `Feature.properties`, and the collection's
-features. They do not preserve arbitrary metadata or geometry. WMO unit identifiers remain
-strings. Enumerated forecast and quality codes use open values whose `rawValue` preserves unknown
+The existing GeoJSON models retain `Feature.id`, `Feature.properties`, the collection's features,
+and `Feature.geometry`, which keeps the provider's geometry as raw ``JSONValue`` when the service
+sends one and is nil when it sends `null` or none. The package does not validate, interpret, or
+compute over that geometry, and it does not preserve other arbitrary metadata. WMO unit identifiers
+remain strings. Enumerated forecast and quality codes use open values whose `rawValue` preserves unknown
 provider values; null measurements remain nil.
 
 ## Point cache policy

@@ -7,13 +7,21 @@ import Foundation
 /// A GeoJSON feature: one object the API describes, with its data in ``properties``.
 ///
 /// Most responses in the API's default representation are a feature, so a response model is the
-/// type of its properties wrapped in this one.
+/// type of its properties wrapped in this one. The feature's geometry is retained as raw JSON when
+/// the service sends one; the package does not validate or interpret it.
 ///
 /// ```swift
 /// let point: Feature<Point> = try JSONDecoder().decode(Feature<Point>.self, from: body)
 /// print(point.properties.gridId)
 /// ```
 public struct Feature<Properties> {
+  /// The feature's GeoJSON geometry as raw JSON, or nil when the service sends `null` or none.
+  ///
+  /// Zone details carry a polygon; directory listings and most other responses carry `null`. The
+  /// value is the geometry object exactly as sent, with no validation, coordinate types, or spatial
+  /// computation.
+  public var geometry: JSONValue?
+
   /// The URL that identifies the feature.
   public var id: URL?
 
@@ -23,9 +31,11 @@ public struct Feature<Properties> {
   /// Creates a feature.
   ///
   /// - Parameters:
+  ///   - geometry: The feature's GeoJSON geometry as raw JSON.
   ///   - id: The URL that identifies the feature.
   ///   - properties: The data the feature describes.
-  public init(id: URL? = nil, properties: Properties) {
+  public init(geometry: JSONValue? = nil, id: URL? = nil, properties: Properties) {
+    self.geometry = geometry
     self.id = id
     self.properties = properties
   }

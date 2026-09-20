@@ -71,3 +71,4 @@ automatically paginate.
 - <doc:PaginatingCollections>
 - <doc:Units>
 - <doc:UsingRequests>
+- <doc:Zones>

@@ -81,6 +81,20 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Retrieve an observation-history page, with continuation semantics in sequence executors.
     /// Only requests returning FeatureCollection<WeatherObservation> carry this resolution.
     case observations(ObservationQuery)
+
+    /// Retrieve one zone by type and identifier and return its GeoJSON properties.
+    ///
+    /// Only requests returning ``WeatherZone`` carry this resolution. An empty type or identifier,
+    /// or one that produces an invalid encoded path, is a failure before any request. The
+    /// feature's geometry is available only through the direct endpoint.
+    case zone(effective: Date?, identifier: String, type: ZoneType)
+
+    /// Retrieve the zones of one type matching a query as one response.
+    ///
+    /// Only requests returning FeatureCollection<WeatherZone> carry this resolution. An empty type
+    /// or one that produces an invalid encoded path is a failure before any request. The service
+    /// returns no continuation for the directory.
+    case zonesOfType(query: ZoneQuery, type: ZoneType)
   }
 
   /// The description an executor interprets, without any SDK or transport dependency.
@@ -310,5 +324,92 @@ extension WeatherRequest where Response == WeatherObservation {
   /// - Returns: A request that performs no work until executed.
   public static func observation(stationIdentifier: String, timestamp: Date) -> Self {
     Self(resolution: .observation(stationIdentifier: stationIdentifier, timestamp: timestamp))
+  }
+}
+
+extension WeatherRequest where Response == FeatureCollection<WeatherZone> {
+  /// Describes the zones of one type matching a query, `/zones/{type}`.
+  ///
+  /// Executing the request rejects an empty type before sending and returns the one response the
+  /// service answers; the directory has no continuation.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.zones(matching: query, ofType: .forecast)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - type: The route's zone type.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zones(matching query: ZoneQuery, ofType type: ZoneType) -> Self {
+    Self(resolution: .zonesOfType(query: query, type: type))
+  }
+
+  /// Describes the zones of one type using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - type: A String-backed zone type.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zones<Kind>(matching query: ZoneQuery, ofType type: Kind) -> Self
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    zones(matching: query, ofType: ZoneType(type))
+  }
+
+  /// Describes the zones of every type matching a query, `/zones`.
+  ///
+  /// The request sends `Endpoint.zones(matching:types:)` and returns its one response unchanged;
+  /// the directory has no continuation.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.zones(matching: query, types: [.county, .fire])
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - types: Zone types to include, or an empty array for every type.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zones(matching query: ZoneQuery, types: [ZoneType] = []) -> Self {
+    Self(endpoint: .zones(matching: query, types: types))
+  }
+
+  /// Describes the zones of every type using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - types: String-backed zone types to include.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zones<Kind>(matching query: ZoneQuery, types: [Kind]) -> Self
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    zones(matching: query, types: types.map { ZoneType($0) })
+  }
+}
+
+extension WeatherRequest where Response == WeatherZone {
+  /// Describes one zone by type and identifier, `/zones/{type}/{zoneId}`.
+  ///
+  /// Executing the request rejects an empty type or identifier before sending and returns the
+  /// zone's properties. The feature's geometry is available through the direct endpoint.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.zone(identifier: "TXZ192", type: .forecast)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
+  ///   - identifier: The zone's identifier, such as `TXZ192`.
+  ///   - type: The route's zone type.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zone(effective: Date? = nil, identifier: String, type: ZoneType) -> Self {
+    Self(resolution: .zone(effective: effective, identifier: identifier, type: type))
+  }
+
+  /// Describes one zone using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
+  ///   - identifier: The zone's identifier.
+  ///   - type: A String-backed zone type.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zone<Kind>(effective: Date? = nil, identifier: String, type: Kind) -> Self
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    zone(effective: effective, identifier: identifier, type: ZoneType(type))
   }
 }

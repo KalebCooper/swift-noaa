@@ -100,4 +100,8 @@ application-specific identity or snapshot policy after retrieval.
 
 Only station-directory, active-alert, alert-history, and observation-history collections currently
 opt into continuation. Other endpoint groups remain single page until their provider continuation
-behavior is implemented and documented.
+behavior is implemented and documented. Every zone list is one of them, for a different reason each
+time, and none of them has a zone page or feature sequence to read:
+
+- The service declares no cursor for `/zones` or `/zones/{type}`, and the recorded directory
+  responses carry no continuation at all.

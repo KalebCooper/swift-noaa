@@ -83,6 +83,8 @@ final class ConditionsModel {
     case .invalidLink(let link): "The API linked outside itself: \(link)"
     case .invalidRedirect: "The weather service returned an invalid redirect."
     case .invalidStationIdentifier: "The weather service returned an invalid station identifier."
+    case .invalidZoneIdentifier: "The weather service returned an invalid zone identifier."
+    case .invalidZoneType: "The weather service returned an invalid zone type."
     case .noObservationStation: "No weather station reports near this location."
     case .pagination: "The weather service returned an invalid next page. Try again later."
     case .problem(let problem): "\(problem.title): \(problem.detail)"

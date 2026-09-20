@@ -87,8 +87,27 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// with, listing the valid region codes in its parameter errors.
   case unknownRegionProblem = "UnknownRegionProblem"
 
+  /// `/zones/forecast/TXZ192`, the Travis public forecast zone with its polygon and 24 stations.
+  case zone = "Zone"
+
   /// `/alerts/active/zone/TXZ192`, active alerts in the Travis forecast zone.
   case zoneAlerts = "ZoneAlerts"
+
+  /// `/zones/county/TXC453`, the Travis county zone with its polygon, no observation stations, and
+  /// a `null` radar station.
+  case zoneCounty = "ZoneCounty"
+
+  /// `/zones/marine/GMZ330`, the Matagorda Bay zone answered by the marine route with the reported
+  /// type `coastal`, a `null` state, and a 93-ring polygon.
+  case zoneMarine = "ZoneMarine"
+
+  /// `/zones?area=TX&limit=2`, the first two Texas zones of every type, with `null` geometry and no
+  /// continuation.
+  case zones = "Zones"
+
+  /// `/zones/forecast?area=TX&limit=2`, the first two Texas forecast zones, reported as `public`,
+  /// with `null` geometry and no continuation.
+  case zonesOfType = "ZonesOfType"
 
   /// The recorded body.
   ///

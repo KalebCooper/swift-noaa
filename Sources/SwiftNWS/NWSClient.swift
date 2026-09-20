@@ -508,6 +508,8 @@ public struct NWSClient: Sendable {
   /// - Returns: The concrete response selected by the request's factory or endpoint.
   /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier or invalid encoded path,
   ///   ``NWSError/invalidAlertIdentifier(_:)`` for an empty alert identifier or invalid encoded path,
+  ///   ``NWSError/invalidZoneType(_:)`` or ``NWSError/invalidZoneIdentifier(_:)`` for an empty
+  ///   zone type or identifier or invalid encoded path,
   ///   ``NWSError/invalidLink(_:)`` for a disallowed link, ``NWSError/noObservationStation``
   ///   for an empty station list, or any error from ``send(_:)``.
   public func value<Value: Decodable & SendableMetatype>(
@@ -600,7 +602,131 @@ public struct NWSClient: Sendable {
     case .observations(let query):
       let endpoint = Endpoint.observations(query: query)
       return try await send(endpoint.decoding(Value.self))
+    case .zone(let effective, let identifier, let type):
+      guard Endpoint<Feature<Value>>.zoneTypeSegment(type) != nil else {
+        throw .invalidZoneType(type.rawValue)
+      }
+      guard let endpoint = Endpoint.zone(effective: effective, identifier: identifier, type: type)
+      else { throw .invalidZoneIdentifier(identifier) }
+      // Only WeatherRequest<WeatherZone> can be created with this resolution.
+      return try await send(
+        endpoint.decoding(Feature<Value>.self)
+      ).properties
+    case .zonesOfType(let query, let type):
+      guard let endpoint = Endpoint.zones(matching: query, ofType: type) else {
+        throw .invalidZoneType(type.rawValue)
+      }
+      // Only WeatherRequest<FeatureCollection<WeatherZone>> can be created with this resolution.
+      // The service returns no continuation for the directory.
+      return try await send(endpoint.decoding(Value.self))
     }
+  }
+
+  /// Retrieves one zone by type and identifier.
+  ///
+  /// Sends one request for `/zones/{type}/{zoneId}` and returns the feature's properties. The
+  /// zone's polygon is available by sending `Endpoint.zone(effective:identifier:type:)` directly.
+  ///
+  /// ```swift
+  /// let zone = try await weather.zone(identifier: "TXZ192", type: .forecast)
+  /// print(zone.name, zone.observationStations?.count ?? 0)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
+  ///   - identifier: The zone's identifier, such as `TXZ192`.
+  ///   - type: The route's zone type, such as `ZoneType.forecast` or `ZoneType.county`.
+  /// - Returns: The zone's properties.
+  /// - Throws: ``NWSError/invalidZoneType(_:)`` for an empty type or invalid encoded path,
+  ///   ``NWSError/invalidZoneIdentifier(_:)`` for an empty identifier or invalid encoded path,
+  ///   or any error from ``value(for:)``.
+  public func zone(effective: Date? = nil, identifier: String, type: ZoneType)
+    async throws(NWSError) -> WeatherZone
+  {
+    try await value(for: .zone(effective: effective, identifier: identifier, type: type))
+  }
+
+  /// Retrieves one zone using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
+  ///   - identifier: The zone's identifier.
+  ///   - type: A String-backed zone type.
+  /// - Returns: The zone's properties.
+  /// - Throws: The errors of ``zone(effective:identifier:type:)-(_,_,ZoneType)``.
+  public func zone<Kind>(effective: Date? = nil, identifier: String, type: Kind)
+    async throws(NWSError) -> WeatherZone
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    try await zone(effective: effective, identifier: identifier, type: ZoneType(type))
+  }
+
+  /// Lists the zones of one type matching a query.
+  ///
+  /// Sends one request for `/zones/{type}` and returns that response. The service declares no
+  /// page size or cursor for the directory and returns no continuation, so the response is the
+  /// whole answer for the query, capped by its limit. Recorded responses list zones with `null`
+  /// geometry.
+  ///
+  /// ```swift
+  /// let query = try ZoneQuery(areas: [.texas], limit: 10)
+  /// let zones = try await weather.zones(matching: query, ofType: .forecast)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - type: The route's zone type.
+  /// - Returns: The GeoJSON collection the service answered.
+  /// - Throws: ``NWSError/invalidZoneType(_:)`` for an empty type or invalid encoded path, or any
+  ///   error from ``value(for:)``.
+  public func zones(matching query: ZoneQuery, ofType type: ZoneType) async throws(NWSError)
+    -> FeatureCollection<WeatherZone>
+  {
+    try await value(for: .zones(matching: query, ofType: type))
+  }
+
+  /// Lists the zones of one type using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - type: A String-backed zone type.
+  /// - Returns: The GeoJSON collection the service answered.
+  /// - Throws: The errors of ``zones(matching:ofType:)-(_,ZoneType)``.
+  public func zones<Kind>(matching query: ZoneQuery, ofType type: Kind) async throws(NWSError)
+    -> FeatureCollection<WeatherZone>
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    try await zones(matching: query, ofType: ZoneType(type))
+  }
+
+  /// Lists zones of every type matching a query, optionally restricted to some types.
+  ///
+  /// Sends one request for `/zones` and returns that response. The service declares no page size
+  /// or cursor for the directory and returns no continuation, so the response is the whole answer
+  /// for the query, capped by its limit. Recorded responses list zones with `null` geometry.
+  ///
+  /// ```swift
+  /// let query = try ZoneQuery(areas: [.texas], limit: 10)
+  /// let zones = try await weather.zones(matching: query, types: [.county, .fire])
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - types: Zone types to include, or an empty array for every type.
+  /// - Returns: The GeoJSON collection the service answered.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func zones(matching query: ZoneQuery, types: [ZoneType] = []) async throws(NWSError)
+    -> FeatureCollection<WeatherZone>
+  {
+    try await value(for: .zones(matching: query, types: types))
+  }
+
+  /// Lists zones of every type using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - query: The validated filters.
+  ///   - types: String-backed zone types to include.
+  /// - Returns: The GeoJSON collection the service answered.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func zones<Kind>(matching query: ZoneQuery, types: [Kind]) async throws(NWSError)
+    -> FeatureCollection<WeatherZone>
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    try await zones(matching: query, types: types.map { ZoneType($0) })
   }
 
   private func alertCollection(

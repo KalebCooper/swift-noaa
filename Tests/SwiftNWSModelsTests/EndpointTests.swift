@@ -102,4 +102,65 @@ struct EndpointTests {
       try #require(Endpoint.latestObservation(stationIdentifier: "A/B?x=#%")).path
         == "/stations/A%2FB%3Fx%3D%23%25/observations/latest")
   }
+
+  @Test("Zone routes name exact paths and ask for GeoJSON without feature flags")
+  func zoneRoutesNameExactPathsAndAskForGeoJSONWithoutFeatureFlags() throws {
+    let query = try ZoneQuery(areas: [.texas], limit: 2)
+    let root = Endpoint.zones(matching: query)
+    let typed = try #require(Endpoint.zones(matching: query, ofType: .forecast))
+    let detail = try #require(Endpoint.zone(identifier: "TXZ192", type: .forecast))
+    #expect(root.path == "/zones?area=TX&limit=2")
+    #expect(typed.path == "/zones/forecast?area=TX&limit=2")
+    #expect(detail.path == "/zones/forecast/TXZ192")
+    for endpoint in [root, typed] {
+      #expect(endpoint.accept == .geoJSON)
+      #expect(endpoint.featureFlags.isEmpty)
+    }
+    #expect(detail.accept == .geoJSON)
+    #expect(detail.featureFlags.isEmpty)
+    // 2026-09-20T00:00:00.5Z, sent with whole-second precision.
+    let effective = Date(timeIntervalSince1970: 1_789_862_400.5)
+    #expect(
+      Endpoint.zone(effective: effective, identifier: "TXZ192", type: .county)?.path
+        == "/zones/county/TXZ192?effective=2026-09-20T00:00:00Z")
+  }
+
+  @Test("Zone path arguments occupy exactly one segment each and keep their case")
+  func zonePathArgumentsOccupyExactlyOneSegmentEachAndKeepTheirCase() throws {
+    #expect(
+      Endpoint.zone(identifier: "A/B?x=#%", type: ZoneType(rawValue: "fu/ture"))?.path
+        == "/zones/fu%2Fture/A%2FB%3Fx%3D%23%25")
+    #expect(
+      Endpoint.zone(identifier: "Zoné", type: .forecast)?.path == "/zones/forecast/Zon%C3%A9")
+    #expect(Endpoint.zone(identifier: "txz192", type: .forecast)?.path == "/zones/forecast/txz192")
+    #expect(
+      Endpoint.zones(matching: try ZoneQuery(), ofType: ZoneType(rawValue: "Fire Weather"))?.path
+        == "/zones/Fire%20Weather")
+    #expect(
+      Endpoint.zone(identifier: "TXZ192", type: AppZoneType.forecast)?.path
+        == "/zones/forecast/TXZ192")
+  }
+
+  @Test("Empty and dot zone path arguments are rejected", arguments: ["", ".", ".."])
+  func emptyAndDotZonePathArgumentsAreRejected(argument: String) throws {
+    let query = try ZoneQuery()
+    #expect(Endpoint.zone(identifier: argument, type: .forecast) == nil)
+    #expect(Endpoint.zone(identifier: "TXZ192", type: ZoneType(rawValue: argument)) == nil)
+    #expect(Endpoint.zones(matching: query, ofType: ZoneType(rawValue: argument)) == nil)
+  }
+
+  @Test("A zone link becomes its path only on the API origin")
+  func aZoneLinkBecomesItsPathOnlyOnTheAPIOrigin() throws {
+    let alert = try JSONDecoder().decode(Feature<WeatherAlert>.self, from: Fixture.alert.data())
+    let link = try #require(alert.properties.affectedZones.first)
+    let followed = try #require(Endpoint<Feature<WeatherZone>>(link: link))
+    #expect(followed.path == link.path)
+    #expect(followed.accept == .geoJSON)
+    let outside = try #require(URL(string: "https://example.com/zones/forecast/TXZ192"))
+    #expect(Endpoint<Feature<WeatherZone>>(link: outside) == nil)
+  }
+}
+
+private enum AppZoneType: String {
+  case forecast
 }
