@@ -13,12 +13,14 @@ struct AlertClientTests {
   func alertAccessLayersAgree(layer: Int, selection: Int) async throws {
     let location = try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431)
     let endpoints: [Endpoint<FeatureCollection<WeatherAlert>>] = [
-      .activeAlerts(for: location), .activeAlerts(inArea: .texas),
-      .activeAlerts(inZone: "TXZ192"), .activeAlerts(matching: .init(severity: [.moderate])),
+      .activeAlerts(for: location), try #require(.activeAlerts(inArea: .texas)),
+      try #require(.activeAlerts(inZone: "TXZ192")),
+      .activeAlerts(matching: .init(severity: [.moderate])),
     ]
     let requests: [WeatherRequest<FeatureCollection<WeatherAlert>>] = [
-      .activeAlerts(for: location), .activeAlerts(inArea: .texas),
-      .activeAlerts(inZone: "TXZ192"), .activeAlerts(matching: .init(severity: [.moderate])),
+      .activeAlerts(for: location), try #require(.activeAlerts(inArea: .texas)),
+      try #require(.activeAlerts(inZone: "TXZ192")),
+      .activeAlerts(matching: .init(severity: [.moderate])),
     ]
     let body = try Fixture.activeAlerts.data()
     let transport = MockTransport()
@@ -48,7 +50,7 @@ struct AlertClientTests {
 
   @Test("Alert factories infer reusable responses without sending")
   func alertFactoriesInferReusableResponsesWithoutSending() throws {
-    let request = WeatherRequest.activeAlerts(inArea: .texas)
+    let request = try #require(WeatherRequest.activeAlerts(inArea: .texas))
     let alert = WeatherRequest.alert(identifier: "example")
     let custom = WeatherRequest.texasAlerts
     #expect(request == custom)
@@ -79,10 +81,12 @@ struct AlertClientTests {
   func consumerAreaEnumsWorkAcrossAllAccessLevels() async throws {
     let body = try Fixture.areaAlerts.data()
     let expected = try JSONDecoder().decode(FeatureCollection<WeatherAlert>.self, from: body)
-    let endpoint: Endpoint<FeatureCollection<WeatherAlert>> = .activeAlerts(
-      inArea: ConsumerArea.texas)
-    let request: WeatherRequest<FeatureCollection<WeatherAlert>> = .activeAlerts(
-      inArea: ConsumerArea.texas)
+    let endpoint: Endpoint<FeatureCollection<WeatherAlert>> = try #require(
+      .activeAlerts(
+        inArea: ConsumerArea.texas))
+    let request: WeatherRequest<FeatureCollection<WeatherAlert>> = try #require(
+      .activeAlerts(
+        inArea: ConsumerArea.texas))
     let transport = MockTransport()
     transport.setHandler(forPath: endpoint.path) { _ in
       .success(MockTransport.Answer(Response(body: body, status: .ok)))
@@ -208,5 +212,5 @@ private enum ConsumerArea: String {
 }
 
 extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
-  fileprivate static var texasAlerts: Self { .activeAlerts(inArea: .texas) }
+  fileprivate static var texasAlerts: Self? { .activeAlerts(inArea: .texas) }
 }

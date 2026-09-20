@@ -46,29 +46,32 @@ struct AlertSummaryTests {
   }
 
   @Test("Alert count, type, and region endpoints name their paths and media types")
-  func alertCountTypeAndRegionEndpointsNameTheirPathsAndMediaTypes() {
+  func alertCountTypeAndRegionEndpointsNameTheirPathsAndMediaTypes() throws {
     #expect(Endpoint.activeAlertCount.path == "/alerts/active/count")
     #expect(Endpoint.activeAlertCount.accept.rawValue == "application/ld+json")
     #expect(Endpoint.alertTypes.path == "/alerts/types")
     #expect(Endpoint.alertTypes.accept.rawValue == "application/ld+json")
-    #expect(Endpoint.activeAlerts(inRegion: .gulfOfMexico).path == "/alerts/active/region/GM")
-    #expect(Endpoint.activeAlerts(inRegion: .gulfOfMexico).accept == .geoJSON)
     #expect(
-      Endpoint.activeAlerts(inRegion: ConsumerRegion.atlantic).path == "/alerts/active/region/AT")
+      try #require(Endpoint.activeAlerts(inRegion: .gulfOfMexico)).path
+        == "/alerts/active/region/GM")
+    #expect(try #require(Endpoint.activeAlerts(inRegion: .gulfOfMexico)).accept == .geoJSON)
     #expect(
-      Endpoint.activeAlerts(inRegion: MarineRegionCode(rawValue: "A/T")).path
+      try #require(Endpoint.activeAlerts(inRegion: ConsumerRegion.atlantic)).path
+        == "/alerts/active/region/AT")
+    #expect(
+      try #require(Endpoint.activeAlerts(inRegion: MarineRegionCode(rawValue: "A/T"))).path
         == "/alerts/active/region/A%2FT")
   }
 
   @Test("Alert count, type, and region requests describe their endpoints without sending")
-  func alertCountTypeAndRegionRequestsDescribeTheirEndpointsWithoutSending() {
+  func alertCountTypeAndRegionRequestsDescribeTheirEndpointsWithoutSending() throws {
     let count = WeatherRequest.activeAlertCount
     let types = WeatherRequest.alertTypes
-    let region = WeatherRequest.activeAlerts(inRegion: .atlantic)
+    let region = try #require(WeatherRequest.activeAlerts(inRegion: .atlantic))
     #expect(count.resolution == .endpoint(.activeAlertCount))
     #expect(types.resolution == .endpoint(.alertTypes))
-    #expect(region.resolution == .activeAlerts(.activeAlerts(inRegion: .atlantic)))
-    #expect(WeatherRequest.activeAlerts(inRegion: ConsumerRegion.atlantic) == region)
+    #expect(region.resolution == .activeAlerts(try #require(.activeAlerts(inRegion: .atlantic))))
+    #expect(try #require(WeatherRequest.activeAlerts(inRegion: ConsumerRegion.atlantic)) == region)
     #expect(WeatherRequest.nationalAlertCount == count)
   }
 

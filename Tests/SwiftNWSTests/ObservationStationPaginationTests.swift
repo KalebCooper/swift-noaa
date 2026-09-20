@@ -98,9 +98,10 @@ struct ObservationStationPaginationTests {
     transport.enqueue(
       .success(.init(Response(body: Data(), headers: [.location: "/canonical"], status: .found))))
     try answer(transport, page: page())
-    let endpoint = Endpoint<FeatureCollection<ObservationStation>>(
-      accept: .init(rawValue: "application/ld+json"),
-      featureFlags: [.init(rawValue: "future_flag")], path: "/custom")
+    let endpoint = try #require(
+      Endpoint<FeatureCollection<ObservationStation>>(
+        accept: .init(rawValue: "application/ld+json"),
+        featureFlags: [.init(rawValue: "future_flag")], path: "/custom"))
     var iterator = makeClient(transport).observationStationPages(for: .init(endpoint: endpoint))
       .makeAsyncIterator()
     #expect(try await iterator.next() != nil)
@@ -119,7 +120,7 @@ struct ObservationStationPaginationTests {
     try answer(transport, page: page(next: "bad link"))
     let client = makeClient(transport)
     let request = WeatherRequest(
-      endpoint: Endpoint<FeatureCollection<ObservationStation>>(path: "/custom"))
+      endpoint: try #require(Endpoint<FeatureCollection<ObservationStation>>(path: "/custom")))
     var iterator = client.observationStationPages(for: request).makeAsyncIterator()
     #expect(try await iterator.next() != nil)
     #expect(try await iterator.next() == nil)
@@ -300,7 +301,7 @@ struct ObservationStationPaginationTests {
     let _: ObservationStationSequence = client.observationStations(
       for: .observationStations(query: query))
     let custom = WeatherRequest(
-      endpoint: Endpoint<FeatureCollection<ObservationStation>>(path: "/custom"))
+      endpoint: try #require(Endpoint<FeatureCollection<ObservationStation>>(path: "/custom")))
     let _: ObservationStationPageSequence = client.observationStationPages(for: custom)
     #expect(transport.requests.isEmpty)
   }

@@ -46,9 +46,7 @@ struct CollectionPageSequence<Properties: Decodable & Sendable>: AsyncSequence, 
       if current == nil, case .nearbyObservationStations(let location) = sequence.start {
         let stations = try await sequence.client.nearbyObservationStationsEndpoint(for: location)
         guard !Task.isCancelled else { throw .transport(.cancelled) }
-        begin(
-          at: Endpoint(
-            accept: stations.accept, featureFlags: stations.featureFlags, path: stations.path))
+        begin(at: stations.decoding(Element.self))
       }
       guard var current, var pages else {
         preconditionFailure(

@@ -48,7 +48,7 @@ struct StationLookupClientTests {
     try answer(transport, path: "/stations/KATT", with: .observationStation)
     let client = makeClient(transport)
     let request = WeatherRequest(
-      endpoint: Endpoint<Feature<StationProvider>>(path: "/stations/KATT"))
+      endpoint: try #require(Endpoint<Feature<StationProvider>>(path: "/stations/KATT")))
     #expect(transport.requests.isEmpty)
 
     let result = try await client.value(for: request)
@@ -141,7 +141,9 @@ struct StationLookupClientTests {
       switch layer {
       case 0: try await client.observationStation(identifier: "KATT")
       case 1: try await client.value(for: .observationStation(identifier: "KATT"))
-      default: try await client.send(Endpoint.observationStation(identifier: "KATT")).properties
+      default:
+        try await client.send(try #require(Endpoint.observationStation(identifier: "KATT")))
+          .properties
       }
     let recorded = try JSONDecoder().decode(
       Feature<ObservationStation>.self, from: Fixture.observationStation.data())
@@ -163,8 +165,10 @@ struct StationLookupClientTests {
       case 1:
         try await client.value(for: .observation(stationIdentifier: "KATT", timestamp: timestamp))
       default:
-        try await client.send(Endpoint.observation(stationIdentifier: "KATT", timestamp: timestamp))
-          .properties
+        try await client.send(
+          try #require(Endpoint.observation(stationIdentifier: "KATT", timestamp: timestamp))
+        )
+        .properties
       }
     let recorded = try JSONDecoder().decode(
       Feature<WeatherObservation>.self, from: Fixture.observationAtTimestamp.data())

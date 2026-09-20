@@ -150,9 +150,11 @@ for try await alert in weather.activeAlerts(matching: filter) {
   print(alert.id as Any, alert.properties.headline ?? alert.properties.event)
   break
 }
-for try await page in weather.activeAlertPages(for: .activeAlerts(inZone: "TXZ192")) {
-  print(page.features.count)
-  break
+if let request = WeatherRequest.activeAlerts(inZone: "TXZ192") {
+  for try await page in weather.activeAlertPages(for: request) {
+    print(page.features.count)
+    break
+  }
 }
 ```
 
@@ -178,12 +180,18 @@ let reusable = WeatherRequest.activeAlerts(inArea: AppArea.home)
 let endpoint = Endpoint<FeatureCollection<WeatherAlert>>.activeAlerts(inArea: AppArea.home)
 ```
 
+The area, region, and zone endpoint and request factories return nil for empty codes or invalid
+encoded paths. The everyday client methods throw `NWSError.invalidAlertLocation` before sending.
+Unknown codes with valid paths remain usable.
+
 Marine regions have their own path, and a String-backed region enum works the same way:
 
 ```swift
 let gulf = try await weather.activeAlerts(inRegion: .gulfOfMexico)
-for try await page in weather.activeAlertPages(for: .activeAlerts(inRegion: .atlantic)) {
-  print(page.features.count)
+if let request = WeatherRequest.activeAlerts(inRegion: .atlantic) {
+  for try await page in weather.activeAlertPages(for: request) {
+    print(page.features.count)
+  }
 }
 ```
 
@@ -293,7 +301,7 @@ print(station.name, station.provider ?? "", station.forecast as Any)
 and links to the forecast, county, and fire weather zones containing the station, each present only
 when the service sends it; list responses relative to a location add a distance and bearing. The
 matching `WeatherRequest.observationStation(identifier:)` returns the same properties, and
-`Endpoint.observationStation(identifier:)` keeps the GeoJSON envelope. An empty identifier throws
+`Endpoint.observationStation(identifier:)` keeps the GeoJSON envelope. An empty identifier or invalid encoded path throws
 `NWSError.invalidStationIdentifier` before any request; an unknown station is the service's `404`
 problem.
 
@@ -365,11 +373,11 @@ struct StationIdentity: Decodable, Sendable {
   let stationId: String
 }
 
-let identityRequest = WeatherRequest(
-  endpoint: Endpoint<Feature<StationIdentity>>(path: "/stations/KATT/observations/latest")
-)
-let identity = try await weather.value(for: identityRequest)
-print(identity.properties.stationId)
+if let endpoint = Endpoint<Feature<StationIdentity>>(path: "/stations/KATT/observations/latest") {
+  let identityRequest = WeatherRequest(endpoint: endpoint)
+  let identity = try await weather.value(for: identityRequest)
+  print(identity.properties.stationId)
+}
 ```
 
 The same initializer supports additional NWS endpoints when you supply their paths and response
@@ -392,7 +400,7 @@ for try await page in weather.observationPages(for: .observations(query: query))
 
 `ObservationQuery` names a station, an optional `start` and `end`, an optional page size from 1
 through 500, and an optional initial cursor. A nil limit omits the parameter so the service applies
-its own page size, and an empty station identifier is rejected at construction. The service decides
+its own page size, and an empty station identifier or invalid encoded path is rejected at construction. The service decides
 which observations a window matches and how it orders them; recorded responses list the newest
 first, but that is not a documented guarantee. `ObservationPageSequence` and `ObservationSequence`
 follow the same lazy, single-traversal contract as the station sequences, and each feature's
@@ -431,6 +439,12 @@ your own `User-Agent`, set `Feature-Flags` from `endpoint.featureFlags.map(\.raw
 as the endpoint's response type. Use
 `Endpoint(accept:featureFlags:link:)` to validate service-provided links before following them.
 
+Raw-path initializers are failable. Paths must start with one slash and may include an encoded
+query. Absolute or authority URLs, fragments, raw whitespace and controls, malformed escapes,
+backslashes, and dot path segments are rejected, including encoded path equivalents. Accepted paths
+and queries retain their exact spelling; query values are not treated as path segments, and query
+names such as `api_key` are allowed. `path` is immutable; `accept` and `featureFlags` remain configurable.
+
 `WeatherRequest.resolution` is also public and transport-independent: `.endpoint` describes one
 HTTP call; `.latestObservation` describes an `ObservationSource`; forecast cases describe a coordinate
 and options; `.alert` describes an identifier; `.observationStation` describes a station identifier;
@@ -448,7 +462,7 @@ quality codes are typed open values that preserve unknown `rawValue`s.
 ### Errors and migration
 
 The client throws `NWSError`: NWS problem details, transport or decoding failures, invalid
-service links or redirects, excess redirect hops, invalid pagination, empty station or alert identifiers,
+service links or redirects, excess redirect hops, invalid pagination, invalid station or alert identifiers and alert locations,
 or a station list with no stations. Cancellation is
 `NWSError.transport(.cancelled)`, with a cancellation check before each HTTP call.
 When the service rejects a request parameter, such as an unknown marine region, the thrown

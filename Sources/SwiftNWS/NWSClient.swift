@@ -89,17 +89,24 @@ public struct NWSClient: Sendable {
   /// Retrieves active alerts for a provider area.
   /// - Parameter area: A state, territory, or marine area code.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
-  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  /// - Throws: ``NWSError/invalidAlertLocation(_:)`` for an empty code or invalid encoded path,
+  ///   or any error from ``value(for:)``.
   public func activeAlerts(inArea area: AreaCode) async throws(NWSError) -> FeatureCollection<
     WeatherAlert
   > {
-    try await value(for: .activeAlerts(inArea: area))
+    guard !Task.isCancelled else { throw .transport(.cancelled) }
+    guard let request = WeatherRequest<FeatureCollection<WeatherAlert>>.activeAlerts(inArea: area)
+    else {
+      throw .invalidAlertLocation(area.rawValue)
+    }
+    return try await value(for: request)
   }
 
   /// Retrieves active alerts using a consumer-defined area enum.
   /// - Parameter area: A String-backed state, territory, or marine area code.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
-  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  /// - Throws: ``NWSError/invalidAlertLocation(_:)`` for an empty code or invalid encoded path,
+  ///   or any error from ``value(for:)``.
   public func activeAlerts<Area>(inArea area: Area) async throws(NWSError) -> FeatureCollection<
     WeatherAlert
   > where Area: RawRepresentable, Area.RawValue == String {
@@ -109,18 +116,26 @@ public struct NWSClient: Sendable {
   /// Retrieves active alerts for a marine region.
   /// - Parameter region: A marine region code.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
-  /// - Throws: Any ``NWSError`` from ``value(for:)``, including ``NWSError/problem(_:)`` for a
+  /// - Throws: ``NWSError/invalidAlertLocation(_:)`` for an empty code or invalid encoded path,
+  ///   or any error from ``value(for:)``, including ``NWSError/problem(_:)`` for a
   ///   code the service does not recognize.
   public func activeAlerts(inRegion region: MarineRegionCode) async throws(NWSError)
     -> FeatureCollection<WeatherAlert>
   {
-    try await value(for: .activeAlerts(inRegion: region))
+    guard !Task.isCancelled else { throw .transport(.cancelled) }
+    guard
+      let request = WeatherRequest<FeatureCollection<WeatherAlert>>.activeAlerts(inRegion: region)
+    else {
+      throw .invalidAlertLocation(region.rawValue)
+    }
+    return try await value(for: request)
   }
 
   /// Retrieves active alerts using a consumer-defined marine region enum.
   /// - Parameter region: A String-backed marine region code.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
-  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  /// - Throws: ``NWSError/invalidAlertLocation(_:)`` for an empty code or invalid encoded path,
+  ///   or any error from ``value(for:)``.
   public func activeAlerts<Region>(inRegion region: Region) async throws(NWSError)
     -> FeatureCollection<WeatherAlert>
   where Region: RawRepresentable, Region.RawValue == String {
@@ -130,11 +145,17 @@ public struct NWSClient: Sendable {
   /// Retrieves active alerts for a provider zone.
   /// - Parameter zone: A nonempty forecast or county zone identifier.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
-  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  /// - Throws: ``NWSError/invalidAlertLocation(_:)`` for an empty code or invalid encoded path,
+  ///   or any error from ``value(for:)``.
   public func activeAlerts(inZone zone: String) async throws(NWSError) -> FeatureCollection<
     WeatherAlert
   > {
-    try await value(for: .activeAlerts(inZone: zone))
+    guard !Task.isCancelled else { throw .transport(.cancelled) }
+    guard let request = WeatherRequest<FeatureCollection<WeatherAlert>>.activeAlerts(inZone: zone)
+    else {
+      throw .invalidAlertLocation(zone)
+    }
+    return try await value(for: request)
   }
 
   /// Creates a lazy feature traversal for supported active-alert filters.
@@ -290,7 +311,7 @@ public struct NWSClient: Sendable {
   ///   - stationIdentifier: The station's identifier, such as `KATT`.
   ///   - timestamp: The observation's exact timestamp, sent with whole-second precision.
   /// - Returns: The observation, including any missing measurements.
-  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier,
+  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier or invalid encoded path,
   ///   ``NWSError/problem(_:)`` for an unknown station or an instant with no observation, or any
   ///   other error from ``value(for:)``.
   public func observation(
@@ -335,7 +356,7 @@ public struct NWSClient: Sendable {
   ///
   /// - Parameter identifier: The station's identifier, such as `KATT`.
   /// - Returns: The station's metadata.
-  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier,
+  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier or invalid encoded path,
   ///   ``NWSError/problem(_:)`` for an unknown station, or any other error from ``value(for:)``.
   public func observationStation(identifier: String) async throws(NWSError) -> ObservationStation {
     try await value(for: .observationStation(identifier: identifier))
@@ -485,8 +506,8 @@ public struct NWSClient: Sendable {
   ///
   /// - Parameter request: The portable description to execute.
   /// - Returns: The concrete response selected by the request's factory or endpoint.
-  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier,
-  ///   ``NWSError/invalidAlertIdentifier(_:)`` for an empty alert identifier,
+  /// - Throws: ``NWSError/invalidStationIdentifier(_:)`` for an empty identifier or invalid encoded path,
+  ///   ``NWSError/invalidAlertIdentifier(_:)`` for an empty alert identifier or invalid encoded path,
   ///   ``NWSError/invalidLink(_:)`` for a disallowed link, ``NWSError/noObservationStation``
   ///   for an empty station list, or any error from ``send(_:)``.
   public func value<Value: Decodable & SendableMetatype>(
@@ -497,12 +518,13 @@ public struct NWSClient: Sendable {
     case .activeAlerts(let endpoint):
       return try await send(endpoint)
     case .alert(let identifier):
-      guard !identifier.isEmpty else { throw .invalidAlertIdentifier(identifier) }
-      let endpoint = Endpoint.alert(identifier: identifier)
-      return try await send(Endpoint<Feature<Value>>(path: endpoint.path)).properties
+      guard let endpoint = Endpoint.alert(identifier: identifier) else {
+        throw .invalidAlertIdentifier(identifier)
+      }
+      return try await send(endpoint.decoding(Feature<Value>.self)).properties
     case .alerts(let query):
       let endpoint = Endpoint.alerts(matching: query)
-      return try await send(Endpoint<Value>(path: endpoint.path))
+      return try await send(endpoint.decoding(Value.self))
     case .endpoint(let endpoint):
       return try await send(endpoint)
     case .forecast(let location, let options), .hourlyForecast(let location, let options):
@@ -518,8 +540,7 @@ public struct NWSClient: Sendable {
       }
       guard let endpoint else { throw .invalidLink(link) }
       return try await send(
-        Endpoint<Feature<Value>>(
-          accept: endpoint.accept, featureFlags: endpoint.featureFlags, path: endpoint.path)
+        endpoint.decoding(Feature<Value>.self)
       ).properties
     case .forecastGrid(let location):
       let point = try await point(for: location)
@@ -528,8 +549,7 @@ public struct NWSClient: Sendable {
       }
       // Only WeatherRequest<ForecastGrid> can be created with this resolution.
       return try await send(
-        Endpoint<Feature<Value>>(
-          accept: endpoint.accept, featureFlags: endpoint.featureFlags, path: endpoint.path)
+        endpoint.decoding(Feature<Value>.self)
       ).properties
     case .latestObservation(let source):
       let identifier: String
@@ -543,43 +563,43 @@ public struct NWSClient: Sendable {
       case .station(let stationIdentifier):
         identifier = stationIdentifier
       }
-      guard !identifier.isEmpty else { throw .invalidStationIdentifier(identifier) }
-      let endpoint = Endpoint.latestObservation(stationIdentifier: identifier)
+      guard let endpoint = Endpoint.latestObservation(stationIdentifier: identifier) else {
+        throw .invalidStationIdentifier(identifier)
+      }
       // Only WeatherRequest<WeatherObservation> can be created with this resolution.
       // Decode the same response type through its GeoJSON envelope without erasing or casting it.
       let feature = try await send(
-        Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path))
+        endpoint.decoding(Feature<Value>.self))
       return feature.properties
     case .nearbyObservationStations(let location):
       let endpoint = try await nearbyObservationStationsEndpoint(for: location)
       // Only WeatherRequest<FeatureCollection<ObservationStation>> can be created with this
       // resolution. The page's continuation link is not followed.
       return try await send(
-        Endpoint<Value>(
-          accept: endpoint.accept, featureFlags: endpoint.featureFlags, path: endpoint.path))
+        endpoint.decoding(Value.self))
     case .observation(let stationIdentifier, let timestamp):
-      guard !stationIdentifier.isEmpty else {
-        throw .invalidStationIdentifier(stationIdentifier)
-      }
-      let endpoint = Endpoint.observation(
-        stationIdentifier: stationIdentifier, timestamp: timestamp)
+      guard
+        let endpoint = Endpoint.observation(
+          stationIdentifier: stationIdentifier, timestamp: timestamp)
+      else { throw .invalidStationIdentifier(stationIdentifier) }
       // Only WeatherRequest<WeatherObservation> can be created with this resolution.
       return try await send(
-        Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path)
+        endpoint.decoding(Feature<Value>.self)
       ).properties
     case .observationStation(let identifier):
-      guard !identifier.isEmpty else { throw .invalidStationIdentifier(identifier) }
-      let endpoint = Endpoint.observationStation(identifier: identifier)
+      guard let endpoint = Endpoint.observationStation(identifier: identifier) else {
+        throw .invalidStationIdentifier(identifier)
+      }
       // Only WeatherRequest<ObservationStation> can be created with this resolution.
       return try await send(
-        Endpoint<Feature<Value>>(accept: endpoint.accept, path: endpoint.path)
+        endpoint.decoding(Feature<Value>.self)
       ).properties
     case .observationStations(let query):
       let endpoint = Endpoint.observationStations(query: query)
-      return try await send(Endpoint<Value>(path: endpoint.path))
+      return try await send(endpoint.decoding(Value.self))
     case .observations(let query):
       let endpoint = Endpoint.observations(query: query)
-      return try await send(Endpoint<Value>(path: endpoint.path))
+      return try await send(endpoint.decoding(Value.self))
     }
   }
 
@@ -599,17 +619,6 @@ public struct NWSClient: Sendable {
     }
   }
 
-  /// Resolves a coordinate's point and validates its observation-stations link.
-  func nearbyObservationStationsEndpoint(
-    for location: WeatherCoordinate
-  ) async throws(NWSError) -> Endpoint<FeatureCollection<ObservationStation>> {
-    let point = try await point(for: location)
-    guard let endpoint = Endpoint.observationStations(near: point) else {
-      throw .invalidLink(point.observationStations)
-    }
-    return endpoint
-  }
-
   func collectionPages<Properties: Decodable & Sendable>(
     endpoint: Endpoint<FeatureCollection<Properties>>, followsLinks: Bool
   ) -> PageSequence<FeatureCollection<Properties>> {
@@ -626,6 +635,17 @@ public struct NWSClient: Sendable {
     }
   }
 
+  /// Resolves a coordinate's point and validates its observation-stations link.
+  func nearbyObservationStationsEndpoint(
+    for location: WeatherCoordinate
+  ) async throws(NWSError) -> Endpoint<FeatureCollection<ObservationStation>> {
+    let point = try await point(for: location)
+    guard let endpoint = Endpoint.observationStations(near: point) else {
+      throw .invalidLink(point.observationStations)
+    }
+    return endpoint
+  }
+
   func redirectEndpoint<Value>(
     after error: TransportError, from endpoint: Endpoint<Value>
   ) throws(NWSError) -> Endpoint<Value>? {
@@ -634,8 +654,17 @@ public struct NWSClient: Sendable {
       let location = fields[.location]
     else { return nil }
     guard let current = URL(string: Self.baseURL.absoluteString + endpoint.path),
+      let raw = URL(string: location, encodingInvalidCharacters: false),
+      let components = URLComponents(url: raw, resolvingAgainstBaseURL: false),
       let link = URL(string: location, relativeTo: current)?.absoluteURL
     else { throw .invalidRedirect(location) }
+    // Validate before resolving, because relative URL resolution can remove dot segments.
+    let path = components.percentEncodedPath
+    let relativePath = path.hasPrefix("/") ? path : "/" + path
+    let query = components.percentEncodedQuery.map { "?" + $0 } ?? ""
+    guard Endpoint<Value>(path: relativePath + query) != nil,
+      components.scheme != nil || components.host == nil
+    else { throw .invalidLink(link) }
     guard
       let next = Endpoint<Value>(
         accept: endpoint.accept, featureFlags: endpoint.featureFlags, link: link)

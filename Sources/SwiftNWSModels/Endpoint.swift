@@ -24,12 +24,13 @@ public struct Endpoint<Response>: Hashable, Sendable {
   /// The comma-separated values to send in the Feature-Flags header.
   public var featureFlags: [NWSFeatureFlag]
 
-  /// The path, and query when there is one, relative to `https://api.weather.gov`.
-  public var path: String
+  /// The validated encoded path and optional query, relative to `https://api.weather.gov`.
+  /// The exact spelling is retained and cannot be changed after initialization.
+  public let path: String
 
   /// Creates an endpoint from an HTTPS API link without credentials or a fragment.
   ///
-  /// Returns `nil` for another origin, a nondefault port, credentials, a fragment, or no path.
+  /// Returns `nil` for another origin, a nondefault port, credentials, a fragment, no path, or an invalid relative path.
   /// Explicit port 443 is accepted. Encoded paths and queries are retained.
   ///
   /// Responses link to related resources with absolute URLs. Follow them through this initializer
@@ -72,26 +73,34 @@ public struct Endpoint<Response>: Hashable, Sendable {
     self.init(accept: accept, featureFlags: converted, link: link)
   }
 
-  /// Creates an endpoint from a path.
+  /// Creates an endpoint from an encoded relative API path and optional query.
+  ///
+  /// Returns nil for absolute or authority URLs, fragments, raw whitespace or controls,
+  /// malformed percent escapes, backslashes, or dot path segments. Encoded authority forms,
+  /// backslashes, controls, and dot segments within the path are also rejected.
+  /// Encoded spaces and Unicode are allowed. Query values are not interpreted as path segments.
+  /// Accepted text is retained exactly, without normalization.
   ///
   /// - Parameters:
   ///   - accept: The media type to ask for; defaults to ``MediaType/geoJSON``.
   ///   - featureFlags: Explicit response representations to request.
   ///   - path: The path relative to `https://api.weather.gov`, starting with `/`.
-  public init(
+  public init?(
     accept: MediaType = .geoJSON, featureFlags: [NWSFeatureFlag] = [], path: String
   ) {
+    guard Self.isValidPath(path) else { return nil }
     self.accept = accept
     self.featureFlags = featureFlags
     self.path = path
   }
 
-  /// Creates an endpoint from a path using a consumer-defined feature flag enum.
+  /// Creates an endpoint from a validated path using a consumer-defined feature flag enum.
+  /// Returns nil under the same rules as the raw-path initializer.
   /// - Parameters:
   ///   - accept: The media type to ask for; defaults to ``MediaType/geoJSON``.
   ///   - featureFlags: String-backed response representations to request.
   ///   - path: The path relative to `https://api.weather.gov`, starting with `/`.
-  public init<Flag>(accept: MediaType = .geoJSON, featureFlags: [Flag], path: String)
+  public init?<Flag>(accept: MediaType = .geoJSON, featureFlags: [Flag], path: String)
   where Flag: RawRepresentable, Flag.RawValue == String {
     var converted: [NWSFeatureFlag] = []
     converted.reserveCapacity(featureFlags.count)
@@ -99,6 +108,68 @@ public struct Endpoint<Response>: Hashable, Sendable {
       converted.append(NWSFeatureFlag(featureFlag))
     }
     self.init(accept: accept, featureFlags: converted, path: path)
+  }
+
+  // Only fixed paths, validated domain values, and encoded queries use this construction.
+  // Validation still runs so there is no alternate unchecked endpoint representation.
+  static func builtIn(accept: MediaType = .geoJSON, path: String) -> Self {
+    guard let endpoint = Self(accept: accept, path: path) else {
+      preconditionFailure("Fixed API paths with validated segments and encoded queries are valid.")
+    }
+    return endpoint
+  }
+
+  private static func decoded(_ value: String) -> String? {
+    let bytes = Array(value.utf8)
+    var decoded: [UInt8] = []
+    var index = 0
+    while index < bytes.count {
+      if bytes[index] == 37 {
+        guard index + 2 < bytes.count,
+          let byte = UInt8(
+            String(decoding: bytes[(index + 1)...(index + 2)], as: UTF8.self), radix: 16)
+        else { return nil }
+        decoded.append(byte)
+        index += 3
+      } else {
+        decoded.append(bytes[index])
+        index += 1
+      }
+    }
+    return String(validating: decoded, as: UTF8.self)
+  }
+
+  private static func isValidPath(_ value: String) -> Bool {
+    guard value.hasPrefix("/"), !value.hasPrefix("//") else { return false }
+    let bytes = Array(value.utf8)
+    var index = 0
+    var inQuery = false
+    while index < bytes.count {
+      let byte = bytes[index]
+      if byte == 63 { inQuery = true }
+      let allowed =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~!$&'()*+,;=:@/?%"
+      guard allowed.utf8.contains(byte) || (inQuery && (byte == 91 || byte == 93)) else {
+        return false
+      }
+      if byte == 37 {
+        guard index + 2 < bytes.count,
+          UInt8(String(UnicodeScalar(bytes[index + 1])), radix: 16) != nil,
+          UInt8(String(UnicodeScalar(bytes[index + 2])), radix: 16) != nil
+        else { return false }
+        index += 3
+      } else {
+        index += 1
+      }
+    }
+    let path = value.split(separator: "?", maxSplits: 1, omittingEmptySubsequences: false)[0]
+    guard let decoded = decoded(String(path)),
+      !decoded.hasPrefix("//"),
+      !decoded.unicodeScalars.contains(where: {
+        $0.properties.generalCategory == .control || $0 == "\\"
+      })
+    else { return false }
+    return !decoded.split(separator: "/").contains { $0 == "." || $0 == ".." }
   }
 }
 
@@ -123,17 +194,25 @@ extension Endpoint where Response == Feature<WeatherForecast> {
 
   private static func forecast(link: URL, options: ForecastOptions) -> Self? {
     guard
-      var endpoint = Self(
-        featureFlags: options.featureFlags.sorted { $0.rawValue < $1.rawValue }, link: link),
-      var components = URLComponents(string: endpoint.path)
+      let endpoint = Self(
+        featureFlags: options.featureFlags.sorted { $0.rawValue < $1.rawValue }, link: link)
     else { return nil }
-    var items = components.percentEncodedQueryItems ?? []
-    items.removeAll { $0.name == "units" }
-    items.append(URLQueryItem(name: "units", value: options.units.rawValue))
-    components.percentEncodedQueryItems = items
-    guard let path = components.string else { return nil }
-    endpoint.path = path
-    return endpoint
+    let parts = endpoint.path.split(
+      separator: "?", maxSplits: 1, omittingEmptySubsequences: false)
+    var items: [String] = []
+    if parts.count == 2, !parts[1].isEmpty {
+      items = parts[1].split(separator: "&", omittingEmptySubsequences: false).map(String.init)
+      items.removeAll {
+        let name = $0.split(
+          separator: "=", maxSplits: 1, omittingEmptySubsequences: false)[0]
+        return decoded(String(name)) == "units"
+      }
+    }
+    let units = URLComponents.nwsQuery([URLQueryItem(name: "units", value: options.units.rawValue)])
+    items.append(String(units.dropFirst()))
+    return Self(
+      accept: endpoint.accept, featureFlags: endpoint.featureFlags,
+      path: String(parts[0]) + "?" + items.joined(separator: "&"))
   }
 }
 
@@ -159,23 +238,16 @@ extension Endpoint where Response == Feature<WeatherObservation> {
   /// The most recent observation from a station, `/stations/{stationId}/observations/latest`.
   ///
   /// ```swift
-  /// Endpoint.latestObservation(stationIdentifier: "KATT").path
+  /// Endpoint.latestObservation(stationIdentifier: "KATT")?.path
   /// // "/stations/KATT/observations/latest"
   /// ```
   ///
   /// - Parameter stationIdentifier: The station's identifier, such as `KATT`. It is encoded as
-  ///   one path segment. Callers of this low-level factory must supply a nonempty identifier.
-  /// - Returns: The endpoint.
-  public static func latestObservation(stationIdentifier: String) -> Endpoint {
-    let encoded = stationIdentifier.utf8.map { byte -> String in
-      switch byte {
-      case 45, 48...57, 65...90, 95, 97...122, 126:
-        String(UnicodeScalar(byte))
-      default:
-        "%" + (byte < 16 ? "0" : "") + String(byte, radix: 16, uppercase: true)
-      }
-    }.joined()
-    return Endpoint(path: "/stations/\(encoded)/observations/latest")
+  ///   one path segment. Empty identifiers and invalid encoded paths are rejected.
+  /// - Returns: The endpoint, or nil for an empty identifier or invalid path.
+  public static func latestObservation(stationIdentifier: String) -> Endpoint? {
+    guard !stationIdentifier.isEmpty else { return nil }
+    return Endpoint(path: "/stations/" + encodedSegment(stationIdentifier) + "/observations/latest")
   }
 
   /// The observation a station made at an exact instant, `/stations/{stationId}/observations/{time}`.
@@ -187,17 +259,18 @@ extension Endpoint where Response == Feature<WeatherObservation> {
   ///
   /// ```swift
   /// let timestamp = Date(timeIntervalSince1970: 1_789_696_260)
-  /// Endpoint.observation(stationIdentifier: "KATT", timestamp: timestamp).path
+  /// Endpoint.observation(stationIdentifier: "KATT", timestamp: timestamp)?.path
   /// // "/stations/KATT/observations/2026-09-18T01:51:00Z"
   /// ```
   ///
   /// - Parameters:
   ///   - stationIdentifier: The station's identifier, such as `KATT`. It is encoded as one path
-  ///     segment. Callers of this low-level factory must supply a nonempty identifier.
+  ///     segment. Empty identifiers and invalid encoded paths are rejected.
   ///   - timestamp: The observation's exact timestamp.
-  /// - Returns: The endpoint.
-  public static func observation(stationIdentifier: String, timestamp: Date) -> Endpoint {
-    Endpoint(
+  /// - Returns: The endpoint, or nil for an empty identifier or invalid path.
+  public static func observation(stationIdentifier: String, timestamp: Date) -> Endpoint? {
+    guard !stationIdentifier.isEmpty else { return nil }
+    return Endpoint(
       path: "/stations/" + encodedSegment(stationIdentifier) + "/observations/"
         + timestamp.formatted(.iso8601))
   }
@@ -207,14 +280,15 @@ extension Endpoint where Response == Feature<ObservationStation> {
   /// The metadata for one observation station, `/stations/{stationId}`.
   ///
   /// ```swift
-  /// Endpoint.observationStation(identifier: "KATT").path  // "/stations/KATT"
+  /// Endpoint.observationStation(identifier: "KATT")?.path  // "/stations/KATT"
   /// ```
   ///
   /// - Parameter identifier: The station's identifier, such as `KATT`. It is encoded as one path
-  ///   segment. Callers of this low-level factory must supply a nonempty identifier.
-  /// - Returns: The endpoint.
-  public static func observationStation(identifier: String) -> Self {
-    Self(path: "/stations/" + encodedSegment(identifier))
+  ///   segment. Empty identifiers and invalid encoded paths are rejected.
+  /// - Returns: The endpoint, or nil for an empty identifier or invalid path.
+  public static func observationStation(identifier: String) -> Self? {
+    guard !identifier.isEmpty else { return nil }
+    return Self(path: "/stations/" + encodedSegment(identifier))
   }
 }
 
@@ -230,7 +304,7 @@ extension Endpoint where Response == FeatureCollection<WeatherObservation> {
   /// - Parameter query: The station, window, page size, and optional initial cursor.
   /// - Returns: One endpoint for the history page.
   public static func observations(query: ObservationQuery) -> Self {
-    Self(
+    builtIn(
       path: "/stations/" + encodedSegment(query.stationIdentifier) + "/observations" + query.query)
   }
 }
@@ -248,7 +322,7 @@ extension Endpoint where Response == FeatureCollection<ObservationStation> {
   /// - Parameter query: Filters, page size, and optional initial cursor.
   /// - Returns: One endpoint for the directory page.
   public static func observationStations(query: ObservationStationQuery) -> Self {
-    Self(path: "/stations" + query.query)
+    builtIn(path: "/stations" + query.query)
   }
 }
 
@@ -265,7 +339,7 @@ extension Endpoint where Response == Feature<Point> {
   /// - Parameter location: A validated, normalized coordinate.
   /// - Returns: The endpoint.
   public static func point(for location: WeatherCoordinate) -> Endpoint {
-    Endpoint(path: "/points/\(coordinate(location.latitude)),\(coordinate(location.longitude))")
+    builtIn(path: "/points/\(coordinate(location.latitude)),\(coordinate(location.longitude))")
   }
 
   // Written with integer arithmetic rather than a number formatter, so the result is the same

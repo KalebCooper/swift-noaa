@@ -37,7 +37,8 @@ struct NWSClientTests {
     try answer(transport, path: "/stations/KATT/observations/latest", with: .observation)
     let client = NWSClient(configuration: configuration, transport: transport)
     let request = WeatherRequest(
-      endpoint: Endpoint<Feature<Reading>>(path: "/stations/KATT/observations/latest"))
+      endpoint: try #require(Endpoint<Feature<Reading>>(path: "/stations/KATT/observations/latest"))
+    )
     #expect(transport.requests.isEmpty)
 
     let result = try await client.value(for: request)

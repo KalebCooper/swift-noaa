@@ -63,14 +63,14 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Retrieve the observation a station made at an exact instant and return its GeoJSON
     /// properties.
     ///
-    /// Only requests returning ``WeatherObservation`` carry this resolution. An empty identifier is
+    /// Only requests returning ``WeatherObservation`` carry this resolution. An empty identifier or invalid encoded path is
     /// a failure before any request. The instant must match an observation's timestamp; the service
     /// does not select the nearest observation, and no other instant or station is tried.
     case observation(stationIdentifier: String, timestamp: Date)
 
     /// Retrieve one station's metadata and return its GeoJSON properties.
     ///
-    /// Only requests returning ``ObservationStation`` carry this resolution. An empty identifier is
+    /// Only requests returning ``ObservationStation`` carry this resolution. An empty identifier or invalid encoded path is
     /// a failure before any request.
     case observationStation(identifier: String)
 
@@ -154,39 +154,49 @@ extension WeatherRequest where Response == FeatureCollection<WeatherAlert> {
 
   /// Describes active alerts in a provider area.
   /// - Parameter area: A state, territory, or marine area code.
-  /// - Returns: A reusable request for a GeoJSON collection.
-  public static func activeAlerts(inArea area: AreaCode) -> Self {
-    Self(resolution: .activeAlerts(.activeAlerts(inArea: area)))
+  /// - Returns: A reusable request, or nil for an empty code or invalid encoded path.
+  public static func activeAlerts(inArea area: AreaCode) -> Self? {
+    guard let endpoint = Endpoint<FeatureCollection<WeatherAlert>>.activeAlerts(inArea: area) else {
+      return nil
+    }
+    return Self(resolution: .activeAlerts(endpoint))
   }
 
   /// Describes active alerts using a consumer-defined area enum.
   /// - Parameter area: A String-backed state, territory, or marine area code.
-  /// - Returns: A reusable request for a GeoJSON collection.
-  public static func activeAlerts<Area>(inArea area: Area) -> Self
+  /// - Returns: A reusable request, or nil for an empty code or invalid encoded path.
+  public static func activeAlerts<Area>(inArea area: Area) -> Self?
   where Area: RawRepresentable, Area.RawValue == String {
     activeAlerts(inArea: AreaCode(area))
   }
 
   /// Describes active alerts in a marine region.
   /// - Parameter region: A marine region code.
-  /// - Returns: A reusable request for a GeoJSON collection.
-  public static func activeAlerts(inRegion region: MarineRegionCode) -> Self {
-    Self(resolution: .activeAlerts(.activeAlerts(inRegion: region)))
+  /// - Returns: A reusable request, or nil for an empty code or invalid encoded path.
+  public static func activeAlerts(inRegion region: MarineRegionCode) -> Self? {
+    guard let endpoint = Endpoint<FeatureCollection<WeatherAlert>>.activeAlerts(inRegion: region)
+    else {
+      return nil
+    }
+    return Self(resolution: .activeAlerts(endpoint))
   }
 
   /// Describes active alerts using a consumer-defined marine region enum.
   /// - Parameter region: A String-backed marine region code.
-  /// - Returns: A reusable request for a GeoJSON collection.
-  public static func activeAlerts<Region>(inRegion region: Region) -> Self
+  /// - Returns: A reusable request, or nil for an empty code or invalid encoded path.
+  public static func activeAlerts<Region>(inRegion region: Region) -> Self?
   where Region: RawRepresentable, Region.RawValue == String {
     activeAlerts(inRegion: MarineRegionCode(region))
   }
 
   /// Describes active alerts in a provider zone.
   /// - Parameter zone: A nonempty zone identifier.
-  /// - Returns: A reusable request for a GeoJSON collection.
-  public static func activeAlerts(inZone zone: String) -> Self {
-    Self(resolution: .activeAlerts(.activeAlerts(inZone: zone)))
+  /// - Returns: A reusable request, or nil for an empty code or invalid encoded path.
+  public static func activeAlerts(inZone zone: String) -> Self? {
+    guard let endpoint = Endpoint<FeatureCollection<WeatherAlert>>.activeAlerts(inZone: zone) else {
+      return nil
+    }
+    return Self(resolution: .activeAlerts(endpoint))
   }
 
   /// Describes an active-alert query.

@@ -21,7 +21,9 @@ geographic combinations the service rejects. Empty arrays omit a filter. `AreaCo
 event names, and event codes remain open strings.
 
 Use `activeAlerts(inArea:)`, `activeAlerts(inRegion:)`, or `activeAlerts(inZone:)` for canonical
-area, marine region, or zone paths. An unrecognized region code is sent as given, and the service
+area, marine region, or zone paths. Empty codes and invalid encoded paths throw
+`NWSError.invalidAlertLocation` before sending. Their endpoint and request factories return nil
+for those inputs. An unrecognized region code with a valid path is sent as given, and the service
 answers with problem details. The area and region overloads on `NWSClient`, `WeatherRequest`, and `Endpoint` also accept a consumer-defined
 String-backed enum directly. `alert(identifier:)` retrieves an individual alert's properties. Equivalent `WeatherRequest`
 factories perform no work until executed. `Endpoint` factories retain the GeoJSON envelopes.
@@ -46,7 +48,7 @@ for try await page in weather.activeAlertPages(matching: filter) {
 
 Use `activeAlertPages(for:)` or synchronous `activeAlerts(for:)` with any library alert request,
 including `.activeAlerts(for: home)`, `.activeAlerts(inArea: .texas)`,
-`.activeAlerts(inRegion: .gulfOfMexico)`, and `.activeAlerts(inZone: "TXZ192")`. Their initial endpoint paths are unchanged.
+`.activeAlerts(inRegion: .gulfOfMexico)`, and `.activeAlerts(inZone: "TXZ192")`. Unwrap the failable area, region, and zone request factories before passing them to an executor.
 `WeatherRequest(endpoint:)` remains a single-page operation even when its response contains pagination.
 
 ``ActiveAlertPageSequence`` and ``ActiveAlertSequence`` send nothing until read and start independently

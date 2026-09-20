@@ -25,8 +25,27 @@ owns status handling, cancellation, and decoding.
 Use `Endpoint(accept:featureFlags:link:)` for links returned by the API. It accepts only HTTPS on
 `api.weather.gov`, with no credentials or fragment and either no explicit port or port 443.
 It retains the encoded path and query. A disallowed link returns nil and must not be followed.
-The path-based initializer is a low-level escape hatch; callers supply the path and response
-type that match their intended operation.
+Raw-path initializers are failable. Paths must start with one slash and may include an encoded
+query. Absolute or authority URLs, fragments, raw whitespace and controls, malformed escapes,
+backslashes, and dot path segments are rejected, including encoded path equivalents. Accepted paths
+and queries retain their exact spelling; query values are not treated as path segments, and query
+names such as `api_key` are allowed. `path` is immutable; `accept` and `featureFlags` remain configurable.
+
+```swift
+if let endpoint = Endpoint<Feature<ObservationStation>>(path: "/stations/KATT") {
+  print(endpoint.path)
+  let request = WeatherRequest(endpoint: endpoint)
+}
+```
+
+Named factories taking station or alert identifiers, areas, regions, or zones also return nil when
+the resulting path is invalid or the identifier is empty. Area, region, and zone request factories
+are failable for the same reason. Check the optional before execution. Other identifier request
+factories defer validation to execution; unwrap their endpoint factory and report failure before
+sending. Observation queries validate their station path during construction.
+
+Validate a redirect's original encoded path before resolving a relative URL, because resolution
+can remove dot segments. Then apply the same endpoint origin and path checks to the resolved URL.
 
 ## Interpret a weather request
 
@@ -43,7 +62,7 @@ Constructing or inspecting it sends nothing.
   responses. Resolve the point, validate its grid data link with `Endpoint.forecastGrid(for:)`,
   send it without a units query or feature flags, and return the feature's properties. A disallowed
   link is a failure; do not rebuild the path.
-- An alert resolution contains an identifier. Reject an empty identifier, send `Endpoint.alert(identifier:)`,
+- An alert resolution contains an identifier. Unwrap the endpoint factory, reject invalid identifiers, send `Endpoint.alert(identifier:)`,
   and return the feature's properties.
 - Active-alert factories use an `activeAlerts` resolution containing the typed initial endpoint.
   One-page execution retains the returned collection. Sequence execution follows validated pagination
@@ -54,15 +73,15 @@ Constructing or inspecting it sends nothing.
   `Endpoint.observations(query:)` for one page, decode `FeatureCollection<WeatherObservation>`, and
   apply the continuation rules below for a sequence.
 - A latest-observation resolution contains ``ObservationSource`` and is only created for
-  ``WeatherObservation`` responses. For an explicit station, reject an empty identifier,
-  send `Endpoint.latestObservation(stationIdentifier:)`, and return the feature's properties.
+  ``WeatherObservation`` responses. For an explicit station, reject invalid identifiers,
+  unwrap and send `Endpoint.latestObservation(stationIdentifier:)`, and return the feature's properties.
 - An `observation` resolution contains a station identifier and a timestamp and is only created for
-  ``WeatherObservation`` responses. Reject an empty identifier, send
+  ``WeatherObservation`` responses. Unwrap the endpoint factory, reject invalid identifiers, send
   `Endpoint.observation(stationIdentifier:timestamp:)`, and return the feature's properties. The
   service answers an instant that matches no observation with `404` problem details; do not substitute
   the nearest observation.
 - An `observationStation` resolution contains a station identifier and is only created for
-  ``ObservationStation`` responses. Reject an empty identifier, send
+  ``ObservationStation`` responses. Unwrap the endpoint factory, reject invalid identifiers, send
   `Endpoint.observationStation(identifier:)`, and return the feature's properties.
 - A `nearbyObservationStations` resolution contains a coordinate and is only created for
   `FeatureCollection<ObservationStation>` responses. Resolve the point, validate its
@@ -96,7 +115,7 @@ if let pagination = page.pagination {
 The station-query, active-alert, alert-history, and observation-history resolutions support
 one-page execution and opt-in continuation. The nearby-station resolution is always one page. A custom endpoint resolution remains one HTTP operation.
 Queries validate limits from 1 through 500 and preserve an initial cursor; an observation query
-omits the limit when none is given and rejects an empty station identifier. Empty identifier and
+omits the limit when none is given and rejects an empty station identifier or invalid encoded path. Empty identifier and
 state arrays omit their filters, and window bounds are sent as whole-second ISO 8601 instants.
 
 For active alerts, `WeatherRequest.activeAlerts(matching:)`, coordinate, area, marine region, and zone factories

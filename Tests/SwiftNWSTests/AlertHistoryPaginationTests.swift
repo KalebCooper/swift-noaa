@@ -93,7 +93,7 @@ struct AlertHistoryPaginationTests {
     let transport = MockTransport()
     try answer(transport, page: page(next: "bad link"))
     let request = WeatherRequest(
-      endpoint: Endpoint<FeatureCollection<WeatherAlert>>(path: "/custom"))
+      endpoint: try #require(Endpoint<FeatureCollection<WeatherAlert>>(path: "/custom")))
     var iterator = makeClient(transport).alerts(for: request).makeAsyncIterator()
     var features: [Feature<WeatherAlert>] = []
     while let feature = try await iterator.next() { features.append(feature) }
@@ -165,7 +165,8 @@ struct AlertHistoryPaginationTests {
     try answer(transport, page: page(next: nil))
     let client = makeClient(transport)
     let request: WeatherRequest<FeatureCollection<WeatherAlert>> =
-      history ? .alerts(matching: try AlertQuery(limit: 1)) : .activeAlerts(inArea: .texas)
+      history
+      ? .alerts(matching: try AlertQuery(limit: 1)) : try #require(.activeAlerts(inArea: .texas))
     let first = history ? "/alerts?limit=1" : "/alerts/active/area/TX"
     var pages: [FeatureCollection<WeatherAlert>] = []
     if history {

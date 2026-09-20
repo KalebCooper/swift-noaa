@@ -22,7 +22,7 @@ public struct ObservationQuery: Hashable, Sendable {
   public enum ValidationError: Error {
     /// The requested page size is outside 1 through 500.
     case invalidLimit
-    /// The station identifier is empty.
+    /// The station identifier is empty or produces an invalid encoded path.
     case invalidStationIdentifier
   }
 
@@ -45,13 +45,15 @@ public struct ObservationQuery: Hashable, Sendable {
   ///   - start: The earliest instant to include.
   ///   - stationIdentifier: A nonempty station identifier.
   /// - Throws: ``ValidationError/invalidLimit`` for an unsupported page size, or
-  ///   ``ValidationError/invalidStationIdentifier`` for an empty identifier.
+  ///   ``ValidationError/invalidStationIdentifier`` for an empty identifier or invalid encoded path.
   public init(
     cursor: String? = nil, end: Date? = nil, limit: Int? = nil, start: Date? = nil,
     stationIdentifier: String
   ) throws(ValidationError) {
     if let limit { guard (1...500).contains(limit) else { throw .invalidLimit } }
-    guard !stationIdentifier.isEmpty else { throw .invalidStationIdentifier }
+    guard Endpoint.latestObservation(stationIdentifier: stationIdentifier) != nil else {
+      throw .invalidStationIdentifier
+    }
     self.cursor = cursor
     self.end = end
     self.limit = limit

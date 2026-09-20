@@ -6,11 +6,12 @@ import Testing
 @Suite("Forecast code values", .timeLimit(.minutes(suiteTimeLimitMinutes)))
 struct ForecastCodeValueTests {
   @Test("Consumer enums create forecast options and endpoints")
-  func consumerEnumsCreateForecastOptionsAndEndpoints() {
+  func consumerEnumsCreateForecastOptionsAndEndpoints() throws {
     let options = ForecastOptions(
       featureFlags: [ConsumerFeatureFlag.temperatureQuantity], units: ConsumerForecastUnits.metric)
-    let endpoint = Endpoint<String>(
-      featureFlags: [ConsumerFeatureFlag.temperatureQuantity], path: "/custom")
+    let endpoint = try #require(
+      Endpoint<String>(
+        featureFlags: [ConsumerFeatureFlag.temperatureQuantity], path: "/custom"))
 
     #expect(options.featureFlags == [.temperatureQuantity])
     #expect(options.units == .si)

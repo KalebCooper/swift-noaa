@@ -24,7 +24,7 @@ for try await observation in weather.observations(for: request) {
 `ObservationQuery` names a station, an optional `start` and `end`, an optional page size from 1
 through 500, and an optional initial cursor. Window bounds are sent as ISO 8601 instants in UTC
 with whole-second precision, and an absent bound is left open. A nil limit omits the parameter so
-the service applies its own page size. An empty station identifier is rejected at construction.
+the service applies its own page size. An empty station identifier or invalid encoded path is rejected at construction.
 The service decides which observations a window matches and how it orders them; recorded responses
 list the newest observation first, but that order is not a documented guarantee.
 
@@ -56,7 +56,9 @@ shared sequence contract.
 let timestamp = firstPage.features[0].properties.timestamp
 let observation = try await weather.observation(stationIdentifier: "KATT", timestamp: timestamp)
 let reusable = WeatherRequest.observation(stationIdentifier: "KATT", timestamp: timestamp)
-let direct = try await weather.send(.observation(stationIdentifier: "KATT", timestamp: timestamp))
+if let endpoint = Endpoint.observation(stationIdentifier: "KATT", timestamp: timestamp) {
+  let direct = try await weather.send(endpoint)
+}
 ```
 
 ``NWSClient/observation(stationIdentifier:timestamp:)`` sends one request to
@@ -65,7 +67,7 @@ properties. The instant is sent in ISO 8601 form in UTC with whole-second precis
 returns an observation only when the instant matches an observation's timestamp exactly, so take it
 from observation history or from an earlier observation. Any other instant, including one between two
 observations or older than the service keeps, throws ``NWSError/problem(_:)`` with `404` details; the
-client does not look for the nearest observation or try another instant. An empty station identifier
+client does not look for the nearest observation or try another instant. An empty station identifier or invalid encoded path
 throws ``NWSError/invalidStationIdentifier(_:)`` before any request.
 
 ## Custom endpoints and latest observations

@@ -90,7 +90,7 @@ struct ForecastClientTests {
     let _: WeatherForecast = try await client.value(for: .austinForecast)
     let endpoint = try #require(Endpoint.forecast(for: point))
     let _: Feature<WeatherForecast> = try await client.send(endpoint)
-    let custom = WeatherRequest(endpoint: Endpoint<ForecastIdentity>(path: "/custom"))
+    let custom = WeatherRequest(endpoint: try #require(Endpoint<ForecastIdentity>(path: "/custom")))
     let _: ForecastIdentity = try await client.value(for: custom)
   }
 }

@@ -78,10 +78,11 @@ final class ConditionsModel {
 
   private static func message(for error: NWSError) -> String {
     switch error {
-    case .invalidAlertIdentifier: "The weather service returned an empty alert identifier."
+    case .invalidAlertIdentifier: "The weather service returned an invalid alert identifier."
+    case .invalidAlertLocation: "The alert location is invalid."
     case .invalidLink(let link): "The API linked outside itself: \(link)"
     case .invalidRedirect: "The weather service returned an invalid redirect."
-    case .invalidStationIdentifier: "The weather service returned an empty station identifier."
+    case .invalidStationIdentifier: "The weather service returned an invalid station identifier."
     case .noObservationStation: "No weather station reports near this location."
     case .pagination: "The weather service returned an invalid next page. Try again later."
     case .problem(let problem): "\(problem.title): \(problem.detail)"

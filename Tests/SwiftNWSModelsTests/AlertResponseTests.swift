@@ -104,7 +104,7 @@ struct AlertResponseTests {
   }
 
   @Test("Filters encode all supported query fields")
-  func filtersEncodeAllSupportedQueryFields() {
+  func filtersEncodeAllSupportedQueryFields() throws {
     let endpoint = Endpoint.activeAlerts(
       matching: .init(
         certainty: [.likely], code: ["HTY"], event: ["Heat Advisory"], location: .areas([.texas]),
@@ -115,10 +115,11 @@ struct AlertResponseTests {
     )
     #expect(Endpoint.activeAlerts().path == "/alerts/active")
     #expect(
-      Endpoint.activeAlerts(inArea: AreaCode(rawValue: "TX/OK")).path
+      try #require(Endpoint.activeAlerts(inArea: AreaCode(rawValue: "TX/OK"))).path
         == "/alerts/active/area/TX%2FOK")
-    #expect(Endpoint.activeAlerts(inZone: "../x").path == "/alerts/active/zone/%2E%2E%2Fx")
-    #expect(Endpoint.alert(identifier: "urn:oid:a/b").path == "/alerts/urn%3Aoid%3Aa%2Fb")
+    #expect(try #require(Endpoint.activeAlerts(inZone: "x/y")).path == "/alerts/active/zone/x%2Fy")
+    #expect(
+      try #require(Endpoint.alert(identifier: "urn:oid:a/b")).path == "/alerts/urn%3Aoid%3Aa%2Fb")
   }
 
   @Test("Unknown alert codes and null fields survive decoding")

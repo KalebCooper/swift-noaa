@@ -38,10 +38,10 @@ struct ObservationQueryTests {
 
   @Test("Station identifiers occupy exactly one path segment")
   func stationIdentifiersOccupyExactlyOnePathSegment() throws {
-    let query = try ObservationQuery(stationIdentifier: "../A/B?x=#%\n")
+    let query = try ObservationQuery(stationIdentifier: "A/B?x=#%")
     #expect(
       Endpoint.observations(query: query).path
-        == "/stations/%2E%2E%2FA%2FB%3Fx%3D%23%25%0A/observations")
+        == "/stations/A%2FB%3Fx%3D%23%25/observations")
   }
 
   @Test("Window bounds, page size, and the initial cursor retain their supplied values")

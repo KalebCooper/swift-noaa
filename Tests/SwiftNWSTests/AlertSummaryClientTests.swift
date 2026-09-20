@@ -37,7 +37,7 @@ struct AlertSummaryClientTests {
     try answer(transport, path: "/alerts/active/count", with: .activeAlertCount)
     let client = makeClient(transport)
     let request = WeatherRequest(
-      endpoint: Endpoint<TotalOnly>(accept: .jsonLD, path: "/alerts/active/count"))
+      endpoint: try #require(Endpoint<TotalOnly>(accept: .jsonLD, path: "/alerts/active/count")))
     #expect(try await client.value(for: request) == TotalOnly(total: 244))
   }
 
@@ -87,7 +87,7 @@ struct AlertSummaryClientTests {
     let region = MarineRegionCode(rawValue: "XX")
     let failure = await #expect(throws: NWSError.self) {
       if useRequest {
-        _ = try await client.value(for: .activeAlerts(inRegion: region))
+        _ = try await client.value(for: try #require(.activeAlerts(inRegion: region)))
       } else {
         _ = try await client.activeAlerts(inRegion: region)
       }
@@ -115,8 +115,8 @@ struct AlertSummaryClientTests {
       switch layer {
       case 0: try await client.activeAlerts(inRegion: .atlantic)
       case 1: try await client.activeAlerts(inRegion: ConsumerRegion.atlantic)
-      case 2: try await client.value(for: .activeAlerts(inRegion: .atlantic))
-      default: try await client.send(Endpoint.activeAlerts(inRegion: .atlantic))
+      case 2: try await client.value(for: try #require(.activeAlerts(inRegion: .atlantic)))
+      default: try await client.send(try #require(Endpoint.activeAlerts(inRegion: .atlantic)))
       }
     #expect(
       result
@@ -132,12 +132,16 @@ struct AlertSummaryClientTests {
     try answer(transport, path: "/alerts/active/region/AT", with: .regionAlerts)
     let client = makeClient(transport)
     var pages = 0
-    for try await page in client.activeAlertPages(for: .activeAlerts(inRegion: .atlantic)) {
+    for try await page in client.activeAlertPages(
+      for: try #require(.activeAlerts(inRegion: .atlantic)))
+    {
       pages += 1
       #expect(page.features.count == 2)
     }
     var events: [String] = []
-    for try await alert in client.activeAlerts(for: .activeAlerts(inRegion: .atlantic)) {
+    for try await alert in client.activeAlerts(
+      for: try #require(.activeAlerts(inRegion: .atlantic)))
+    {
       events.append(alert.properties.event)
     }
     #expect(pages == 1)

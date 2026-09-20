@@ -100,9 +100,10 @@ struct AlertPaginationTests {
           Response(
             headers: [.location: "/canonical"], status: .movedPermanently))))
     try answer(transport, page: page(next: "invalid continuation"))
-    let endpoint = Endpoint<FeatureCollection<WeatherAlert>>(
-      accept: .init(rawValue: "application/ld+json"),
-      featureFlags: [.init(rawValue: "future_flag")], path: "/custom")
+    let endpoint = try #require(
+      Endpoint<FeatureCollection<WeatherAlert>>(
+        accept: .init(rawValue: "application/ld+json"),
+        featureFlags: [.init(rawValue: "future_flag")], path: "/custom"))
     let request = WeatherRequest(endpoint: endpoint)
     var iterator = makeClient(transport).activeAlerts(for: request).makeAsyncIterator()
     var features: [Feature<WeatherAlert>] = []
@@ -148,8 +149,9 @@ struct AlertPaginationTests {
       .regions([.alaska]), .zones(["TXZ192"]),
     ]
     var requests: [WeatherRequest<FeatureCollection<WeatherAlert>>] = [
-      .activeAlerts(for: point), .activeAlerts(inArea: .texas),
-      .activeAlerts(inArea: AlertArea.texas), .activeAlerts(inZone: "TXZ192"),
+      .activeAlerts(for: point), try #require(.activeAlerts(inArea: .texas)),
+      try #require(.activeAlerts(inArea: AlertArea.texas)),
+      try #require(.activeAlerts(inZone: "TXZ192")),
     ]
     var expectedPaths = [
       "/alerts/active?point=30.2672,-97.7431",

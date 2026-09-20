@@ -17,6 +17,7 @@ import SwiftNWSModels
 /// } catch {
 ///   switch error {
 ///   case .invalidAlertIdentifier: report("An alert identifier is required.")
+///   case .invalidAlertLocation: report("A valid alert location is required.")
 ///   case .invalidLink(let link): report("Unexpected link: \(link)")
 ///   case .invalidRedirect: report("The API returned an invalid redirect.")
 ///   case .invalidStationIdentifier: report("A station identifier is required.")
@@ -29,8 +30,11 @@ import SwiftNWSModels
 /// }
 /// ```
 public enum NWSError: Error {
-  /// The alert identifier is empty, so no request was sent.
+  /// The alert identifier is empty or produces an invalid encoded path, so no request was sent.
   case invalidAlertIdentifier(String)
+
+  /// An area, region, or zone code is empty or produces an invalid encoded path.
+  case invalidAlertLocation(String)
 
   /// A response contained a disallowed service URL, so the link was not followed.
   ///
@@ -40,7 +44,7 @@ public enum NWSError: Error {
   /// A redirect Location could not be interpreted as a URL.
   case invalidRedirect(String)
 
-  /// The station identifier is empty, so no station or observation request was sent.
+  /// The station identifier is empty or produces an invalid encoded path, so no station or observation request was sent.
   case invalidStationIdentifier(String)
 
   /// The point lists no observation station to read conditions from.

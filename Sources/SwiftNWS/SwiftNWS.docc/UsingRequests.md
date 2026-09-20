@@ -44,15 +44,21 @@ struct StationIdentity: Decodable, Sendable {
   let stationId: String
 }
 
-let request = WeatherRequest(
-  endpoint: Endpoint<Feature<StationIdentity>>(path: "/stations/KATT/observations/latest")
-)
-let result = try await weather.value(for: request)
-print(result.properties.stationId)
+if let endpoint = Endpoint<Feature<StationIdentity>>(path: "/stations/KATT/observations/latest") {
+  let request = WeatherRequest(endpoint: endpoint)
+  let result = try await weather.value(for: request)
+  print(result.properties.stationId)
+}
 ```
 
 For an additional NWS endpoint, supply its path and a model matching its response. The SDK
 sends the endpoint with its declared Accept media type and the configured User-Agent.
+Raw-path initializers are failable. Paths must start with one slash and may include an encoded
+query. Absolute or authority URLs, fragments, raw whitespace and controls, malformed escapes,
+backslashes, and dot path segments are rejected, including encoded path equivalents. Accepted paths
+and queries retain their exact spelling; query values are not treated as path segments, and query
+names such as `api_key` are allowed. `path` is immutable; `accept` and `featureFlags` remain configurable.
+
 Custom multi-step workflows can be ordinary async functions that call the client.
 
 ## Inspect results and failures
@@ -61,12 +67,12 @@ Everyday observations retain station identity and timestamp, allowing your appli
 a freshness policy. Measurements may be absent or contain a null value. WMO unit identifiers stay
 open strings; enumerated quality codes use open `QualityControlCode` values.
 
-For the existing GeoJSON envelope, use `send(Endpoint.latestObservation(stationIdentifier:))`
-or wrap that endpoint in a request. The result retains `Feature.id` and `Feature.properties`;
+For the existing GeoJSON envelope, unwrap `Endpoint.latestObservation(stationIdentifier:)`, then
+pass the endpoint to `send(_:)` or wrap it in a request. The result retains `Feature.id` and `Feature.properties`;
 geometry and other unmodeled metadata are not retained.
 
 ``NWSError`` distinguishes problem details, transport and decoding failures, invalid links,
-invalid or excessive redirects, empty station or alert identifiers, and empty station lists. Cancellation is
+invalid or excessive redirects, invalid station or alert identifiers and alert locations, and empty station lists. Cancellation is
 `NWSError.transport(.cancelled)`; it is checked before each HTTP call. No new retry policy
 is applied by the weather lookup.
 

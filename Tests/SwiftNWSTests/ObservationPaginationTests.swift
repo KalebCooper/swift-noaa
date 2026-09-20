@@ -112,7 +112,7 @@ struct ObservationPaginationTests {
     let transport = MockTransport()
     try answer(transport, page: page(next: "bad link"))
     let request = WeatherRequest(
-      endpoint: Endpoint<FeatureCollection<WeatherObservation>>(path: "/custom"))
+      endpoint: try #require(Endpoint<FeatureCollection<WeatherObservation>>(path: "/custom")))
     var iterator = makeClient(transport).observations(for: request).makeAsyncIterator()
     var features: [Feature<WeatherObservation>] = []
     while let feature = try await iterator.next() { features.append(feature) }

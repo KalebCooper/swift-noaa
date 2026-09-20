@@ -51,9 +51,10 @@ struct PaginationInfoTests {
 
   @Test("Next endpoints preserve encoded paths and representation headers")
   func nextEndpointsPreserveEncodedPathsAndRepresentationHeaders() throws {
-    let endpoint = Endpoint<FeatureCollection<ObservationStation>>(
-      accept: .init(rawValue: "application/ld+json"), featureFlags: [.init(rawValue: "future")],
-      path: "/stations")
+    let endpoint = try #require(
+      Endpoint<FeatureCollection<ObservationStation>>(
+        accept: .init(rawValue: "application/ld+json"), featureFlags: [.init(rawValue: "future")],
+        path: "/stations"))
     let next = try PaginationInfo(next: "https://api.weather.gov:443/stations?cursor=a%2Fb%3D")
       .nextEndpoint(after: endpoint)
     #expect(next.path == "/stations?cursor=a%2Fb%3D")
@@ -68,10 +69,11 @@ struct PaginationInfoTests {
       "https://example.com/stations", "https://user@api.weather.gov/stations",
       "https://api.weather.gov:444/stations", "https://api.weather.gov/stations#part",
     ] as [String?])
-  func nextEndpointsRejectMissingAndDisallowedLinks(raw: String?) {
+  func nextEndpointsRejectMissingAndDisallowedLinks(raw: String?) throws {
     let expected = raw.map { NWSPaginationError.invalidNext($0) } ?? .missingNext
     #expect(throws: expected) {
-      try PaginationInfo(next: raw).nextEndpoint(after: Endpoint<Int>(path: "/stations"))
+      try PaginationInfo(next: raw).nextEndpoint(
+        after: try #require(Endpoint<Int>(path: "/stations")))
     }
   }
 }

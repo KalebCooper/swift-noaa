@@ -78,9 +78,10 @@ struct StationLookupTests {
   }
 
   @Test("Lookup endpoints name their paths and ask for GeoJSON")
-  func lookupEndpointsNameTheirPathsAndAskForGeoJSON() {
-    let station = Endpoint.observationStation(identifier: "KATT")
-    let observation = Endpoint.observation(stationIdentifier: "KATT", timestamp: recordedTimestamp)
+  func lookupEndpointsNameTheirPathsAndAskForGeoJSON() throws {
+    let station = try #require(Endpoint.observationStation(identifier: "KATT"))
+    let observation = try #require(
+      Endpoint.observation(stationIdentifier: "KATT", timestamp: recordedTimestamp))
 
     #expect(station.path == "/stations/KATT")
     #expect(station.accept == .geoJSON)
@@ -91,19 +92,22 @@ struct StationLookupTests {
   }
 
   @Test("Lookup station identifiers occupy exactly one path segment")
-  func lookupStationIdentifiersOccupyExactlyOnePathSegment() {
+  func lookupStationIdentifiersOccupyExactlyOnePathSegment() throws {
     #expect(
-      Endpoint.observationStation(identifier: "../A/B?x=#%\n").path
-        == "/stations/%2E%2E%2FA%2FB%3Fx%3D%23%25%0A")
+      try #require(Endpoint.observationStation(identifier: "A/B?x=#%")).path
+        == "/stations/A%2FB%3Fx%3D%23%25")
     #expect(
-      Endpoint.observation(stationIdentifier: "../A/B?x=#%\n", timestamp: recordedTimestamp).path
-        == "/stations/%2E%2E%2FA%2FB%3Fx%3D%23%25%0A/observations/2026-09-18T01:51:00Z")
+      try #require(
+        Endpoint.observation(stationIdentifier: "A/B?x=#%", timestamp: recordedTimestamp)
+      ).path
+        == "/stations/A%2FB%3Fx%3D%23%25/observations/2026-09-18T01:51:00Z")
   }
 
   @Test("Observation timestamps are sent in UTC with whole-second precision")
-  func observationTimestampsAreSentInUTCWithWholeSecondPrecision() {
-    let endpoint = Endpoint.observation(
-      stationIdentifier: "KATT", timestamp: recordedTimestamp.addingTimeInterval(0.75))
+  func observationTimestampsAreSentInUTCWithWholeSecondPrecision() throws {
+    let endpoint = try #require(
+      Endpoint.observation(
+        stationIdentifier: "KATT", timestamp: recordedTimestamp.addingTimeInterval(0.75)))
     #expect(endpoint.path == "/stations/KATT/observations/2026-09-18T01:51:00Z")
   }
 }

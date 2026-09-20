@@ -8,6 +8,13 @@ All notable changes are documented here, following
 
 ### Changed
 
+- Make endpoint paths immutable and raw-path initializers failable, preserving accepted encoded text
+  exactly while rejecting invalid paths and encoded traversal forms.
+- Make station, alert, area, region, and zone endpoint factories failable. Area, region, and zone
+  request factories also return optional requests; client methods reject invalid locations with
+  `NWSError.invalidAlertLocation`. Station and alert execution retains its typed identifier errors.
+- Validate observation-query station paths, redirect paths before URL resolution, and forecast
+  reconstruction. Forecast options safely encode custom units while preserving other query fields.
 - Page and feature iterators explicitly forward caller isolation through every wrapper and redirected
   page fetch. Iterators remain serial, independent traversals with typed errors.
 

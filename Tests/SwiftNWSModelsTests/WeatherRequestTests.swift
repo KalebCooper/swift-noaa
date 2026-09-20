@@ -5,8 +5,8 @@ import Testing
 @Suite("WeatherRequest", .timeLimit(.minutes(suiteTimeLimitMinutes)))
 struct WeatherRequestTests {
   @Test("A custom request exposes its endpoint without an SDK import")
-  func aCustomRequestExposesItsEndpointWithoutAnSDKImport() {
-    let endpoint = Endpoint<String>(path: "/custom")
+  func aCustomRequestExposesItsEndpointWithoutAnSDKImport() throws {
+    let endpoint = try #require(Endpoint<String>(path: "/custom"))
     let request = WeatherRequest(endpoint: endpoint)
     guard case .endpoint(let actual) = request.resolution else {
       Issue.record("Expected a direct endpoint")

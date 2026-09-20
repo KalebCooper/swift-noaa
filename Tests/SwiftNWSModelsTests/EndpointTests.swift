@@ -63,9 +63,9 @@ struct EndpointTests {
   }
 
   @Test("latestObservation(stationIdentifier:) names the station's latest observation")
-  func latestObservationNamesTheStationsLatestObservation() {
+  func latestObservationNamesTheStationsLatestObservation() throws {
     #expect(
-      Endpoint.latestObservation(stationIdentifier: "KATT").path
+      try #require(Endpoint.latestObservation(stationIdentifier: "KATT")).path
         == "/stations/KATT/observations/latest")
   }
 
@@ -97,9 +97,9 @@ struct EndpointTests {
   }
 
   @Test("Station identifiers occupy exactly one path segment")
-  func stationIdentifiersOccupyExactlyOnePathSegment() {
+  func stationIdentifiersOccupyExactlyOnePathSegment() throws {
     #expect(
-      Endpoint.latestObservation(stationIdentifier: "../A/B?x=#%\n").path
-        == "/stations/%2E%2E%2FA%2FB%3Fx%3D%23%25%0A/observations/latest")
+      try #require(Endpoint.latestObservation(stationIdentifier: "A/B?x=#%")).path
+        == "/stations/A%2FB%3Fx%3D%23%25/observations/latest")
   }
 }

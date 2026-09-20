@@ -53,8 +53,8 @@ shared sequence contract.
 ## Share the alert executors
 
 Active-alert and alert-history requests describe the same alert collections, so either executor
-accepts both. `alertPages(for: .activeAlerts(inArea: .texas))` and
-`activeAlertPages(for: .alerts(matching: query))` each start at the request's own endpoint and
+accepts both. Unwrap `WeatherRequest.activeAlerts(inArea: .texas)` before passing it to
+`alertPages(for:)`. It and `activeAlertPages(for: .alerts(matching: query))` start at the request's own endpoint and
 follow its validated links. A `WeatherRequest(endpoint:)` yields only that endpoint's page through
 either executor.
 
