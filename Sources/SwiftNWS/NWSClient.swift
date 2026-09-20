@@ -525,6 +525,71 @@ public struct NWSClient: Sendable {
     try await value(for: .observations(query: query))
   }
 
+  /// Retrieves one forecast office's metadata.
+  ///
+  /// Sends one request for a JSON-LD body and returns it unchanged. The office's zone, station,
+  /// and parent office fields are links to other API resources; this method follows none of them.
+  ///
+  /// ```swift
+  /// let office = try await weather.office(identifier: "EWX")
+  /// print(office.name, office.responsibleForecastZones?.count ?? 0)
+  /// ```
+  ///
+  /// - Parameter identifier: The office's identifier, such as `EWX`.
+  /// - Returns: The office's metadata as the service reported it.
+  /// - Throws: ``NWSError/invalidOfficeIdentifier(_:)`` for an empty identifier or invalid encoded
+  ///   path, ``NWSError/problem(_:)`` for an unknown office, or any other error from
+  ///   ``value(for:)``.
+  public func office(identifier: String) async throws(NWSError) -> WeatherOffice {
+    try await value(for: .office(identifier: identifier))
+  }
+
+  /// Retrieves one of an office's editorial headlines.
+  ///
+  /// Sends one request for a JSON-LD body and returns it unchanged. The headline's content keeps
+  /// its HTML markup, and its editorial link is never requested.
+  ///
+  /// ```swift
+  /// let headline = try await weather.officeHeadline(
+  ///   identifier: "ab45482ca5f57ff412eb1320721d5ac9", officeIdentifier: "EWX")
+  /// print(headline.title)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - identifier: The headline's identifier.
+  ///   - officeIdentifier: The office's identifier, such as `EWX`.
+  /// - Returns: The headline as the service reported it.
+  /// - Throws: ``NWSError/invalidOfficeIdentifier(_:)`` for an empty office identifier or invalid
+  ///   encoded path, which is checked first, ``NWSError/invalidHeadlineIdentifier(_:)`` for an
+  ///   empty headline identifier or invalid encoded path, ``NWSError/problem(_:)`` for an unknown
+  ///   headline, or any other error from ``value(for:)``.
+  public func officeHeadline(identifier: String, officeIdentifier: String) async throws(NWSError)
+    -> OfficeHeadline
+  {
+    try await value(
+      for: .officeHeadline(identifier: identifier, officeIdentifier: officeIdentifier))
+  }
+
+  /// Retrieves an office's editorial headlines.
+  ///
+  /// Sends one request for a JSON-LD body and returns the headlines in the service's order. An
+  /// office with nothing to say answers an empty list. The route takes no page size or cursor, so
+  /// nothing is paged, sorted, or filtered by importance or issuance time.
+  ///
+  /// ```swift
+  /// let headlines = try await weather.officeHeadlines(officeIdentifier: "EWX")
+  /// print(headlines.headlines.map(\.title))
+  /// ```
+  ///
+  /// - Parameter officeIdentifier: The office's identifier, such as `EWX`.
+  /// - Returns: The headlines in service order.
+  /// - Throws: ``NWSError/invalidOfficeIdentifier(_:)`` for an empty identifier or invalid encoded
+  ///   path, ``NWSError/problem(_:)`` for an unknown office, or any other error from
+  ///   ``value(for:)``.
+  public func officeHeadlines(officeIdentifier: String) async throws(NWSError) -> OfficeHeadlines {
+    try await value(for: .officeHeadlines(officeIdentifier: officeIdentifier))
+  }
+
   /// Sends an endpoint and decodes its response.
   ///
   /// Follows at most five redirects within the API origin, preserving request headers.
@@ -570,6 +635,8 @@ public struct NWSClient: Sendable {
   ///   ``NWSError/invalidAlertIdentifier(_:)`` for an empty alert identifier or invalid encoded path,
   ///   ``NWSError/invalidZoneType(_:)`` or ``NWSError/invalidZoneIdentifier(_:)`` for an empty
   ///   zone type or identifier or invalid encoded path,
+  ///   ``NWSError/invalidOfficeIdentifier(_:)`` or ``NWSError/invalidHeadlineIdentifier(_:)`` for
+  ///   an empty office or headline identifier or invalid encoded path,
   ///   ``NWSError/invalidLink(_:)`` for a disallowed link, ``NWSError/noObservationStation``
   ///   for an empty station list, or any error from ``send(_:)``.
   public func value<Value: Decodable & SendableMetatype>(
@@ -666,6 +733,29 @@ public struct NWSClient: Sendable {
       return try await send(endpoint.decoding(Value.self))
     case .observations(let query):
       let endpoint = Endpoint.observations(query: query)
+      return try await send(endpoint.decoding(Value.self))
+    case .office(let identifier):
+      guard let endpoint = Endpoint.office(identifier: identifier) else {
+        throw .invalidOfficeIdentifier(identifier)
+      }
+      // Only WeatherRequest<WeatherOffice> can be created with this resolution.
+      return try await send(endpoint.decoding(Value.self))
+    case .officeHeadline(let identifier, let officeIdentifier):
+      guard Endpoint<Value>.officeSegment(officeIdentifier) != nil else {
+        throw .invalidOfficeIdentifier(officeIdentifier)
+      }
+      guard
+        let endpoint = Endpoint.officeHeadline(
+          identifier: identifier, officeIdentifier: officeIdentifier)
+      else { throw .invalidHeadlineIdentifier(identifier) }
+      // Only WeatherRequest<OfficeHeadline> can be created with this resolution.
+      return try await send(endpoint.decoding(Value.self))
+    case .officeHeadlines(let officeIdentifier):
+      guard let endpoint = Endpoint.officeHeadlines(officeIdentifier: officeIdentifier) else {
+        throw .invalidOfficeIdentifier(officeIdentifier)
+      }
+      // Only WeatherRequest<OfficeHeadlines> can be created with this resolution. The route takes
+      // no page size or cursor, so nothing is paged.
       return try await send(endpoint.decoding(Value.self))
     case .zone(let effective, let identifier, let type):
       guard Endpoint<Feature<Value>>.zoneTypeSegment(type) != nil else {

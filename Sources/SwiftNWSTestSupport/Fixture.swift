@@ -79,6 +79,23 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// and no one-hour or six-hour precipitation fields.
   case observationWithWeather = "ObservationWithWeather"
 
+  /// `/offices/EWX`, requested as `application/ld+json`, the Austin/San Antonio office with an
+  /// empty fax number, 33 counties, 33 fire zones, 33 forecast zones, and 63 approved stations.
+  case office = "Office"
+
+  /// `/offices/EWX/headlines/ab45482ca5f57ff412eb1320721d5ac9`, requested as
+  /// `application/ld+json`, one headline with a `null` summary, HTML content, and an editorial
+  /// link outside the API origin.
+  case officeHeadline = "OfficeHeadline"
+
+  /// `/offices/EWX/headlines`, requested as `application/ld+json`, the two headlines the
+  /// Austin/San Antonio office published.
+  case officeHeadlines = "OfficeHeadlines"
+
+  /// `/offices/OUN/headlines`, requested as `application/ld+json`, the empty headline list the
+  /// Norman office answered.
+  case officeHeadlinesEmpty = "OfficeHeadlinesEmpty"
+
   /// `/points/30.2672,-97.7431`, downtown Austin.
   case point = "Point"
 

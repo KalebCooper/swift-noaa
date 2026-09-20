@@ -18,7 +18,9 @@ import SwiftNWSModels
 ///   switch error {
 ///   case .invalidAlertIdentifier: report("An alert identifier is required.")
 ///   case .invalidAlertLocation: report("A valid alert location is required.")
+///   case .invalidHeadlineIdentifier: report("A headline identifier is required.")
 ///   case .invalidLink(let link): report("Unexpected link: \(link)")
+///   case .invalidOfficeIdentifier: report("An office identifier is required.")
 ///   case .invalidRedirect: report("The API returned an invalid redirect.")
 ///   case .invalidStationIdentifier: report("A station identifier is required.")
 ///   case .invalidZoneIdentifier: report("A zone identifier is required.")
@@ -38,10 +40,16 @@ public enum NWSError: Error {
   /// An area, region, or zone code is empty or produces an invalid encoded path.
   case invalidAlertLocation(String)
 
+  /// The headline identifier is empty or produces an invalid encoded path, so no headline request was sent.
+  case invalidHeadlineIdentifier(String)
+
   /// A response contained a disallowed service URL, so the link was not followed.
   ///
   /// Links must use the HTTPS API origin without credentials or a fragment.
   case invalidLink(URL)
+
+  /// The office identifier is empty or produces an invalid encoded path, so no office request was sent.
+  case invalidOfficeIdentifier(String)
 
   /// A redirect Location could not be interpreted as a URL.
   case invalidRedirect(String)

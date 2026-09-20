@@ -29,7 +29,13 @@ follow them.
 The glossary at `/glossary` is built as well. It answers in one response, with the entries in
 service order and each definition exactly as the service wrote it, markup and all.
 
-Office and product endpoints and retries are not built.
+Office metadata and headlines are built: `/offices/{officeId}`, the headline list at
+`/offices/{officeId}/headlines`, and one headline. The headline list is one response in service
+order, and a headline's content is unrendered HTML returned as sent. Office briefings are not yet
+built, weather stories (`/offices/{officeId}/weatherstories` and its image download) are not
+supported, and no PDF or image is ever downloaded.
+
+Product endpoints and retries are not built.
 
 ## Usage
 
@@ -528,6 +534,40 @@ or normalizes it, and nothing builds an attributed string, so converting a defin
 your app's work. The client adds no search index, term matching, or caching, and it does not follow
 links found inside a definition.
 
+### Offices
+
+```swift
+let office = try await weather.office(identifier: "EWX")
+print(office.name)  // "Austin/San Antonio, TX"
+
+let headlines = try await weather.officeHeadlines(officeIdentifier: "EWX")
+for headline in headlines.headlines {
+  print(headline.title, headline.issuanceTime as Any)
+}
+
+let request = WeatherRequest.officeHeadline(
+  identifier: "ab45482ca5f57ff412eb1320721d5ac9", officeIdentifier: "EWX")
+let headline = try await weather.value(for: request)
+```
+
+`office(identifier:)`, `officeHeadlines(officeIdentifier:)`, and
+`officeHeadline(identifier:officeIdentifier:)` each send one request for the JSON-LD body the
+service offers and return `WeatherOffice`, `OfficeHeadlines`, or `OfficeHeadline`. Each is also a
+`WeatherRequest` factory and an `Endpoint`. The request factories always return a request; executing
+one rejects an unusable identifier before sending with `NWSError.invalidOfficeIdentifier` or
+`NWSError.invalidHeadlineIdentifier`, checking the office identifier first.
+
+Optional fields are nil only when the service omits them or sends `null`. A value it does send is
+kept, so an office whose fax number is an empty string reports `""`. The office's zone, station, and
+parent office fields are API links the client does not follow; turn one into an `Endpoint` to read it.
+
+A headline's `url`, from its `@id`, is its identity in the API and can become a validated endpoint.
+Its `link` is editorial content that may point off the API origin, and the client never follows it.
+`content` is HTML exactly as sent: nothing renders, escapes, or strips it. The headline list is one
+response in service order. The route documents no page size or cursor, so none is sent, which
+describes the request rather than how many headlines come back. Headlines are not sorted or filtered
+by importance or issuance time.
+
 ### Direct endpoints and other networking stacks
 
 ```swift
@@ -567,8 +607,8 @@ quality codes are typed open values that preserve unknown `rawValue`s.
 ### Errors and migration
 
 The client throws `NWSError`: NWS problem details, transport or decoding failures, invalid
-service links or redirects, excess redirect hops, invalid pagination, invalid station or alert identifiers and alert locations,
-or a station list with no stations. Cancellation is
+service links or redirects, excess redirect hops, invalid pagination, invalid station, alert, zone,
+office, or headline identifiers, zone types, and alert locations, or a station list with no stations. Cancellation is
 `NWSError.transport(.cancelled)`, with a cancellation check before each HTTP call.
 When the service rejects a request parameter, such as an unknown marine region, the thrown
 `ProblemDetail` lists each rejection in `parameterErrors`, including the values it accepts.

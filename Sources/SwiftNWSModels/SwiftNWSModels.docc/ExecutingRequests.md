@@ -90,6 +90,20 @@ Constructing or inspecting it sends nothing.
 - An `observationStation` resolution contains a station identifier and is only created for
   ``ObservationStation`` responses. Unwrap the endpoint factory, reject invalid identifiers, send
   `Endpoint.observationStation(identifier:)`, and return the feature's properties.
+- An `office` resolution contains an office identifier and is only created for ``WeatherOffice``
+  responses. It exists so an empty or unusable identifier is rejected before any request: unwrap
+  `Endpoint.office(identifier:)`, report a nil result as an unusable office identifier, send it, and
+  decode the whole JSON-LD body as ``WeatherOffice``. There is no GeoJSON wrapper to unwrap, and
+  none of the office's links is followed.
+- An `officeHeadline` resolution contains a headline identifier and an office identifier and is
+  only created for ``OfficeHeadline`` responses. Check the office identifier first, so the failure
+  names which argument was unusable, then unwrap `Endpoint.officeHeadline(identifier:officeIdentifier:)`,
+  report a nil result as an unusable headline identifier, send it, and decode the whole body. Do not
+  request the headline's editorial ``OfficeHeadline/link``.
+- An `officeHeadlines` resolution contains an office identifier and is only created for
+  ``OfficeHeadlines`` responses. Unwrap `Endpoint.officeHeadlines(officeIdentifier:)`, reject an
+  empty or unusable identifier before sending, and return that one response. The route documents no
+  page size or cursor, so send neither and synthesize no continuation.
 - A `nearbyObservationStations` resolution contains a coordinate and is only created for
   `FeatureCollection<ObservationStation>` responses. Resolve the point, validate its
   observation-stations link with `Endpoint.observationStations(near:)`, and return that one page.

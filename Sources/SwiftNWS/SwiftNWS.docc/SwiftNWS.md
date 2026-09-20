@@ -41,7 +41,11 @@ coordinate as one page, and ``NWSClient/observation(stationIdentifier:timestamp:
 observation a station made at an exact instant. Six zone routes read `/zones`, `/zones/{type}`,
 `/zones/{type}/{zoneId}`, a zone's text forecast, and a forecast zone's observations and stations,
 each as one response. ``NWSClient/glossary()`` reads the service's glossary of weather terms, whose
-definitions arrive as the service wrote them, markup included. Active-alert,
+definitions arrive as the service wrote them, markup included. ``NWSClient/office(identifier:)``
+reads a forecast office's metadata, and ``NWSClient/officeHeadlines(officeIdentifier:)`` and
+``NWSClient/officeHeadline(identifier:officeIdentifier:)`` read the editorial headlines it publishes,
+with their content left as unrendered HTML. Office briefings are not yet built, weather stories are
+not supported, and no PDF or image is downloaded. Active-alert,
 alert-history, station-directory, and observation-history page and feature sequences follow validated
 continuation links on demand.
 The station directory is the canonical implementation. Existing single-page methods do not
@@ -73,6 +77,7 @@ automatically paginate.
 - <doc:Glossary>
 - <doc:ObservationHistory>
 - <doc:ObservationStations>
+- <doc:Offices>
 - <doc:PaginatingCollections>
 - <doc:Units>
 - <doc:UsingRequests>

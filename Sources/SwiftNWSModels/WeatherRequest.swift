@@ -89,6 +89,26 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// Only requests returning FeatureCollection<WeatherObservation> carry this resolution.
     case observations(ObservationQuery)
 
+    /// Retrieve one forecast office's metadata.
+    ///
+    /// Only requests returning ``WeatherOffice`` carry this resolution. An empty identifier, or one
+    /// that produces an invalid encoded path, is a failure before any request.
+    case office(identifier: String)
+
+    /// Retrieve one of an office's editorial headlines.
+    ///
+    /// Only requests returning ``OfficeHeadline`` carry this resolution. An empty office or
+    /// headline identifier, or one that produces an invalid encoded path, is a failure before any
+    /// request; the office identifier is checked first.
+    case officeHeadline(identifier: String, officeIdentifier: String)
+
+    /// Retrieve an office's editorial headlines as one response.
+    ///
+    /// Only requests returning ``OfficeHeadlines`` carry this resolution. An empty identifier, or
+    /// one that produces an invalid encoded path, is a failure before any request. The route takes
+    /// no page size or cursor, so nothing is paged.
+    case officeHeadlines(officeIdentifier: String)
+
     /// Retrieve one zone by type and identifier and return its GeoJSON properties.
     ///
     /// Only requests returning ``WeatherZone`` carry this resolution. An empty type or identifier,
@@ -502,5 +522,60 @@ extension WeatherRequest where Response == WeatherGlossary {
   /// ```
   public static var glossary: Self {
     Self(endpoint: .glossary)
+  }
+}
+
+extension WeatherRequest where Response == OfficeHeadline {
+  /// Describes one of an office's editorial headlines,
+  /// `/offices/{officeId}/headlines/{headlineId}`.
+  ///
+  /// Executing the request rejects an empty office or headline identifier before sending, checking
+  /// the office identifier first, and returns the headline's body unchanged.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.officeHeadline(
+  ///   identifier: "ab45482ca5f57ff412eb1320721d5ac9", officeIdentifier: "EWX")
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - identifier: The headline's identifier.
+  ///   - officeIdentifier: The office's identifier, such as `EWX`.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func officeHeadline(identifier: String, officeIdentifier: String) -> Self {
+    Self(resolution: .officeHeadline(identifier: identifier, officeIdentifier: officeIdentifier))
+  }
+}
+
+extension WeatherRequest where Response == OfficeHeadlines {
+  /// Describes an office's editorial headlines, `/offices/{officeId}/headlines`.
+  ///
+  /// Executing the request rejects an empty identifier before sending and returns the one response
+  /// the service answers; the route takes no page size or cursor.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.officeHeadlines(officeIdentifier: "EWX")
+  /// ```
+  ///
+  /// - Parameter officeIdentifier: The office's identifier, such as `EWX`.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func officeHeadlines(officeIdentifier: String) -> Self {
+    Self(resolution: .officeHeadlines(officeIdentifier: officeIdentifier))
+  }
+}
+
+extension WeatherRequest where Response == WeatherOffice {
+  /// Describes one forecast office's metadata, `/offices/{officeId}`.
+  ///
+  /// Executing the request rejects an empty identifier before sending and returns the office's
+  /// body unchanged.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.office(identifier: "EWX")
+  /// ```
+  ///
+  /// - Parameter identifier: The office's identifier, such as `EWX`.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func office(identifier: String) -> Self {
+    Self(resolution: .office(identifier: identifier))
   }
 }

@@ -52,6 +52,24 @@ All notable changes are documented here, following
   and each entry's `definition` and `term` are required. Definitions keep the service's HTML markup,
   character entities, and carriage return line endings exactly as sent: nothing is rendered, escaped,
   stripped, normalized, indexed, or cached, and links inside a definition are not followed.
+- Forecast office metadata and headlines at all three access levels: `office(identifier:)` for
+  `/offices/{officeId}`, `officeHeadlines(officeIdentifier:)` for `/offices/{officeId}/headlines`,
+  and `officeHeadline(identifier:officeIdentifier:)` for
+  `/offices/{officeId}/headlines/{headlineId}`, each also available as a `WeatherRequest` factory
+  and an `Endpoint`. The service offers these resources only as JSON-LD, so each endpoint asks for
+  `MediaType.jsonLD` and sends no feature flags. The request factories are not optional; their
+  `office`, `officeHeadlines`, and `officeHeadline` resolutions reject an unusable identifier before
+  sending, checking the office identifier before the headline identifier.
+- `WeatherOffice`, decoding an office's address, contact details, region, parent office, and
+  responsible zone and approved station links in service order. Optional fields are nil only when
+  the service omits them or sends `null`, so an empty fax number stays `""`.
+- `OfficeHeadlines` and `OfficeHeadline`, decoding an office's headlines in service order. An empty
+  list decodes as no headlines, and a body without the headline array fails to decode. A headline's
+  `url` is its API identity; its `link` is editorial content that may point off the API origin and
+  is never followed; its `content` is unrendered HTML kept as sent. The headline list is one
+  response, because the route documents no page size or cursor.
+- Office briefings are not yet built, weather stories are not supported, and no PDF or image is
+  downloaded.
 
 ### Changed
 
@@ -66,6 +84,9 @@ All notable changes are documented here, following
   page fetch. Iterators remain serial, independent traversals with typed errors.
 - Add the `invalidZoneIdentifier` and `invalidZoneType` cases to `NWSError`. This is a source break
   for any consumer switching over `NWSError` exhaustively, which must handle the two new cases.
+- Add the `invalidHeadlineIdentifier` and `invalidOfficeIdentifier` cases to `NWSError`. This is a
+  source break for any consumer switching over `NWSError` exhaustively, which must handle the two new
+  cases.
 
 ## [0.1.0] - 2026-09-18
 

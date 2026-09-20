@@ -41,6 +41,10 @@ package does not know yet. See <doc:ForecastGridData>.
 ``GlossaryEntry`` values, because the service repeats terms, and each definition keeps the markup,
 character entities, and line endings the service sent. See <doc:GlossaryData>.
 
+``WeatherOffice`` decodes a forecast office's metadata from `/offices/{officeId}`, and
+``OfficeHeadlines`` and ``OfficeHeadline`` decode the editorial headlines it publishes, in service
+order, with each headline's content kept as unrendered HTML. See <doc:OfficeData>.
+
 Forecast and grid validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
 ``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
 one. The exact text stays available as `rawValue`.
@@ -106,6 +110,8 @@ not require full Foundation or a networking stack.
 - ``GlossaryEntry``
 - ``JSONValue``
 - ``ObservationStation``
+- ``OfficeHeadline``
+- ``OfficeHeadlines``
 - ``Point``
 - ``ProblemDetail``
 - ``QuantitativeValue``
@@ -113,11 +119,13 @@ not require full Foundation or a networking stack.
 - ``WeatherForecast``
 - ``WeatherGlossary``
 - ``WeatherObservation``
+- ``WeatherOffice``
 - ``WeatherPhenomenon``
 - ``WeatherZone``
 - ``ZoneForecast``
 - ``ZoneForecastPeriod``
 - <doc:GlossaryData>
+- <doc:OfficeData>
 - <doc:ZoneData>
 
 ### Forecast grids

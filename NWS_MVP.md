@@ -37,6 +37,14 @@ rather than the size of the answer. Entries decode as a required array in servic
 service repeats terms, and definitions keep the markup, character entities, and line endings the
 service sent. Nothing renders, escapes, indexes, matches, or caches them.
 
+Office metadata and headlines are built. `/offices/{officeId}`, `/offices/{officeId}/headlines`, and
+`/offices/{officeId}/headlines/{headlineId}` are available at the endpoint, request, and client
+levels, as JSON-LD. The headline list is one response in service order; the route documents no page
+size and no cursor, so none is sent, which describes the request rather than how many headlines come
+back. A headline's editorial link is never followed and its content is unrendered HTML kept as sent.
+Office briefings are not yet built. Weather stories (`/offices/{officeId}/weatherstories` and its
+image download) are not supported, and no PDF or image is downloaded.
+
 Release validation runs locally before publication. The Android and hosted CI lanes must pass
 on the pushed release commit before approving the 0.1.0 tag. Tagging and pushing require owner approval.
 
@@ -127,7 +135,10 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   declares no cursor, and the observation and station continuation links lead to one station's
   history and to repeated then empty pages, so neither is followed. The station route's declared
   limit and cursor are not offered, because the recorded responses ignored them.
-- **Offices:** `/offices/{officeId}`, headlines, and briefings.
+- **Offices:** `/offices/{officeId}`, headlines, and briefings. Office metadata, the headline list,
+  and one headline are built, as JSON-LD at all three access levels. Briefings are not yet built.
+  Weather stories (`/offices/{officeId}/weatherstories` and its image download) are not supported,
+  and no PDF or image is downloaded.
 - **Alerts, complete:** alert history on `/alerts` with its time and status filters,
   `/alerts/active/count`, `/alerts/active/region/{region}`, and `/alerts/types`. Alert history ships
   with single-page endpoint and request access plus page and item sequences in its first vertical

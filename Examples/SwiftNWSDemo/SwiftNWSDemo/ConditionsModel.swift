@@ -80,7 +80,9 @@ final class ConditionsModel {
     switch error {
     case .invalidAlertIdentifier: "The weather service returned an invalid alert identifier."
     case .invalidAlertLocation: "The alert location is invalid."
+    case .invalidHeadlineIdentifier: "The headline identifier is invalid."
     case .invalidLink(let link): "The API linked outside itself: \(link)"
+    case .invalidOfficeIdentifier: "The office identifier is invalid."
     case .invalidRedirect: "The weather service returned an invalid redirect."
     case .invalidStationIdentifier: "The weather service returned an invalid station identifier."
     case .invalidZoneIdentifier: "The weather service returned an invalid zone identifier."
