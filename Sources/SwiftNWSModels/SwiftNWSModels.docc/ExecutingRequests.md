@@ -58,8 +58,10 @@ can remove dot segments. Then apply the same endpoint origin and path checks to 
 Constructing or inspecting it sends nothing.
 
 - An endpoint resolution contains `Endpoint<Response>`. Decode the complete body as
-  `Response`, without adding or removing a GeoJSON wrapper. `WeatherRequest.activeAlertCount` and
-  `WeatherRequest.alertTypes` use this resolution with endpoints that ask for ``MediaType/jsonLD``.
+  `Response`, without adding or removing a GeoJSON wrapper. `WeatherRequest.activeAlertCount`,
+  `WeatherRequest.alertTypes`, and `WeatherRequest.glossary` use this resolution with endpoints that
+  ask for ``MediaType/jsonLD``, and `WeatherRequest.observations(inForecastZone:)` uses it with an
+  endpoint whose ``ZoneObservationQuery`` already validated the zone and limit.
 - Forecast resolutions contain a coordinate and options. Resolve the point, validate its forecast
   or hourly link using the corresponding endpoint factory, then return the feature's properties.
   Preserve the endpoint's units query and feature flags.

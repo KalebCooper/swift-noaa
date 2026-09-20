@@ -42,6 +42,11 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/gridpoints/EWX/156,91/forecast?units=si`, covering SI units and both quantitative flags.
   case forecastQuantities = "ForecastQuantities"
 
+  /// `/glossary`, requested as `application/ld+json`, the whole glossary of 3,183 entries, with
+  /// repeated terms, HTML markup, character entities, and carriage return line endings in
+  /// definitions.
+  case glossary = "Glossary"
+
   /// `/gridpoints/EWX/156,91/forecast/hourly?units=us`, covering US units and compass codes.
   case hourlyForecast = "HourlyForecast"
 

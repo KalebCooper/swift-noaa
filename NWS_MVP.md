@@ -30,6 +30,13 @@ stations again at a later offset before leading to empty pages. The client follo
 sends no cursor for either route, so there are no zone sequences. Zone forecast periods are text
 only. Nothing here is a claim about other zone routes the service may offer.
 
+The glossary is built too. `/glossary` is available at the endpoint, request, and client levels, as
+JSON-LD, the only representation the service offers for it. The route documents no page size and no
+cursor, so the endpoint sends neither and there are no glossary sequences; that describes the request
+rather than the size of the answer. Entries decode as a required array in service order, because the
+service repeats terms, and definitions keep the markup, character entities, and line endings the
+service sent. Nothing renders, escapes, indexes, matches, or caches them.
+
 Release validation runs locally before publication. The Android and hosted CI lanes must pass
 on the pushed release commit before approving the 0.1.0 tag. Tagging and pushing require owner approval.
 
@@ -127,7 +134,10 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   slice.
 - **Products:** `/products`, product types and locations, the latest product for a type and
   location, and a single product.
-- **Glossary:** `/glossary`.
+- **Glossary:** `/glossary`. Built, as JSON-LD at all three access levels. The route documents no
+  page size and no cursor, so none is sent and the list is one response. Entries are an array in
+  service order because terms repeat, and definitions keep the service's markup, character entities,
+  and line endings unchanged.
 - **Pagination:** verified cursor-based collections follow `pagination.next` through lazy page and
   item sequences while retaining single-page access. Products, zones, and other lists known only to
   accept `limit` remain outside this claim until their provider continuation behavior is verified.

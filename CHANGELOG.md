@@ -42,6 +42,16 @@ All notable changes are documented here, following
   sends one, without validation, coordinate types, or spatial computation. A single zone carries a
   polygon; directory responses send `null` geometry, so a zone list is nil there even when the
   query asked for geometry. A zone forecast carries the zone's polygon as well.
+- The glossary of weather terms through `glossary()`, reading `/glossary` at all three access levels
+  with `WeatherRequest.glossary` and `Endpoint.glossary`. The service offers the resource only as
+  JSON-LD, so the endpoint asks for `MediaType.jsonLD` and sends no query items and no feature flags,
+  because the service documents no page size or cursor for it. The request wraps the endpoint, so it
+  uses the plain endpoint resolution and adds no resolution case of its own.
+- `WeatherGlossary` and `GlossaryEntry`, decoding the glossary as a required array of entries in
+  service order. The entries are an array rather than a dictionary because the service repeats terms,
+  and each entry's `definition` and `term` are required. Definitions keep the service's HTML markup,
+  character entities, and carriage return line endings exactly as sent: nothing is rendered, escaped,
+  stripped, normalized, indexed, or cached, and links inside a definition are not followed.
 
 ### Changed
 

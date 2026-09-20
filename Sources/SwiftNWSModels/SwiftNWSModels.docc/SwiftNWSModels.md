@@ -37,6 +37,10 @@ provider's GeoJSON geometry as raw ``JSONValue`` when the service sends one. See
 open ``ForecastGridLayerName``, typed weather and hazards layers, and any layer or property the
 package does not know yet. See <doc:ForecastGridData>.
 
+``WeatherGlossary`` decodes the service's glossary of weather terms as an array of
+``GlossaryEntry`` values, because the service repeats terms, and each definition keeps the markup,
+character entities, and line endings the service sent. See <doc:GlossaryData>.
+
 Forecast and grid validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
 ``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
 one. The exact text stays available as `rawValue`.
@@ -99,6 +103,7 @@ not require full Foundation or a networking stack.
 - ``ForecastPeriod``
 - ``ForecastTemperature``
 - ``ForecastWind``
+- ``GlossaryEntry``
 - ``JSONValue``
 - ``ObservationStation``
 - ``Point``
@@ -106,11 +111,13 @@ not require full Foundation or a networking stack.
 - ``QuantitativeValue``
 - ``WeatherAlert``
 - ``WeatherForecast``
+- ``WeatherGlossary``
 - ``WeatherObservation``
 - ``WeatherPhenomenon``
 - ``WeatherZone``
 - ``ZoneForecast``
 - ``ZoneForecastPeriod``
+- <doc:GlossaryData>
 - <doc:ZoneData>
 
 ### Forecast grids

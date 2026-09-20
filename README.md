@@ -26,6 +26,9 @@ response: the directory declares no cursor, and the observation and station rout
 continuation links that lead somewhere other than the rest of the list, so the client does not
 follow them.
 
+The glossary at `/glossary` is built as well. It answers in one response, with the entries in
+service order and each definition exactly as the service wrote it, markup and all.
+
 Office and product endpoints and retries are not built.
 
 ## Usage
@@ -496,6 +499,34 @@ Passing a forecast-zone station request to `observationStationPages(for:)` or
 
 Zone request factories always return a request, and execution reports an unusable type or
 identifier. Every level also accepts a `String`-backed type of your own in place of `ZoneType`.
+
+### Glossary
+
+```swift
+let glossary = try await weather.glossary()
+let matches = glossary.entries.filter { $0.term == "AGL" }
+
+let stored = WeatherRequest.glossary
+let reusable = try await weather.value(for: stored)
+let direct = try await weather.send(.glossary)
+```
+
+`glossary()` reads `/glossary` in one request and returns `WeatherGlossary`. The service offers this
+resource only as JSON-LD, so the endpoint asks for `MediaType.jsonLD`, and it sends no query items
+and no feature flags because the service documents no page size or cursor for the glossary. There
+are no glossary sequences to follow, which describes the request rather than the size of the answer.
+
+`WeatherGlossary.entries` is an array in service order, not a dictionary, because the service repeats
+terms: one recorded response held two `AGL` entries whose definitions differed only in trailing
+whitespace, so a term is a filter rather than a key. Each `GlossaryEntry` carries a required `term`
+and `definition`, and a body without the `glossary` array fails to decode rather than yielding an
+empty glossary.
+
+A definition is the service's text unchanged, including HTML tags such as `<br>`, character entities
+such as `&frac12;` and `&deg;`, and carriage return line endings. Nothing renders, escapes, strips,
+or normalizes it, and nothing builds an attributed string, so converting a definition for display is
+your app's work. The client adds no search index, term matching, or caching, and it does not follow
+links found inside a definition.
 
 ### Direct endpoints and other networking stacks
 

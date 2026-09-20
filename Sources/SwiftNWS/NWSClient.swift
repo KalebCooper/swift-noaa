@@ -270,6 +270,21 @@ public struct NWSClient: Sendable {
     try await value(for: .forecastGrid(for: location))
   }
 
+  /// Retrieves the glossary of weather terms the service publishes.
+  ///
+  /// Sends one request for a JSON-LD body. Entries keep the service's order, repeated terms are
+  /// kept, and definitions keep their HTML markup, character entities, and line endings exactly as
+  /// the service sent them. The service accepts no page size or cursor here and answers the whole
+  /// glossary in one response, so nothing is paged, indexed, or rendered.
+  ///
+  /// - Returns: The glossary entries in service order.
+  /// - Throws: ``NWSError/invalidLink(_:)`` for a disallowed glossary redirect,
+  ///   ``NWSError/problem(_:)`` for a refusal with problem details, or any other error from
+  ///   ``send(_:)``.
+  public func glossary() async throws(NWSError) -> WeatherGlossary {
+    try await value(for: .glossary)
+  }
+
   /// Retrieves the hourly forecast for a coordinate.
   /// - Parameters:
   ///   - location: The coordinate to look up.

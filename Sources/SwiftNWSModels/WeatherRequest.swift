@@ -490,3 +490,17 @@ extension WeatherRequest where Response == ZoneForecast {
     zoneForecast(identifier: identifier, type: ZoneType(type))
   }
 }
+
+extension WeatherRequest where Response == WeatherGlossary {
+  /// Describes the glossary of weather terms the service publishes.
+  ///
+  /// The request sends ``Endpoint/glossary`` and returns its body unchanged. The glossary takes no
+  /// page size or cursor, so execution retrieves every entry in one response.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.glossary
+  /// ```
+  public static var glossary: Self {
+    Self(endpoint: .glossary)
+  }
+}

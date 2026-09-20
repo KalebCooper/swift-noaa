@@ -38,8 +38,12 @@ recognized event types, and alert history adds a time window, page size, and cur
 reads a station's past observations over a window. ``NWSClient/observationStation(identifier:)`` reads
 one station's metadata, ``NWSClient/observationStations(near:)`` lists the stations near a
 coordinate as one page, and ``NWSClient/observation(stationIdentifier:timestamp:)`` reads the
-observation a station made at an exact instant. Active-alert, alert-history, station-directory,
-and observation-history page and feature sequences follow validated continuation links on demand.
+observation a station made at an exact instant. Six zone routes read `/zones`, `/zones/{type}`,
+`/zones/{type}/{zoneId}`, a zone's text forecast, and a forecast zone's observations and stations,
+each as one response. ``NWSClient/glossary()`` reads the service's glossary of weather terms, whose
+definitions arrive as the service wrote them, markup included. Active-alert,
+alert-history, station-directory, and observation-history page and feature sequences follow validated
+continuation links on demand.
 The station directory is the canonical implementation. Existing single-page methods do not
 automatically paginate.
 
@@ -66,6 +70,7 @@ automatically paginate.
 - <doc:AlertHistory>
 - <doc:ForecastGrids>
 - <doc:Forecasts>
+- <doc:Glossary>
 - <doc:ObservationHistory>
 - <doc:ObservationStations>
 - <doc:PaginatingCollections>
