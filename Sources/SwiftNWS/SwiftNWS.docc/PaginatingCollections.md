@@ -55,6 +55,10 @@ Both sequences send nothing until the iterator requests its first element. They 
 never prefetch, and each iterator starts an independent traversal. Item sequences consume the current
 page before asking for another. Breaking either loop prevents the next request.
 
+`next(isolation:)` defaults to the caller's isolation and forwards it through every iterator wrapper,
+including redirected page fetches. Each iterator must be read serially; it is not Sendable and does
+not support concurrent reads.
+
 Active alerts offer the same two views through ``NWSClient/activeAlertPages(matching:)`` and the
 synchronous `activeAlerts(matching:)` overload, alert history through
 ``NWSClient/alertPages(matching:)`` and the synchronous `alerts(matching:)` overload, and a

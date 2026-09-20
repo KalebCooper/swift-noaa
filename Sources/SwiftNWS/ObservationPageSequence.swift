@@ -28,9 +28,13 @@ public struct ObservationPageSequence: AsyncSequence, Sendable {
     }
 
     /// Fetches a page on demand, validating its continuation before returning it.
+    /// - Parameter actor: The caller's isolation, forwarded through page fetching. Read an iterator
+    ///   serially; concurrent calls to the same iterator are unsupported.
     /// - Throws: A pagination, redirect, problem-detail, transport, or cancellation error.
-    public mutating func next() async throws(NWSError) -> Element? {
-      try await pages.next()
+    public mutating func next(
+      isolation actor: isolated (any Actor)? = #isolation
+    ) async throws(NWSError) -> Element? {
+      try await pages.next(isolation: actor)
     }
   }
 

@@ -6,6 +6,11 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+### Changed
+
+- Page and feature iterators explicitly forward caller isolation through every wrapper and redirected
+  page fetch. Iterators remain serial, independent traversals with typed errors.
+
 ## [0.1.0] - 2026-09-18
 
 ### Added

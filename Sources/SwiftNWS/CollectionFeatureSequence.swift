@@ -18,13 +18,17 @@ struct CollectionFeatureSequence<Properties: Decodable & Sendable>: AsyncSequenc
     }
 
     /// Returns the next feature, checking cancellation even while a page is buffered.
+    /// - Parameter actor: The caller's isolation, forwarded through page fetching. Read an iterator
+    ///   serially; concurrent calls to the same iterator are unsupported.
     /// - Throws: The same errors as the page sequence. Any error finishes this iterator.
-    mutating func next() async throws(NWSError) -> Element? {
+    mutating func next(
+      isolation actor: isolated (any Actor)? = #isolation
+    ) async throws(NWSError) -> Element? {
       guard !finished else { return nil }
       finished = true
       guard !Task.isCancelled else { throw .transport(.cancelled) }
       while index == features.count {
-        guard let page = try await pages.next() else { return nil }
+        guard let page = try await pages.next(isolation: actor) else { return nil }
         features = page.features
         index = 0
       }

@@ -33,9 +33,13 @@ struct CollectionPageSequence<Properties: Decodable & Sendable>: AsyncSequence, 
     }
 
     /// Fetches a page on demand, validating its continuation before returning it.
+    /// - Parameter actor: The caller's isolation, forwarded through page fetching. Read an iterator
+    ///   serially; concurrent calls to the same iterator are unsupported.
     /// - Throws: A pagination, redirect, problem-detail, transport, or cancellation error, or
     ///   ``NWSError/invalidLink(_:)`` when a point's station link is disallowed.
-    mutating func next() async throws(NWSError) -> Element? {
+    mutating func next(
+      isolation actor: isolated (any Actor)? = #isolation
+    ) async throws(NWSError) -> Element? {
       guard !finished else { return nil }
       finished = true
       guard !Task.isCancelled else { throw .transport(.cancelled) }
@@ -59,7 +63,7 @@ struct CollectionPageSequence<Properties: Decodable & Sendable>: AsyncSequence, 
         guard redirects.insert(current.path).inserted else { throw .tooManyRedirects }
         let page: Element
         do {
-          guard let response = try await pages.next() else { return nil }
+          guard let response = try await pages.next(isolation: actor) else { return nil }
           page = response.value
         } catch {
           guard let redirected = try sequence.client.redirectEndpoint(after: error, from: current)

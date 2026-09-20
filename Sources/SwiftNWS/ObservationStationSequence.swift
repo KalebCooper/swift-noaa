@@ -26,9 +26,13 @@ public struct ObservationStationSequence: AsyncSequence, Sendable {
     }
 
     /// Returns the next feature, checking cancellation even while a page is buffered.
+    /// - Parameter actor: The caller's isolation, forwarded through page fetching. Read an iterator
+    ///   serially; concurrent calls to the same iterator are unsupported.
     /// - Throws: The same errors as the page sequence. Any error finishes this iterator.
-    public mutating func next() async throws(NWSError) -> Element? {
-      try await features.next()
+    public mutating func next(
+      isolation actor: isolated (any Actor)? = #isolation
+    ) async throws(NWSError) -> Element? {
+      try await features.next(isolation: actor)
     }
   }
 
