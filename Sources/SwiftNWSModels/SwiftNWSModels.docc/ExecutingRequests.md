@@ -59,9 +59,12 @@ Constructing or inspecting it sends nothing.
 
 - An endpoint resolution contains `Endpoint<Response>`. Decode the complete body as
   `Response`, without adding or removing a GeoJSON wrapper. `WeatherRequest.activeAlertCount`,
-  `WeatherRequest.alertTypes`, and `WeatherRequest.glossary` use this resolution with endpoints that
+  `WeatherRequest.alertTypes`, `WeatherRequest.glossary`, `WeatherRequest.productLocations`, and
+  `WeatherRequest.productTypes` use this resolution with endpoints that
   ask for ``MediaType/jsonLD``, and `WeatherRequest.observations(inForecastZone:)` uses it with an
-  endpoint whose ``ZoneObservationQuery`` already validated the zone and limit.
+  endpoint whose ``ZoneObservationQuery`` already validated the zone and limit. The two product
+  catalogs that take no argument are plain endpoint properties, so their requests add no resolution
+  case of their own.
 - Forecast resolutions contain a coordinate and options. Resolve the point, validate its forecast
   or hourly link using the corresponding endpoint factory, then return the feature's properties.
   Preserve the endpoint's units query and feature flags.
@@ -110,6 +113,19 @@ Constructing or inspecting it sends nothing.
   ``OfficeHeadlines`` responses. Unwrap `Endpoint.officeHeadlines(officeIdentifier:)`, reject an
   empty or unusable identifier before sending, and return that one response. The route documents no
   page size or cursor, so send neither and synthesize no continuation.
+- A `productLocations` resolution contains a ``ProductCode`` and is only created for
+  ``ProductLocations`` responses. Unwrap `Endpoint.productLocations(for:)`, report a nil result as
+  an unusable product code before sending, send it once, and decode the whole JSON-LD body. The
+  code is encoded as one path segment and is not upper-cased or otherwise normalized, and a code
+  the service does not catalog is sent rather than rejected. The route documents no page size or
+  cursor, so send neither and synthesize no continuation. Keep every location the service listed
+  without a description.
+- A `productTypes` resolution contains a location identifier and is only created for
+  ``ProductTypes`` responses. Unwrap `Endpoint.productTypes(at:)`, report a nil result as an
+  unusable product location before sending, send it once, and decode the whole JSON-LD body,
+  keeping the order the service listed the types in. The identifier is encoded as one path segment
+  and is not upper-cased or otherwise normalized. The route documents no page size or cursor, so
+  send neither and synthesize no continuation.
 - A `nearbyObservationStations` resolution contains a coordinate and is only created for
   `FeatureCollection<ObservationStation>` responses. Resolve the point, validate its
   observation-stations link with `Endpoint.observationStations(near:)`, and return that one page.

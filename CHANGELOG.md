@@ -79,6 +79,32 @@ All notable changes are documented here, following
 - A briefing's `download` link is never requested. Briefing documents
   (`/offices/{officeId}/briefing/download/latest` and
   `/offices/{officeId}/briefing/download/{briefingId}`) are not supported, weather stories are not supported, and no PDF or image is downloaded.
+- The product catalogs at all three access levels: `productTypes()` for `/products/types`,
+  `productLocations()` for `/products/locations`, `productLocations(for:)` for
+  `/products/types/{typeId}/locations`, and `productTypes(at:)` for
+  `/products/locations/{locationId}/types`, each also available as a `WeatherRequest` factory and
+  an `Endpoint`. The service offers these resources only as JSON-LD, so each endpoint asks for
+  `MediaType.jsonLD` and sends no query items and no feature flags, because the routes document no
+  page size or cursor. The two catalogs that take no argument are endpoint properties whose
+  requests use the plain endpoint resolution; the two that take a code or an identifier are
+  failable endpoint factories whose `productLocations` and `productTypes` resolutions reject an
+  unusable argument before sending. Every level also accepts a String-backed product code of the
+  consumer's own.
+- `ProductTypes` and `ProductType`, decoding a catalog's required `@graph` array in service order.
+  A product type's `productCode` and `productName` are both required, and a body without the array
+  fails to decode rather than producing an empty list.
+- `ProductLocations`, decoding a catalog's required `locations` object as `[String: String?]`. The
+  service lists most identifiers without a description, sending `null`, and an undescribed location
+  is kept with a nil value rather than dropped, because its identifier is usable on the product
+  routes either way. Encoding writes it back as `null`. A body without the object fails to decode.
+- `ProductCode`, an extensible String-backed code naming one kind of text product, with
+  `areaForecastDiscussion` (`AFD`), `publicZoneForecast` (`ZFP`), and `specialWeatherStatement`
+  (`SPS`) named and every other code usable through `init(rawValue:)`, preserving the service's
+  exact value.
+- The catalogs name what the service issues and carry no product text. `/products`,
+  `/products/{productId}`, `/products/types/{typeId}`,
+  `/products/types/{typeId}/locations/{locationId}`, and that pairing's `/latest` route are not yet
+  built, and plain-text product retrieval is not supported.
 
 ### Changed
 
@@ -95,6 +121,9 @@ All notable changes are documented here, following
   for any consumer switching over `NWSError` exhaustively, which must handle the two new cases.
 - Add the `invalidHeadlineIdentifier` and `invalidOfficeIdentifier` cases to `NWSError`. This is a
   source break for any consumer switching over `NWSError` exhaustively, which must handle the two new
+  cases.
+- Add the `invalidProductCode` and `invalidProductLocation` cases to `NWSError`. This is a source
+  break for any consumer switching over `NWSError` exhaustively, which must handle the two new
   cases.
 
 ## [0.1.0] - 2026-09-18

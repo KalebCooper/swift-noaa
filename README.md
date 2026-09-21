@@ -36,7 +36,15 @@ headline's content is unrendered HTML returned as sent. Briefing documents (PDFs
 supported, weather stories (`/offices/{officeId}/weatherstories` and its image download) are not
 supported, and no PDF or image is ever downloaded.
 
-Product endpoints and retries are not built.
+The product catalogs are built: every kind of text product the service issues at
+`/products/types`, every location it issues them for at `/products/locations`, and each catalog
+narrowed by the other at `/products/types/{typeId}/locations` and
+`/products/locations/{locationId}/types`. Each answers one response as JSON-LD. A catalog names
+what exists and carries no product text: `/products`, `/products/{productId}`,
+`/products/types/{typeId}`, `/products/types/{typeId}/locations/{locationId}`, and that pairing's
+`/latest` route are not yet built, and plain-text product retrieval is not supported.
+
+Retries are not built.
 
 ## Usage
 
@@ -583,6 +591,47 @@ Every briefing field is optional, and the dates decode as ISO 8601. The endpoint
 `OfficeBriefingResponse`. The briefing's `download` is a URL the client never requests: briefing
 documents are PDFs, which this package does not retrieve, so hand the URL to your own stack or a
 browser. The briefing download routes and weather stories are not supported.
+
+### Product catalogs
+
+```swift
+let types = try await weather.productTypes()
+print(types.types.count)  // 338
+print(types.types.first?.productName ?? "")  // "Rawinsonde Data Above 100 Millibars"
+
+let locations = try await weather.productLocations(for: .areaForecastDiscussion)
+print(locations.locations["EWX"] ?? nil)  // "Austin/San Antonio, TX"
+
+let atLocation = try await weather.productTypes(at: "EWX")
+print(atLocation.types.count)  // 20
+
+let everywhere = try await weather.productLocations()
+print(everywhere.locations.count)  // 1693
+```
+
+`productTypes()`, `productLocations()`, `productLocations(for:)`, and `productTypes(at:)` each send
+one request for the JSON-LD body the service offers and return `ProductTypes` or
+`ProductLocations`. Each is also a `WeatherRequest` factory and an `Endpoint`. The two that take an
+argument are failable at the endpoint level; their request factories always return a request, and
+executing one rejects an unusable argument before sending with `NWSError.invalidProductCode` or
+`NWSError.invalidProductLocation`. A code or identifier the service does not catalog is sent, and
+its refusal arrives as `NWSError.problem`.
+
+`ProductCode` is an extensible code whose `rawValue` keeps the service's exact value. It names
+`areaForecastDiscussion` (`AFD`), `publicZoneForecast` (`ZFP`), and `specialWeatherStatement`
+(`SPS`); every other code is usable through `ProductCode(rawValue:)`, and each level also accepts a
+String-backed code of your own. `/products/types` is the live authority on which codes exist.
+
+`ProductLocations.locations` is a `[String: String?]`, because the service lists most identifiers
+without a description: 1,562 of the 1,693 recorded from `/products/locations` arrived as `null`. An
+undescribed location is kept with a nil value rather than dropped, since its identifier is usable on
+the product routes either way, so a nil value and an absent key stay different answers. A product
+location identifier is not a forecast office identifier, and nothing converts between the two.
+
+Each catalog is one response, because the routes document no page size and no cursor, which
+describes the request rather than how large a catalog is. `ProductTypes` keeps service order and
+`ProductLocations` is a dictionary with no order; nothing sorts, filters, or searches a catalog, and
+no completeness or freshness claim is made. These routes return no product text.
 
 ### Direct endpoints and other networking stacks
 

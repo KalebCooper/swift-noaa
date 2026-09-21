@@ -47,6 +47,13 @@ order, with each headline's content kept as unrendered HTML. ``OfficeBriefingRes
 office's current briefing as an optional ``OfficeBriefing``, nil when the office has none. Its
 download link is a URL the package never requests. See <doc:OfficeData>.
 
+``ProductTypes`` and ``ProductLocations`` decode the service's product catalogs, from
+`/products/types` and `/products/locations` and from the routes that narrow each by the other.
+Types keep service order and pair an open ``ProductCode`` with the name the service displays for
+it. Locations decode as a dictionary whose value is optional, because the service lists most
+identifiers without a description and an undescribed identifier stays usable. A catalog names what
+the service issues; no model here carries a product's text. See <doc:ProductData>.
+
 Forecast and grid validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
 ``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
 one. The exact text stays available as `rawValue`.
@@ -85,6 +92,7 @@ not require full Foundation or a networking stack.
 - ``ForecastWindDirection``
 - ``MarineRegionCode``
 - ``NWSFeatureFlag``
+- ``ProductCode``
 - ``QualityControlCode``
 - ``WeatherPhenomenonIntensity``
 - ``WeatherPhenomenonKind``
@@ -118,6 +126,9 @@ not require full Foundation or a networking stack.
 - ``OfficeHeadlines``
 - ``Point``
 - ``ProblemDetail``
+- ``ProductLocations``
+- ``ProductType``
+- ``ProductTypes``
 - ``QuantitativeValue``
 - ``WeatherAlert``
 - ``WeatherForecast``
@@ -130,6 +141,7 @@ not require full Foundation or a networking stack.
 - ``ZoneForecastPeriod``
 - <doc:GlossaryData>
 - <doc:OfficeData>
+- <doc:ProductData>
 - <doc:ZoneData>
 
 ### Forecast grids

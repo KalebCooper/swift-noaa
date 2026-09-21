@@ -110,6 +110,22 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/points/0,0`, the `404` problem details the API answers a point outside its coverage with.
   case problemDetail = "ProblemDetail"
 
+  /// `/products/locations`, requested as `application/ld+json`, the 1,693 locations the service
+  /// issues text products for, 1,562 of them listed with a `null` description.
+  case productLocations = "ProductLocations"
+
+  /// `/products/types/AFD/locations`, requested as `application/ld+json`, the 123 offices that
+  /// issue an area forecast discussion, every one of them described.
+  case productLocationsForType = "ProductLocationsForType"
+
+  /// `/products/types`, requested as `application/ld+json`, the 338 kinds of text product the
+  /// service issues.
+  case productTypes = "ProductTypes"
+
+  /// `/products/locations/EWX/types`, requested as `application/ld+json`, the 20 kinds of product
+  /// the Austin/San Antonio office issues.
+  case productTypesAtLocation = "ProductTypesAtLocation"
+
   /// `/alerts/active/region/AT`, active alerts in the Atlantic marine region.
   case regionAlerts = "RegionAlerts"
 

@@ -46,7 +46,12 @@ reads a forecast office's metadata, and ``NWSClient/officeHeadlines(officeIdenti
 ``NWSClient/officeHeadline(identifier:officeIdentifier:)`` read the editorial headlines it publishes,
 with their content left as unrendered HTML. ``NWSClient/officeBriefing(officeIdentifier:)`` reads
 the metadata for an office's current briefing, or nil when there is none. Briefing documents
-and weather stories are not supported, and no PDF or image is downloaded. Active-alert,
+and weather stories are not supported, and no PDF or image is downloaded. Four product catalog
+routes name what the service issues: ``NWSClient/productTypes()`` and
+``NWSClient/productLocations()`` read the whole catalog of product codes and of location
+identifiers, and ``NWSClient/productLocations(for:)-(ProductCode)`` and
+``NWSClient/productTypes(at:)`` narrow each one by the other. A catalog names what exists; the
+routes that return a product's text are not yet built. Active-alert,
 alert-history, station-directory, and observation-history page and feature sequences follow validated
 continuation links on demand.
 The station directory is the canonical implementation. Existing single-page methods do not
@@ -80,6 +85,7 @@ automatically paginate.
 - <doc:ObservationStations>
 - <doc:Offices>
 - <doc:PaginatingCollections>
+- <doc:Products>
 - <doc:Units>
 - <doc:UsingRequests>
 - <doc:Zones>

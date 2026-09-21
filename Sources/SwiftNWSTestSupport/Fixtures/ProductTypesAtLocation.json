@@ -1,0 +1,88 @@
+{
+    "@context": {
+        "@version": "1.1",
+        "@vocab": "https://api.weather.gov/ontology#"
+    },
+    "@graph": [
+        {
+            "productCode": "AFD",
+            "productName": "Area Forecast Discussion"
+        },
+        {
+            "productCode": "ESG",
+            "productName": "Extended Streamflow Guidance"
+        },
+        {
+            "productCode": "FWF",
+            "productName": "Routine Fire Wx Fcst (With/Without 6-10 Day Outlook)"
+        },
+        {
+            "productCode": "FWS",
+            "productName": "Suppression Forecast"
+        },
+        {
+            "productCode": "HML",
+            "productName": "AHPS XML"
+        },
+        {
+            "productCode": "HYD",
+            "productName": "Daily Hydrometeorological Products"
+        },
+        {
+            "productCode": "LCO",
+            "productName": "Local Cooperative Observation"
+        },
+        {
+            "productCode": "NPW",
+            "productName": "Non-Precipitation Warnings / Watches / Advisories"
+        },
+        {
+            "productCode": "PFM",
+            "productName": "Point Forecast Matrices"
+        },
+        {
+            "productCode": "PFW",
+            "productName": "Fire Weather Point Forecast Matrices"
+        },
+        {
+            "productCode": "RFD",
+            "productName": "Rangeland Fire Danger Forecast"
+        },
+        {
+            "productCode": "RRM",
+            "productName": "Miscellaneous Hydrologic Data"
+        },
+        {
+            "productCode": "RRS",
+            "productName": "HADS Data"
+        },
+        {
+            "productCode": "RVA",
+            "productName": "River Summary"
+        },
+        {
+            "productCode": "RVF",
+            "productName": "River Forecast"
+        },
+        {
+            "productCode": "RWR",
+            "productName": "Regional Weather Roundup"
+        },
+        {
+            "productCode": "SFT",
+            "productName": "Tabular State Forecast"
+        },
+        {
+            "productCode": "STQ",
+            "productName": "Spot Forecast Request"
+        },
+        {
+            "productCode": "VFT",
+            "productName": "Terminal Aerodrome Forecast (TAF) Verification"
+        },
+        {
+            "productCode": "ZFP",
+            "productName": "Zone Forecast Product"
+        }
+    ]
+}

@@ -614,6 +614,92 @@ public struct NWSClient: Sendable {
     try await value(for: .officeHeadlines(officeIdentifier: officeIdentifier))
   }
 
+  /// Retrieves every location the service issues text products for.
+  ///
+  /// Sends one request for a JSON-LD body and returns it unchanged. The service describes only
+  /// some of the locations it lists and sends `null` for the rest; an undescribed location is kept
+  /// with a nil description. The route takes no page size or cursor, so nothing is paged.
+  ///
+  /// ```swift
+  /// let locations = try await weather.productLocations()
+  /// print(locations.locations.count)  // 1693
+  /// ```
+  ///
+  /// - Returns: The locations as the service reported them.
+  /// - Throws: ``NWSError/invalidLink(_:)`` for a disallowed redirect,
+  ///   ``NWSError/problem(_:)`` when the service refuses the request, or any other error from
+  ///   ``send(_:)``.
+  public func productLocations() async throws(NWSError) -> ProductLocations {
+    try await value(for: .productLocations)
+  }
+
+  /// Retrieves the locations one kind of text product is issued for.
+  ///
+  /// Sends one request for a JSON-LD body and returns it unchanged. The route takes no page size
+  /// or cursor, so nothing is paged.
+  ///
+  /// ```swift
+  /// let locations = try await weather.productLocations(for: .areaForecastDiscussion)
+  /// print(locations.locations["EWX"] ?? nil)  // "Austin/San Antonio, TX"
+  /// ```
+  ///
+  /// - Parameter type: The product's code, such as `ProductCode.areaForecastDiscussion`.
+  /// - Returns: The locations as the service reported them.
+  /// - Throws: ``NWSError/invalidProductCode(_:)`` for an empty code or invalid encoded path,
+  ///   ``NWSError/problem(_:)`` for a code the service does not catalog, or any other error from
+  ///   ``value(for:)``.
+  public func productLocations(for type: ProductCode) async throws(NWSError) -> ProductLocations {
+    try await value(for: .productLocations(for: type))
+  }
+
+  /// Retrieves the locations one kind of product is issued for using a consumer-defined product
+  /// code enum.
+  /// - Parameter type: A String-backed product code.
+  /// - Returns: The locations as the service reported them.
+  /// - Throws: The errors of ``productLocations(for:)-(ProductCode)``.
+  public func productLocations<Code>(for type: Code) async throws(NWSError) -> ProductLocations
+  where Code: RawRepresentable, Code.RawValue == String {
+    try await productLocations(for: ProductCode(type))
+  }
+
+  /// Retrieves every kind of text product the service issues.
+  ///
+  /// Sends one request for a JSON-LD body and returns it unchanged, keeping the order the service
+  /// listed the types in. The route takes no page size or cursor, so nothing is paged.
+  ///
+  /// ```swift
+  /// let types = try await weather.productTypes()
+  /// print(types.types.count)  // 338
+  /// ```
+  ///
+  /// - Returns: The product types in service order.
+  /// - Throws: ``NWSError/invalidLink(_:)`` for a disallowed redirect,
+  ///   ``NWSError/problem(_:)`` when the service refuses the request, or any other error from
+  ///   ``send(_:)``.
+  public func productTypes() async throws(NWSError) -> ProductTypes {
+    try await value(for: .productTypes)
+  }
+
+  /// Retrieves the kinds of text product issued for one location.
+  ///
+  /// Sends one request for a JSON-LD body and returns it unchanged, keeping the order the service
+  /// listed the types in. The identifier is sent as one path segment and is not upper-cased or
+  /// otherwise normalized. The route takes no page size or cursor, so nothing is paged.
+  ///
+  /// ```swift
+  /// let types = try await weather.productTypes(at: "EWX")
+  /// print(types.types.count)  // 20
+  /// ```
+  ///
+  /// - Parameter location: The location's identifier, such as `EWX`.
+  /// - Returns: The product types in service order.
+  /// - Throws: ``NWSError/invalidProductLocation(_:)`` for an empty identifier or invalid encoded
+  ///   path, ``NWSError/problem(_:)`` for a location the service does not catalog, or any other
+  ///   error from ``value(for:)``.
+  public func productTypes(at location: String) async throws(NWSError) -> ProductTypes {
+    try await value(for: .productTypes(at: location))
+  }
+
   /// Sends an endpoint and decodes its response.
   ///
   /// Follows at most five redirects within the API origin, preserving request headers.
@@ -661,6 +747,8 @@ public struct NWSClient: Sendable {
   ///   zone type or identifier or invalid encoded path,
   ///   ``NWSError/invalidOfficeIdentifier(_:)`` or ``NWSError/invalidHeadlineIdentifier(_:)`` for
   ///   an empty office or headline identifier or invalid encoded path,
+  ///   ``NWSError/invalidProductCode(_:)`` or ``NWSError/invalidProductLocation(_:)`` for an
+  ///   empty product code or location identifier or invalid encoded path,
   ///   ``NWSError/invalidLink(_:)`` for a disallowed link, ``NWSError/noObservationStation``
   ///   for an empty station list, or any error from ``send(_:)``.
   public func value<Value: Decodable & SendableMetatype>(
@@ -786,6 +874,20 @@ public struct NWSClient: Sendable {
       }
       // Only WeatherRequest<OfficeHeadlines> can be created with this resolution. The route takes
       // no page size or cursor, so nothing is paged.
+      return try await send(endpoint.decoding(Value.self))
+    case .productLocations(let type):
+      guard let endpoint = Endpoint.productLocations(for: type) else {
+        throw .invalidProductCode(type.rawValue)
+      }
+      // Only WeatherRequest<ProductLocations> can be created with this resolution. The route takes
+      // no page size or cursor, so nothing is paged.
+      return try await send(endpoint.decoding(Value.self))
+    case .productTypes(let location):
+      guard let endpoint = Endpoint.productTypes(at: location) else {
+        throw .invalidProductLocation(location)
+      }
+      // Only WeatherRequest<ProductTypes> can be created with this resolution. The route takes no
+      // page size or cursor, so nothing is paged.
       return try await send(endpoint.decoding(Value.self))
     case .zone(let effective, let identifier, let type):
       guard Endpoint<Feature<Value>>.zoneTypeSegment(type) != nil else {

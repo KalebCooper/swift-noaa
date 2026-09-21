@@ -116,6 +116,20 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// no page size or cursor, so nothing is paged.
     case officeHeadlines(officeIdentifier: String)
 
+    /// Retrieve the locations one kind of text product is issued for as one response.
+    ///
+    /// Only requests returning ``ProductLocations`` carry this resolution. An empty code, or one
+    /// that produces an invalid encoded path, is a failure before any request. The route takes no
+    /// page size or cursor, so nothing is paged.
+    case productLocations(type: ProductCode)
+
+    /// Retrieve the kinds of text product issued for one location as one response.
+    ///
+    /// Only requests returning ``ProductTypes`` carry this resolution. An empty identifier, or one
+    /// that produces an invalid encoded path, is a failure before any request. The route takes no
+    /// page size or cursor, so nothing is paged.
+    case productTypes(location: String)
+
     /// Retrieve one zone by type and identifier and return its GeoJSON properties.
     ///
     /// Only requests returning ``WeatherZone`` carry this resolution. An empty type or identifier,
@@ -603,5 +617,76 @@ extension WeatherRequest where Response == WeatherOffice {
   /// - Returns: A reusable request that performs no I/O at construction.
   public static func office(identifier: String) -> Self {
     Self(resolution: .office(identifier: identifier))
+  }
+}
+
+extension WeatherRequest where Response == ProductLocations {
+  /// Describes every location the service issues text products for, `/products/locations`.
+  ///
+  /// The request sends ``Endpoint/productLocations`` and returns its body unchanged. The route
+  /// takes no page size or cursor, so execution retrieves the whole catalog in one response.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.productLocations
+  /// ```
+  public static var productLocations: Self {
+    Self(endpoint: .productLocations)
+  }
+
+  /// Describes the locations one kind of product is issued for,
+  /// `/products/types/{typeId}/locations`.
+  ///
+  /// Executing the request rejects an empty code before sending and returns the catalog
+  /// unchanged. The route takes no page size or cursor, so execution retrieves every location in
+  /// one response.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.productLocations(for: .areaForecastDiscussion)
+  /// ```
+  ///
+  /// - Parameter type: The product's code, such as ``ProductCode/areaForecastDiscussion``.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func productLocations(for type: ProductCode) -> Self {
+    Self(resolution: .productLocations(type: type))
+  }
+
+  /// Describes the locations one kind of product is issued for using a consumer-defined product
+  /// code enum.
+  /// - Parameter type: A String-backed product code.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func productLocations<Code>(for type: Code) -> Self
+  where Code: RawRepresentable, Code.RawValue == String {
+    productLocations(for: ProductCode(type))
+  }
+}
+
+extension WeatherRequest where Response == ProductTypes {
+  /// Describes every kind of text product the service issues, `/products/types`.
+  ///
+  /// The request sends ``Endpoint/productTypes`` and returns its body unchanged. The route takes
+  /// no page size or cursor, so execution retrieves the whole catalog in one response.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.productTypes
+  /// ```
+  public static var productTypes: Self {
+    Self(endpoint: .productTypes)
+  }
+
+  /// Describes the kinds of product issued for one location,
+  /// `/products/locations/{locationId}/types`.
+  ///
+  /// Executing the request rejects an empty identifier before sending and returns the catalog
+  /// unchanged. The route takes no page size or cursor, so execution retrieves every kind in one
+  /// response.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.productTypes(at: "EWX")
+  /// ```
+  ///
+  /// - Parameter location: The location's identifier, such as `EWX`.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func productTypes(at location: String) -> Self {
+    Self(resolution: .productTypes(location: location))
   }
 }

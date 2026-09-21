@@ -51,6 +51,21 @@ The briefing route returns the office's current briefing metadata, or nil when t
 supported, weather stories (`/offices/{officeId}/weatherstories` and its image download) are not
 supported, and no PDF or image is downloaded.
 
+The product catalog phase is built, and it names what the service issues rather than returning any
+product's text. `/products/types`, `/products/locations`, `/products/types/{typeId}/locations`, and
+`/products/locations/{locationId}/types` are available at the endpoint, request, and client levels,
+as JSON-LD, the only representation the service offers for them. A type catalog decodes a required
+`@graph` array in service order, and a location catalog decodes a required `locations` object whose
+values are optional: the service lists most identifiers without a description, and an undescribed
+location is kept with a nil value rather than dropped, because its identifier is usable on the
+product routes either way. A product location identifier is not a forecast office identifier, and
+nothing converts between the two. `ProductCode` is extensible, naming `AFD`, `ZFP`, and `SPS` while
+preserving every other code the service sends. Each route answers one response, and that is a
+limitation rather than a completeness claim: none of the four documents a page size or a cursor, so
+neither is sent. A catalog is what the service answered for that request, and a pairing it lists is
+not a promise that a product exists for it. The routes that return a product's text are not built,
+and plain-text product retrieval is not supported.
+
 Release validation runs locally before publication. The Android and hosted CI lanes must pass
 on the pushed release commit before approving the 0.1.0 tag. Tagging and pushing require owner approval.
 
@@ -151,15 +166,27 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   `/alerts/active/count`, `/alerts/active/region/{region}`, and `/alerts/types`. Alert history ships
   with single-page endpoint and request access plus page and item sequences in its first vertical
   slice.
-- **Products:** `/products`, product types and locations, the latest product for a type and
-  location, and a single product.
+- **Products:** the four catalog routes are built at the endpoint, request, and client levels:
+  `/products/types`, `/products/locations`, `/products/types/{typeId}/locations`, and
+  `/products/locations/{locationId}/types`. The service offers each only as `application/ld+json`,
+  so every product endpoint asks for that media type and sends no query items and no feature flags;
+  the type catalogs decode a required `@graph` array in service order, and the location catalogs
+  decode a required `locations` object whose undescribed entries arrive as `null` and are kept.
+  Each answers one response, because the routes document no page size and no cursor. A catalog
+  names what the service issues and carries no product text. Not built: `/products` and its
+  filters, `/products/{productId}`, `/products/types/{typeId}`,
+  `/products/types/{typeId}/locations/{locationId}`, and that pairing's `/latest` route. Plain-text
+  product retrieval (`text/plain`) is not supported.
 - **Glossary:** `/glossary`. Built, as JSON-LD at all three access levels. The route documents no
   page size and no cursor, so none is sent and the list is one response. Entries are an array in
   service order because terms repeat, and definitions keep the service's markup, character entities,
   and line endings unchanged.
 - **Pagination:** verified cursor-based collections follow `pagination.next` through lazy page and
-  item sequences while retaining single-page access. Products, zones, and other lists known only to
-  accept `limit` remain outside this claim until their provider continuation behavior is verified.
+  item sequences while retaining single-page access. The four built product catalog routes are
+  outside that surface entirely: each documents neither a page size nor a cursor, so neither is sent
+  and there is nothing to continue. Zones, the product routes that are not yet built, and other
+  lists known only to accept `limit` remain outside the claim as well, until their provider
+  continuation behavior is verified.
   Grid station lists are one page, because their continuation link is verified not to continue them.
 - **Media types:** CAP XML and Atom for alerts, each either supported or listed as not supported.
   `application/pdf`, the office briefing document type, is not supported: the briefing route is read
