@@ -95,6 +95,13 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// that produces an invalid encoded path, is a failure before any request.
     case office(identifier: String)
 
+    /// Retrieve the metadata for an office's current weather briefing, or nil for none.
+    ///
+    /// Only requests returning an optional ``OfficeBriefing`` carry this resolution. An empty
+    /// identifier, or one that produces an invalid encoded path, is a failure before any request.
+    /// A `null` briefing is nil after one request; the briefing's document is never requested.
+    case officeBriefing(officeIdentifier: String)
+
     /// Retrieve one of an office's editorial headlines.
     ///
     /// Only requests returning ``OfficeHeadline`` carry this resolution. An empty office or
@@ -522,6 +529,25 @@ extension WeatherRequest where Response == WeatherGlossary {
   /// ```
   public static var glossary: Self {
     Self(endpoint: .glossary)
+  }
+}
+
+extension WeatherRequest where Response == OfficeBriefing? {
+  /// Describes the metadata for an office's current weather briefing,
+  /// `/offices/{officeId}/briefing`.
+  ///
+  /// Executing the request rejects an empty identifier before sending, sends one request, and
+  /// returns the briefing's metadata, or nil when the office has no current briefing. It never
+  /// requests the briefing's document.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.officeBriefing(officeIdentifier: "LWX")
+  /// ```
+  ///
+  /// - Parameter officeIdentifier: The office's identifier, such as `LWX`.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func officeBriefing(officeIdentifier: String) -> Self {
+    Self(resolution: .officeBriefing(officeIdentifier: officeIdentifier))
   }
 }
 

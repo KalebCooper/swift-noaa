@@ -83,6 +83,14 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// empty fax number, 33 counties, 33 fire zones, 33 forecast zones, and 63 approved stations.
   case office = "Office"
 
+  /// `/offices/LWX/briefing`, requested as `application/ld+json`, the Baltimore/Washington
+  /// office's current briefing with every metadata field, a false priority, and a download link.
+  case officeBriefing = "OfficeBriefing"
+
+  /// `/offices/EWX/briefing`, requested as `application/ld+json`, the `null` briefing the
+  /// Austin/San Antonio office answered with no current briefing.
+  case officeBriefingAbsent = "OfficeBriefingAbsent"
+
   /// `/offices/EWX/headlines/ab45482ca5f57ff412eb1320721d5ac9`, requested as
   /// `application/ld+json`, one headline with a `null` summary, HTML content, and an editorial
   /// link outside the API origin.

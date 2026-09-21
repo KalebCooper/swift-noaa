@@ -1,0 +1,16 @@
+{
+    "@context": {
+        "@version": "1.1"
+    },
+    "briefing": {
+        "id": "3913ad35-9342-46fb-b8ab-5f148277426c",
+        "officeId": "LWX",
+        "startTime": "2026-09-18T14:40:00+00:00",
+        "endTime": "2026-09-21T15:00:00+00:00",
+        "updateTime": "2026-09-18T14:38:46+00:00",
+        "title": "Click to view briefing",
+        "description": "NWS Baltimore/Washington 7-day Hazardous Weather Briefing",
+        "priority": false,
+        "download": "https://api.weather.gov/offices/LWX/briefing/download/3913ad35-9342-46fb-b8ab-5f148277426c"
+    }
+}

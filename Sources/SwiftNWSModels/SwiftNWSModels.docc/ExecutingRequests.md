@@ -95,6 +95,12 @@ Constructing or inspecting it sends nothing.
   `Endpoint.office(identifier:)`, report a nil result as an unusable office identifier, send it, and
   decode the whole JSON-LD body as ``WeatherOffice``. There is no GeoJSON wrapper to unwrap, and
   none of the office's links is followed.
+- An `officeBriefing` resolution contains an office identifier and is only created for optional
+  ``OfficeBriefing`` responses. Unwrap `Endpoint.officeBriefing(officeIdentifier:)`, report a nil
+  result as an unusable office identifier before sending, send it once, decode the body as
+  ``OfficeBriefingResponse``, and return its ``OfficeBriefingResponse/briefing``. A `null` briefing
+  is nil, an answer rather than a failure: do not retry or fall back to another route. A `404` for
+  an unknown office stays a failure. Do not request the briefing's ``OfficeBriefing/download``.
 - An `officeHeadline` resolution contains a headline identifier and an office identifier and is
   only created for ``OfficeHeadline`` responses. Check the office identifier first, so the failure
   names which argument was unusable, then unwrap `Endpoint.officeHeadline(identifier:officeIdentifier:)`,

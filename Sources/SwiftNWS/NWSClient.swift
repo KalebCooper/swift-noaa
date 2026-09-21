@@ -544,6 +544,30 @@ public struct NWSClient: Sendable {
     try await value(for: .office(identifier: identifier))
   }
 
+  /// Retrieves the metadata for an office's current weather briefing.
+  ///
+  /// Sends one request for a JSON-LD body and returns its briefing. An office with no current
+  /// briefing answers `null`, which is nil here after that one request. The briefing's
+  /// `download` link is never requested; this method does not retrieve briefing documents.
+  ///
+  /// ```swift
+  /// if let briefing = try await weather.officeBriefing(officeIdentifier: "LWX") {
+  ///   print(briefing.title ?? "Untitled briefing")
+  ///   if let download = briefing.download {
+  ///     print(download)
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// - Parameter officeIdentifier: The office's identifier, such as `LWX`.
+  /// - Returns: The briefing's metadata, or nil when the office has no current briefing.
+  /// - Throws: ``NWSError/invalidOfficeIdentifier(_:)`` for an empty identifier or invalid encoded
+  ///   path, ``NWSError/problem(_:)`` for an unknown office, or any other error from
+  ///   ``send(_:)``.
+  public func officeBriefing(officeIdentifier: String) async throws(NWSError) -> OfficeBriefing? {
+    try await value(for: .officeBriefing(officeIdentifier: officeIdentifier))
+  }
+
   /// Retrieves one of an office's editorial headlines.
   ///
   /// Sends one request for a JSON-LD body and returns it unchanged. The headline's content keeps
@@ -740,6 +764,12 @@ public struct NWSClient: Sendable {
       }
       // Only WeatherRequest<WeatherOffice> can be created with this resolution.
       return try await send(endpoint.decoding(Value.self))
+    case .officeBriefing(let officeIdentifier):
+      guard let endpoint = Endpoint.officeBriefing(officeIdentifier: officeIdentifier) else {
+        throw .invalidOfficeIdentifier(officeIdentifier)
+      }
+      // Only WeatherRequest<OfficeBriefing?> can be created with this resolution.
+      return try await send(endpoint.decoding(BriefingEnvelope<Value>.self)).briefing
     case .officeHeadline(let identifier, let officeIdentifier):
       guard Endpoint<Value>.officeSegment(officeIdentifier) != nil else {
         throw .invalidOfficeIdentifier(officeIdentifier)

@@ -29,10 +29,11 @@ follow them.
 The glossary at `/glossary` is built as well. It answers in one response, with the entries in
 service order and each definition exactly as the service wrote it, markup and all.
 
-Office metadata and headlines are built: `/offices/{officeId}`, the headline list at
-`/offices/{officeId}/headlines`, and one headline. The headline list is one response in service
-order, and a headline's content is unrendered HTML returned as sent. Office briefings are not yet
-built, weather stories (`/offices/{officeId}/weatherstories` and its image download) are not
+Office metadata, headlines, and briefing metadata are built: `/offices/{officeId}`, the headline
+list at `/offices/{officeId}/headlines`, one headline, and the current briefing's metadata at
+`/offices/{officeId}/briefing`. The headline list is one response in service order, and a
+headline's content is unrendered HTML returned as sent. Briefing documents (PDFs) are not
+supported, weather stories (`/offices/{officeId}/weatherstories` and its image download) are not
 supported, and no PDF or image is ever downloaded.
 
 Product endpoints and retries are not built.
@@ -548,6 +549,13 @@ for headline in headlines.headlines {
 let request = WeatherRequest.officeHeadline(
   identifier: "ab45482ca5f57ff412eb1320721d5ac9", officeIdentifier: "EWX")
 let headline = try await weather.value(for: request)
+
+if let briefing = try await weather.officeBriefing(officeIdentifier: "LWX") {
+  print(briefing.title ?? "Untitled briefing")
+  if let download = briefing.download {
+    print(download)
+  }
+}
 ```
 
 `office(identifier:)`, `officeHeadlines(officeIdentifier:)`, and
@@ -567,6 +575,14 @@ Its `link` is editorial content that may point off the API origin, and the clien
 response in service order. The route documents no page size or cursor, so none is sent, which
 describes the request rather than how many headlines come back. Headlines are not sorted or filtered
 by importance or issuance time.
+
+`officeBriefing(officeIdentifier:)` sends one request and returns the office's current
+`OfficeBriefing`, or nil when the service answers a `null` briefing because the office has none.
+Nil is not retried and has no fallback; an unknown office's `404` still throws `NWSError.problem`.
+Every briefing field is optional, and the dates decode as ISO 8601. The endpoint returns the whole
+`OfficeBriefingResponse`. The briefing's `download` is a URL the client never requests: briefing
+documents are PDFs, which this package does not retrieve, so hand the URL to your own stack or a
+browser. The briefing download routes and weather stories are not supported.
 
 ### Direct endpoints and other networking stacks
 

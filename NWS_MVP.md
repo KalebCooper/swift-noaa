@@ -37,13 +37,19 @@ rather than the size of the answer. Entries decode as a required array in servic
 service repeats terms, and definitions keep the markup, character entities, and line endings the
 service sent. Nothing renders, escapes, indexes, matches, or caches them.
 
-Office metadata and headlines are built. `/offices/{officeId}`, `/offices/{officeId}/headlines`, and
-`/offices/{officeId}/headlines/{headlineId}` are available at the endpoint, request, and client
-levels, as JSON-LD. The headline list is one response in service order; the route documents no page
+The office phase is complete: office metadata, headlines, and briefing metadata are built.
+`/offices/{officeId}`, `/offices/{officeId}/headlines`,
+`/offices/{officeId}/headlines/{headlineId}`, and `/offices/{officeId}/briefing` are available at the
+endpoint, request, and client levels, as JSON-LD. The headline list is one response in service order; the route documents no page
 size and no cursor, so none is sent, which describes the request rather than how many headlines come
 back. A headline's editorial link is never followed and its content is unrendered HTML kept as sent.
-Office briefings are not yet built. Weather stories (`/offices/{officeId}/weatherstories` and its
-image download) are not supported, and no PDF or image is downloaded.
+The briefing route returns the office's current briefing metadata, or nil when the office answers
+`null`, after one request with no fallback; an unknown office's `404` stays an error. The metadata's
+`download` link is a URL the SDK never requests. Briefing documents
+(`/offices/{officeId}/briefing/download/latest` and
+`/offices/{officeId}/briefing/download/{briefingId}`, served as `application/pdf`) are not
+supported, weather stories (`/offices/{officeId}/weatherstories` and its image download) are not
+supported, and no PDF or image is downloaded.
 
 Release validation runs locally before publication. The Android and hosted CI lanes must pass
 on the pushed release commit before approving the 0.1.0 tag. Tagging and pushing require owner approval.
@@ -135,10 +141,12 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   declares no cursor, and the observation and station continuation links lead to one station's
   history and to repeated then empty pages, so neither is followed. The station route's declared
   limit and cursor are not offered, because the recorded responses ignored them.
-- **Offices:** `/offices/{officeId}`, headlines, and briefings. Office metadata, the headline list,
-  and one headline are built, as JSON-LD at all three access levels. Briefings are not yet built.
-  Weather stories (`/offices/{officeId}/weatherstories` and its image download) are not supported,
-  and no PDF or image is downloaded.
+- **Offices:** built. `/offices/{officeId}`, headlines, and briefing metadata. Office metadata, the
+  headline list, one headline, and the current briefing's metadata are built, as JSON-LD at all
+  three access levels; a `null` briefing is nil. Briefing documents (`/briefing/download/latest` and
+  `/briefing/download/{briefingId}`) are not supported. Weather stories
+  (`/offices/{officeId}/weatherstories` and its image download) are not supported, and no PDF or
+  image is downloaded.
 - **Alerts, complete:** alert history on `/alerts` with its time and status filters,
   `/alerts/active/count`, `/alerts/active/region/{region}`, and `/alerts/types`. Alert history ships
   with single-page endpoint and request access plus page and item sequences in its first vertical
@@ -153,8 +161,10 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   item sequences while retaining single-page access. Products, zones, and other lists known only to
   accept `limit` remain outside this claim until their provider continuation behavior is verified.
   Grid station lists are one page, because their continuation link is verified not to continue them.
-- **Media types:** CAP XML and Atom for alerts, and `application/pdf` for office briefings, each
-  either supported or listed as not supported. No endpoint is left in an unstated state.
+- **Media types:** CAP XML and Atom for alerts, each either supported or listed as not supported.
+  `application/pdf`, the office briefing document type, is not supported: the briefing route is read
+  as JSON-LD metadata only, and its download link is never requested. No endpoint is left in an
+  unstated state.
 - **Out of scope, stated as such:** `/radar`, `/aviation` (SIGMETs, center weather advisories,
   TAFs), `/icons`, `/thumbnails`, and `/radio`, unless a consumer need appears before 1.0.0.
 - **Feature flags:** every flag the spec lists is modeled for every endpoint that accepts it.

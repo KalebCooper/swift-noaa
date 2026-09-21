@@ -1,10 +1,11 @@
 # Reading forecast offices
 
-Retrieve a forecast office's metadata and the editorial headlines it publishes.
+Retrieve a forecast office's metadata, the editorial headlines it publishes, and the metadata for
+its current weather briefing.
 
 ## Overview
 
-A forecast office is identified by a short code, such as `EWX` for Austin/San Antonio. Three
+A forecast office is identified by a short code, such as `EWX` for Austin/San Antonio. Four
 operations read what an office publishes about itself:
 
 | Operation | Path | Returns |
@@ -12,6 +13,7 @@ operations read what an office publishes about itself:
 | ``NWSClient/office(identifier:)`` | `/offices/{officeId}` | `WeatherOffice` |
 | ``NWSClient/officeHeadlines(officeIdentifier:)`` | `/offices/{officeId}/headlines` | `OfficeHeadlines` |
 | ``NWSClient/officeHeadline(identifier:officeIdentifier:)`` | `/offices/{officeId}/headlines/{headlineId}` | `OfficeHeadline` |
+| ``NWSClient/officeBriefing(officeIdentifier:)`` | `/offices/{officeId}/briefing` | `OfficeBriefing?` |
 
 ```swift
 import SwiftNWS
@@ -50,9 +52,12 @@ if let endpoint = Endpoint.officeHeadline(
 ```
 
 The everyday methods delegate to `WeatherRequest.office(identifier:)`,
-`WeatherRequest.officeHeadlines(officeIdentifier:)`, and
-`WeatherRequest.officeHeadline(identifier:officeIdentifier:)`, so all three levels return the same
-value. The endpoint factories return nil for an identifier they cannot encode as a path segment.
+`WeatherRequest.officeHeadlines(officeIdentifier:)`,
+`WeatherRequest.officeHeadline(identifier:officeIdentifier:)`, and
+`WeatherRequest.officeBriefing(officeIdentifier:)`. For the first three, all three levels return the
+same value. The briefing endpoint returns the whole `OfficeBriefingResponse`, while the method and
+the request return its `briefing`, as described under Briefings below. The endpoint factories
+return nil for an identifier they cannot encode as a path segment.
 
 ### Identifiers are checked before sending
 
@@ -120,13 +125,57 @@ the links inside it. Presenting it is your app's decision: text placed directly 
 does not interpret markup shows the tags instead of the meaning. A headline's `summary` can be nil
 even when the headline has content.
 
+### Briefings
+
+``NWSClient/officeBriefing(officeIdentifier:)`` returns the metadata for the office's current
+weather briefing: its identifier, office, title, description, priority, the times it starts, ends,
+and was last updated, and a `download` link to the briefing's document.
+
+```swift
+if let briefing = try await weather.officeBriefing(officeIdentifier: "LWX") {
+  print(briefing.title ?? "Untitled briefing")
+  if let download = briefing.download {
+    print(download)
+  }
+} else {
+  print("No current briefing")
+}
+```
+
+An office with no current briefing answers `null`, and the method returns nil after that one
+request. Nil is an answer, not a failure: the client does not retry, ask another office, or fall
+back to any other route. An office the service does not recognize is still a refusal, and its `404`
+arrives as ``NWSError/problem(_:)`` rather than nil.
+
+Every field of the metadata is optional, and is nil only when the service omits it or sends `null`.
+The dates decode as ISO 8601, and a present value of the wrong type fails the response to decode.
+
+`download` is a URL and nothing more. The client never requests it and does not retrieve, open, or
+parse briefing documents. The document it names is a PDF, which this package does not support. To
+show the briefing, hand the URL to your own networking stack, a web view, or the system browser.
+
+### Supported office routes
+
+| Route | Supported |
+|---|---|
+| `/offices/{officeId}` | Yes |
+| `/offices/{officeId}/headlines` | Yes |
+| `/offices/{officeId}/headlines/{headlineId}` | Yes |
+| `/offices/{officeId}/briefing` | Yes, as metadata |
+| `/offices/{officeId}/briefing/download/latest` | No |
+| `/offices/{officeId}/briefing/download/{briefingId}` | No |
+| `/offices/{officeId}/weatherstories` | No |
+| `/offices/{officeId}/weatherstories/download/{imageId}` | No |
+
 ### What the office operations do not do
 
 - The headline list is one response. The service documents no page size and no cursor for
   `/offices/{officeId}/headlines`, so neither is sent and there are no headline page or item
   sequences. That describes the request, not a guarantee about how many headlines come back. See
   <doc:PaginatingCollections> for the collections that do continue.
-- Office briefings (`/offices/{officeId}/briefing` and its downloads) are not yet built.
+- Briefing documents are not supported. Neither `/offices/{officeId}/briefing/download/latest` nor
+  `/offices/{officeId}/briefing/download/{briefingId}` is requested, including through a briefing's
+  `download` link.
 - Weather stories (`/offices/{officeId}/weatherstories` and its image download) are not supported.
 - No PDF or image is ever downloaded. Nothing is fetched beyond the one request each operation
   sends.

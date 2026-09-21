@@ -9,7 +9,7 @@ import Testing
 
 @Suite("Office client", .timeLimit(.minutes(suiteTimeLimitMinutes)))
 struct OfficeClientTests {
-  @Test("A cancelled office lookup sends nothing", arguments: [0, 1, 2])
+  @Test("A cancelled office lookup sends nothing", arguments: [0, 1, 2, 3])
   func aCancelledOfficeLookupSendsNothing(operation: Int) async throws {
     let transport = MockTransport()
     let client = makeClient(transport)
@@ -18,6 +18,7 @@ struct OfficeClientTests {
         switch operation {
         case 0: _ = try await client.office(identifier: "EWX")
         case 1: _ = try await client.officeHeadlines(officeIdentifier: "EWX")
+        case 2: _ = try await client.officeBriefing(officeIdentifier: "LWX")
         default:
           _ = try await client.officeHeadline(identifier: "a", officeIdentifier: "EWX")
         }
@@ -74,15 +75,16 @@ struct OfficeClientTests {
     #expect(transport.requests.isEmpty)
   }
 
-  @Test("An empty office identifier sends nothing", arguments: [0, 1])
+  @Test("An empty office identifier sends nothing", arguments: [0, 1, 2, 3])
   func anEmptyOfficeIdentifierSendsNothing(operation: Int) async throws {
     let transport = MockTransport()
     let client = makeClient(transport)
     let failure = await #expect(throws: NWSError.self) {
-      if operation == 0 {
-        _ = try await client.office(identifier: "")
-      } else {
-        _ = try await client.officeHeadlines(officeIdentifier: "")
+      switch operation {
+      case 0: _ = try await client.office(identifier: "")
+      case 1: _ = try await client.officeHeadlines(officeIdentifier: "")
+      case 2: _ = try await client.officeBriefing(officeIdentifier: "")
+      default: _ = try await client.value(for: .officeBriefing(officeIdentifier: ""))
       }
     }
     guard case .invalidOfficeIdentifier(let identifier) = failure else {
@@ -247,6 +249,138 @@ struct OfficeClientTests {
     #expect(
       transport.requests.map(\.request.path)
         == ["/offices/EWX/headlines/ab45482ca5f57ff412eb1320721d5ac9"])
+  }
+
+  @Test("Briefing access layers agree", arguments: [0, 1])
+  func briefingAccessLayersAgree(layer: Int) async throws {
+    let transport = MockTransport()
+    try answer(transport, path: "/offices/LWX/briefing", with: .officeBriefing)
+    let client = makeClient(transport)
+    let result: OfficeBriefing? =
+      switch layer {
+      case 0: try await client.officeBriefing(officeIdentifier: "LWX")
+      default: try await client.value(for: .officeBriefing(officeIdentifier: "LWX"))
+      }
+    let expected = try JSONDecoder().decode(
+      OfficeBriefingResponse.self, from: Fixture.officeBriefing.data())
+    #expect(result == expected.briefing)
+    #expect(result?.title == "Click to view briefing")
+    #expect(result?.id == "3913ad35-9342-46fb-b8ab-5f148277426c")
+    #expect(result?.officeId == "LWX")
+    #expect(transport.requests.map(\.request.path) == ["/offices/LWX/briefing"])
+    #expect(transport.requests[0].request.headerFields[.accept] == "application/ld+json")
+    #expect(transport.requests[0].request.headerFields[.userAgent] == "office-tests")
+  }
+
+  @Test("A null briefing is nil after exactly one request", arguments: [0, 1])
+  func aNullBriefingIsNilAfterExactlyOneRequest(layer: Int) async throws {
+    let transport = MockTransport()
+    try answer(transport, path: "/offices/EWX/briefing", with: .officeBriefingAbsent)
+    let client = makeClient(transport)
+    let result: OfficeBriefing? =
+      switch layer {
+      case 0: try await client.officeBriefing(officeIdentifier: "EWX")
+      default: try await client.value(for: .officeBriefing(officeIdentifier: "EWX"))
+      }
+    #expect(result == nil)
+    #expect(transport.requests.map(\.request.path) == ["/offices/EWX/briefing"])
+  }
+
+  @Test("A stored briefing request executes without a type annotation")
+  func aStoredBriefingRequestExecutesWithoutATypeAnnotation() async throws {
+    let transport = MockTransport()
+    try answer(transport, path: "/offices/LWX/briefing", with: .officeBriefing)
+    let client = makeClient(transport)
+    let stored = WeatherRequest.officeBriefing(officeIdentifier: "LWX")
+    let briefing = try await client.value(for: stored)
+    #expect(briefing?.title == "Click to view briefing")
+  }
+
+  @Test("Sending the briefing endpoint returns the whole response", arguments: [0, 1])
+  func sendingTheBriefingEndpointReturnsTheWholeResponse(recorded: Int) async throws {
+    let fixture: Fixture = recorded == 0 ? .officeBriefing : .officeBriefingAbsent
+    let office = recorded == 0 ? "LWX" : "EWX"
+    let transport = MockTransport()
+    try answer(transport, path: "/offices/\(office)/briefing", with: fixture)
+    let client = makeClient(transport)
+    let response = try await client.send(
+      try #require(Endpoint.officeBriefing(officeIdentifier: office)))
+    #expect(
+      response == (try JSONDecoder().decode(OfficeBriefingResponse.self, from: fixture.data())))
+    if recorded == 0 {
+      #expect(response.briefing?.title == "Click to view briefing")
+      #expect(response.briefing?.id == "3913ad35-9342-46fb-b8ab-5f148277426c")
+      #expect(response.briefing?.officeId == "LWX")
+    } else {
+      #expect(response.briefing == nil)
+    }
+    #expect(transport.requests.count == 1)
+  }
+
+  @Test("An unknown office's briefing stays the service's problem")
+  func anUnknownOfficesBriefingStaysTheServicesProblem() async throws {
+    let transport = MockTransport()
+    try answer(
+      transport, path: "/offices/XXX/briefing", status: .notFound, with: .problemDetail)
+    let client = makeClient(transport)
+    let failure = await #expect(throws: NWSError.self) {
+      try await client.officeBriefing(officeIdentifier: "XXX")
+    }
+    guard case .problem(let problem) = failure else {
+      Issue.record("Expected problem details, got \(String(describing: failure))")
+      return
+    }
+    #expect(problem.status == 404)
+    #expect(transport.requests.map(\.request.path) == ["/offices/XXX/briefing"])
+  }
+
+  @Test("The briefing's download link is never requested")
+  func theBriefingsDownloadLinkIsNeverRequested() async throws {
+    let transport = MockTransport()
+    try answer(transport, path: "/offices/LWX/briefing", with: .officeBriefing)
+    let client = makeClient(transport)
+    let briefing = try await client.officeBriefing(officeIdentifier: "LWX")
+    #expect(
+      briefing?.download
+        == URL(
+          string:
+            "https://api.weather.gov/offices/LWX/briefing/download/3913ad35-9342-46fb-b8ab-5f148277426c"
+        ))
+    #expect(transport.requests.map(\.request.path) == ["/offices/LWX/briefing"])
+  }
+
+  @Test("Briefing office identifiers keep their case and stay one path segment")
+  func briefingOfficeIdentifiersKeepTheirCaseAndStayOnePathSegment() async throws {
+    let transport = MockTransport()
+    try answer(transport, path: "/offices/lwx/briefing", with: .officeBriefingAbsent)
+    try answer(transport, path: "/offices/L%2FX/briefing", with: .officeBriefingAbsent)
+    let client = makeClient(transport)
+    _ = try await client.officeBriefing(officeIdentifier: "lwx")
+    _ = try await client.officeBriefing(officeIdentifier: "L/X")
+    #expect(
+      transport.requests.map(\.request.path)
+        == ["/offices/lwx/briefing", "/offices/L%2FX/briefing"])
+  }
+
+  @Test(
+    "Briefing redirects cannot escape the API origin",
+    arguments: [
+      "https://example.com/offices/LWX/briefing", "http://api.weather.gov/offices/LWX/briefing",
+      "https://user:password@api.weather.gov/offices/LWX/briefing",
+      "https://api.weather.gov/offices/LWX/briefing#latest",
+    ])
+  func briefingRedirectsCannotEscapeTheAPIOrigin(location: String) async throws {
+    let transport = MockTransport()
+    redirect(transport, from: "/offices/LWX/briefing", to: location)
+    let client = makeClient(transport)
+    let failure = await #expect(throws: NWSError.self) {
+      try await client.officeBriefing(officeIdentifier: "LWX")
+    }
+    guard case .invalidLink = failure else {
+      Issue.record("Expected an invalid link, got \(String(describing: failure))")
+      return
+    }
+    #expect(transport.requests.count == 1)
   }
 
   private func answer(

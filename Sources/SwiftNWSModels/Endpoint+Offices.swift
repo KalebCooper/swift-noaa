@@ -1,3 +1,24 @@
+extension Endpoint where Response == OfficeBriefingResponse {
+  /// Retrieves the metadata for an office's current weather briefing, `/offices/{officeId}/briefing`.
+  ///
+  /// The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD`` and sends no feature flags or query items. The identifier is encoded as
+  /// one path segment and is not upper-cased or otherwise normalized. An office with no current
+  /// briefing answers a `null` briefing rather than an error.
+  ///
+  /// ```swift
+  /// Endpoint.officeBriefing(officeIdentifier: "LWX")?.path  // "/offices/LWX/briefing"
+  /// ```
+  ///
+  /// - Parameter officeIdentifier: The office's identifier, such as `LWX`, encoded as one path
+  ///   segment.
+  /// - Returns: The endpoint, or nil for an empty identifier or an invalid encoded path.
+  public static func officeBriefing(officeIdentifier: String) -> Self? {
+    guard let office = officeSegment(officeIdentifier) else { return nil }
+    return Self(accept: .jsonLD, path: "/offices/" + office + "/briefing")
+  }
+}
+
 extension Endpoint where Response == OfficeHeadline {
   /// Retrieves one of an office's headlines, `/offices/{officeId}/headlines/{headlineId}`.
   ///

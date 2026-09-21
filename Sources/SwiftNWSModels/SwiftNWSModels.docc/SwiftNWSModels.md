@@ -43,7 +43,9 @@ character entities, and line endings the service sent. See <doc:GlossaryData>.
 
 ``WeatherOffice`` decodes a forecast office's metadata from `/offices/{officeId}`, and
 ``OfficeHeadlines`` and ``OfficeHeadline`` decode the editorial headlines it publishes, in service
-order, with each headline's content kept as unrendered HTML. See <doc:OfficeData>.
+order, with each headline's content kept as unrendered HTML. ``OfficeBriefingResponse`` decodes the
+office's current briefing as an optional ``OfficeBriefing``, nil when the office has none. Its
+download link is a URL the package never requests. See <doc:OfficeData>.
 
 Forecast and grid validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
 ``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
@@ -110,6 +112,8 @@ not require full Foundation or a networking stack.
 - ``GlossaryEntry``
 - ``JSONValue``
 - ``ObservationStation``
+- ``OfficeBriefing``
+- ``OfficeBriefingResponse``
 - ``OfficeHeadline``
 - ``OfficeHeadlines``
 - ``Point``

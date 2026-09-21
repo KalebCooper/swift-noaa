@@ -1,16 +1,17 @@
 # Decoding office data
 
-Decode a forecast office's metadata and headlines with any networking stack.
+Decode a forecast office's metadata, headlines, and briefing metadata with any networking stack.
 
 ## Overview
 
-Three office routes decode into these models:
+Four office routes decode into these models:
 
 | Path | Endpoint | Decodes as |
 |---|---|---|
 | `/offices/{officeId}` | `Endpoint.office(identifier:)` | ``WeatherOffice`` |
 | `/offices/{officeId}/headlines` | `Endpoint.officeHeadlines(officeIdentifier:)` | ``OfficeHeadlines`` |
 | `/offices/{officeId}/headlines/{headlineId}` | `Endpoint.officeHeadline(identifier:officeIdentifier:)` | ``OfficeHeadline`` |
+| `/offices/{officeId}/briefing` | `Endpoint.officeBriefing(officeIdentifier:)` | ``OfficeBriefingResponse`` |
 
 ```swift
 import SwiftNWSModels
@@ -33,9 +34,10 @@ invalid encoded path.
 
 ## Execution
 
-`WeatherRequest.office(identifier:)`, `WeatherRequest.officeHeadlines(officeIdentifier:)`, and
-`WeatherRequest.officeHeadline(identifier:officeIdentifier:)` always return a request and carry the
-`office`, `officeHeadlines`, and `officeHeadline` resolution cases:
+`WeatherRequest.office(identifier:)`, `WeatherRequest.officeHeadlines(officeIdentifier:)`,
+`WeatherRequest.officeHeadline(identifier:officeIdentifier:)`, and
+`WeatherRequest.officeBriefing(officeIdentifier:)` always return a request and carry the `office`,
+`officeHeadlines`, `officeHeadline`, and `officeBriefing` resolution cases:
 
 ```swift
 let request = WeatherRequest.officeHeadline(
@@ -48,7 +50,8 @@ if case .officeHeadline(let identifier, let officeIdentifier) = request.resoluti
 The cases exist so an executor validates the identifiers before any request: it unwraps the
 endpoint factory and reports an unusable identifier without sending. A headline lookup checks the
 office identifier first, so the failure names which argument was unusable. After that each case is
-one request whose whole body is the response. See <doc:ExecutingRequests>.
+one request. The first three return the whole body; an `officeBriefing` request returns an optional
+``OfficeBriefing``, the value of the body's `briefing` key. See <doc:ExecutingRequests>.
 
 The same endpoints decode a response model of your own, when you want less than the full body:
 
@@ -127,9 +130,72 @@ if let editorial = headline.link {
 escapes. These models do not render, escape, strip, or sanitize it, and links inside it are text.
 Decide how to present it before displaying it.
 
+## Briefings
+
+`/offices/{officeId}/briefing` answers with an envelope around the office's current briefing:
+
+```json
+{
+  "@context": { "@version": "1.1" },
+  "briefing": {
+    "id": "3913ad35-9342-46fb-b8ab-5f148277426c",
+    "officeId": "LWX",
+    "startTime": "2026-09-18T14:40:00+00:00",
+    "title": "Click to view briefing",
+    "download": "https://api.weather.gov/offices/LWX/briefing/download/3913ad35-9342-46fb-b8ab-5f148277426c"
+  }
+}
+```
+
+``OfficeBriefingResponse`` decodes that envelope. Its `briefing` key is required, and its value is
+either the briefing's metadata or `null`. An office with no current briefing answers `null`, which
+decodes as a nil ``OfficeBriefingResponse/briefing``. A body without the key, or with a value that
+is neither an object nor `null`, fails to decode, so no current briefing and a malformed response
+stay distinct. The JSON-LD context is not kept.
+
+Decode it with any networking stack:
+
+```swift
+guard let endpoint = Endpoint.officeBriefing(officeIdentifier: "LWX") else { return }
+print(endpoint.path)  // "/offices/LWX/briefing"
+
+// Send a GET to https://api.weather.gov plus endpoint.path with that Accept header and a
+// User-Agent identifying your application, then:
+let response = try JSONDecoder().decode(OfficeBriefingResponse.self, from: body)
+if let briefing = response.briefing {
+  print(briefing.title ?? "Untitled briefing")
+} else {
+  print("No current briefing")
+}
+```
+
+Every field of ``OfficeBriefing`` is optional, because the route documents none of them as
+required, and is nil only when the service omits it or sends `null`. A value that is present but
+malformed fails to decode: a date that is not ISO 8601, a priority that is not a Boolean, or a
+download link that is not a URL.
+
+| Property | Type | Notes |
+|---|---|---|
+| ``OfficeBriefing/description`` | `String` | The office's description of the briefing. |
+| ``OfficeBriefing/download`` | `URL` | The API link to the briefing's document. Never requested. |
+| ``OfficeBriefing/endTime`` | `Date` | When the briefing stops being current, ISO 8601. |
+| ``OfficeBriefing/id`` | `String` | Kept as sent, not validated as a UUID. |
+| ``OfficeBriefing/officeId`` | `String` | The publishing office, such as `LWX`. |
+| ``OfficeBriefing/priority`` | `Bool` | Whether the office marked the briefing a priority. |
+| ``OfficeBriefing/startTime`` | `Date` | When the briefing becomes current, ISO 8601. |
+| ``OfficeBriefing/title`` | `String` | The briefing's title. |
+| ``OfficeBriefing/updateTime`` | `Date` | When the office last updated the briefing, ISO 8601. |
+
+The dates decode as ISO 8601 independently of the decoder's date strategy.
+
+``OfficeBriefing/download`` is a URL, not content. These models never request it, and the package
+does not retrieve briefing documents, which are PDFs. Hand the URL to your own networking stack, a
+web view, or the system browser to show the briefing.
+
 ## What is not supported
 
-- Office briefings, `/offices/{officeId}/briefing` and its downloads, are not yet built.
+- Briefing documents, `/offices/{officeId}/briefing/download/latest` and
+  `/offices/{officeId}/briefing/download/{briefingId}`, are not supported. PDF bodies have no model.
 - Weather stories, `/offices/{officeId}/weatherstories` and its image download, are not supported.
 - No PDF or image is ever downloaded. These models describe JSON-LD bodies only.
 
@@ -137,6 +203,8 @@ Decide how to present it before displaying it.
 
 ### Offices
 
+- ``OfficeBriefing``
+- ``OfficeBriefingResponse``
 - ``OfficeHeadline``
 - ``OfficeHeadlines``
 - ``WeatherOffice``

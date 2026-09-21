@@ -68,8 +68,17 @@ All notable changes are documented here, following
   `url` is its API identity; its `link` is editorial content that may point off the API origin and
   is never followed; its `content` is unrendered HTML kept as sent. The headline list is one
   response, because the route documents no page size or cursor.
-- Office briefings are not yet built, weather stories are not supported, and no PDF or image is
-  downloaded.
+- Office briefing metadata at all three access levels: `officeBriefing(officeIdentifier:)` for
+  `/offices/{officeId}/briefing`, also available as a `WeatherRequest` factory and an `Endpoint`.
+  `OfficeBriefingResponse` decodes the required `briefing` key, whose `null` value means the office
+  has no current briefing. The client method and request return an optional `OfficeBriefing`, nil
+  after one request with no fallback, while an unknown office's `404` stays `NWSError.problem`. The
+  `officeBriefing` resolution rejects an unusable office identifier before sending. Every
+  `OfficeBriefing` field is optional, its dates decode as ISO 8601, and a present `download` value
+  that is not a URL fails to decode.
+- A briefing's `download` link is never requested. Briefing documents
+  (`/offices/{officeId}/briefing/download/latest` and
+  `/offices/{officeId}/briefing/download/{briefingId}`) are not supported, weather stories are not supported, and no PDF or image is downloaded.
 
 ### Changed
 

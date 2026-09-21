@@ -280,6 +280,122 @@ struct OfficeTests {
         == .officeHeadline(identifier: "a", officeIdentifier: "EWX"))
     #expect(WeatherRequest.austinSanAntonio == WeatherRequest.office(identifier: "EWX"))
   }
+
+  @Test("A recorded briefing decodes every metadata field")
+  func aRecordedBriefingDecodesEveryMetadataField() throws {
+    let response = try JSONDecoder().decode(
+      OfficeBriefingResponse.self, from: Fixture.officeBriefing.data())
+    let briefing = try #require(response.briefing)
+    #expect(briefing.id == "3913ad35-9342-46fb-b8ab-5f148277426c")
+    #expect(briefing.officeId == "LWX")
+    #expect(briefing.startTime == Date(timeIntervalSince1970: 1_789_742_400))
+    #expect(briefing.endTime == Date(timeIntervalSince1970: 1_790_002_800))
+    #expect(briefing.updateTime == Date(timeIntervalSince1970: 1_789_742_326))
+    #expect(briefing.title == "Click to view briefing")
+    #expect(briefing.description == "NWS Baltimore/Washington 7-day Hazardous Weather Briefing")
+    #expect(briefing.priority == false)
+    #expect(
+      briefing.download
+        == URL(
+          string:
+            "https://api.weather.gov/offices/LWX/briefing/download/3913ad35-9342-46fb-b8ab-5f148277426c"
+        ))
+  }
+
+  @Test("A recorded null briefing decodes as no briefing")
+  func aRecordedNullBriefingDecodesAsNoBriefing() throws {
+    let response = try JSONDecoder().decode(
+      OfficeBriefingResponse.self, from: Fixture.officeBriefingAbsent.data())
+    #expect(response.briefing == nil)
+    #expect(response == OfficeBriefingResponse(briefing: nil))
+  }
+
+  @Test(
+    "A recorded briefing response round-trips through its encoded form",
+    arguments: [Fixture.officeBriefing, Fixture.officeBriefingAbsent])
+  func aRecordedBriefingResponseRoundTripsThroughItsEncodedForm(fixture: Fixture) throws {
+    let response = try JSONDecoder().decode(OfficeBriefingResponse.self, from: fixture.data())
+    let encoded = try JSONEncoder().encode(response)
+    #expect(try JSONDecoder().decode(OfficeBriefingResponse.self, from: encoded) == response)
+    let object = try #require(try JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+    #expect(object.keys.contains("briefing"))
+  }
+
+  @Test(
+    "A briefing response that is not a briefing envelope fails to decode",
+    arguments: [
+      #"{"@context":{"@version":"1.1"}}"#, "{}",
+      #"{"id":"3913ad35-9342-46fb-b8ab-5f148277426c","officeId":"LWX","title":"Briefing"}"#,
+      #"{"briefing":3}"#, #"{"briefing":"LWX"}"#, #"{"briefing":[]}"#,
+    ])
+  func aBriefingResponseThatIsNotABriefingEnvelopeFailsToDecode(body: String) {
+    #expect(throws: DecodingError.self) {
+      try JSONDecoder().decode(OfficeBriefingResponse.self, from: Data(body.utf8))
+    }
+  }
+
+  @Test(
+    "A briefing with a malformed field fails to decode",
+    arguments: [
+      #"{"startTime":"the eighteenth"}"#, #"{"endTime":"soon"}"#, #"{"updateTime":42}"#,
+      #"{"priority":"no"}"#, #"{"id":7}"#, #"{"download":false}"#, #"{"download":""}"#,
+      #"{"officeId":["LWX"]}"#,
+    ])
+  func aBriefingWithAMalformedFieldFailsToDecode(body: String) {
+    #expect(throws: DecodingError.self) {
+      try JSONDecoder().decode(OfficeBriefing.self, from: Data(body.utf8))
+    }
+    #expect(throws: DecodingError.self) {
+      try JSONDecoder().decode(
+        OfficeBriefingResponse.self, from: Data((#"{"briefing":"# + body + "}").utf8))
+    }
+  }
+
+  @Test("A briefing without optional fields decodes as nil")
+  func aBriefingWithoutOptionalFieldsDecodesAsNil() throws {
+    let empty = try JSONDecoder().decode(OfficeBriefing.self, from: Data("{}".utf8))
+    #expect(empty == OfficeBriefing())
+    let nulls = try JSONDecoder().decode(
+      OfficeBriefing.self,
+      from: Data(
+        (#"{"id":null,"officeId":null,"startTime":null,"endTime":null,"updateTime":null,"#
+          + #""title":null,"description":null,"priority":null,"download":null}"#).utf8))
+    #expect(nulls == OfficeBriefing())
+    let partial = try JSONDecoder().decode(
+      OfficeBriefingResponse.self, from: Data(#"{"briefing":{"officeId":"LWX"}}"#.utf8))
+    #expect(partial.briefing == OfficeBriefing(officeId: "LWX"))
+    #expect(partial.briefing?.download == nil)
+    #expect(partial.briefing?.startTime == nil)
+  }
+
+  @Test("A briefing identifier is kept as open text")
+  func aBriefingIdentifierIsKeptAsOpenText() throws {
+    let briefing = try JSONDecoder().decode(
+      OfficeBriefing.self, from: Data(#"{"id":"not-a-uuid"}"#.utf8))
+    #expect(briefing.id == "not-a-uuid")
+  }
+
+  @Test("The briefing endpoint and request describe one JSON-LD path")
+  func theBriefingEndpointAndRequestDescribeOneJSONLDPath() throws {
+    let endpoint = try #require(Endpoint.officeBriefing(officeIdentifier: "LWX"))
+    #expect(endpoint.path == "/offices/LWX/briefing")
+    #expect(!endpoint.path.contains("?"))
+    #expect(endpoint.accept == .jsonLD)
+    #expect(endpoint.featureFlags.isEmpty)
+    let stored = WeatherRequest.officeBriefing(officeIdentifier: "LWX")
+    #expect(stored.resolution == .officeBriefing(officeIdentifier: "LWX"))
+    let contextual: WeatherRequest<OfficeBriefing?> = .officeBriefing(officeIdentifier: "LWX")
+    #expect(contextual == stored)
+  }
+
+  @Test("The briefing endpoint encodes its identifier as one path segment")
+  func theBriefingEndpointEncodesItsIdentifierAsOnePathSegment() {
+    #expect(Endpoint.officeBriefing(officeIdentifier: "") == nil)
+    #expect(Endpoint.officeBriefing(officeIdentifier: "lwx")?.path == "/offices/lwx/briefing")
+    #expect(
+      Endpoint.officeBriefing(officeIdentifier: "L/X?a=b")?.path
+        == "/offices/L%2FX%3Fa%3Db/briefing")
+  }
 }
 
 private struct OfficeName: Decodable, Equatable, Sendable {
