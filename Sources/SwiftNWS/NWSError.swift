@@ -22,6 +22,7 @@ import SwiftNWSModels
 ///   case .invalidLink(let link): report("Unexpected link: \(link)")
 ///   case .invalidOfficeIdentifier: report("An office identifier is required.")
 ///   case .invalidProductCode: report("A product code is required.")
+///   case .invalidProductIdentifier: report("A product identifier is required.")
 ///   case .invalidProductLocation: report("A product location is required.")
 ///   case .invalidRedirect: report("The API returned an invalid redirect.")
 ///   case .invalidStationIdentifier: report("A station identifier is required.")
@@ -55,6 +56,9 @@ public enum NWSError: Error {
 
   /// The product code is empty or produces an invalid encoded path, so no product request was sent.
   case invalidProductCode(String)
+
+  /// The product identifier is empty or produces an invalid encoded path, so no product request was sent.
+  case invalidProductIdentifier(String)
 
   /// The product location is empty or produces an invalid encoded path, so no product request was sent.
   case invalidProductLocation(String)

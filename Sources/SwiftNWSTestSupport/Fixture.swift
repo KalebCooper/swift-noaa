@@ -110,6 +110,15 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/points/0,0`, the `404` problem details the API answers a point outside its coverage with.
   case problemDetail = "ProblemDetail"
 
+  /// `/products/a6addd61-6620-4718-9d53-effd7d8c2560`, requested as `application/ld+json`, one
+  /// area forecast discussion with its full bulletin text.
+  case product = "Product"
+
+  /// `/products/types/AFD/locations/EWX/latest`, requested as `application/ld+json`, the latest
+  /// area forecast discussion for Austin/San Antonio, the same product ``product`` was recorded
+  /// from.
+  case productLatest = "ProductLatest"
+
   /// `/products/locations`, requested as `application/ld+json`, the 1,693 locations the service
   /// issues text products for, 1,562 of them listed with a `null` description.
   case productLocations = "ProductLocations"
@@ -117,6 +126,18 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/products/types/AFD/locations`, requested as `application/ld+json`, the 123 offices that
   /// issue an area forecast discussion, every one of them described.
   case productLocationsForType = "ProductLocationsForType"
+
+  /// `/products?type=AFD&location=EWX&limit=2`, requested as `application/ld+json`, two area
+  /// forecast discussions listed without product text.
+  case products = "Products"
+
+  /// `/products/types/AFD/locations/EWX`, requested as `application/ld+json`, the 33 area forecast
+  /// discussions listed for Austin/San Antonio, none of them with product text.
+  case productsAtLocation = "ProductsAtLocation"
+
+  /// `/products/types/AFD`, requested as `application/ld+json`, the 4,567 area forecast
+  /// discussions the service listed, none of them with product text.
+  case productsOfType = "ProductsOfType"
 
   /// `/products/types`, requested as `application/ld+json`, the 338 kinds of text product the
   /// service issues.

@@ -75,6 +75,141 @@ extension Endpoint where Response == ProductTypes {
   }
 }
 
+extension Endpoint where Response == TextProduct {
+  /// The latest product of one kind issued for one location,
+  /// `/products/types/{typeId}/locations/{locationId}/latest`.
+  ///
+  /// The service selects the product, so this is one request rather than a list followed by a
+  /// detail lookup. The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD`` and sends no feature flags or query items. The code and the identifier
+  /// are each encoded as one path segment and are not upper-cased or otherwise normalized.
+  ///
+  /// ```swift
+  /// Endpoint.latestProduct(at: "EWX", ofType: .areaForecastDiscussion)?.path
+  /// // "/products/types/AFD/locations/EWX/latest"
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - location: The product location's identifier, such as `EWX`.
+  ///   - type: The product's code, such as ``ProductCode/areaForecastDiscussion``.
+  /// - Returns: The endpoint, or nil for an empty code or identifier, or an invalid encoded path.
+  public static func latestProduct(at location: String, ofType type: ProductCode) -> Self? {
+    guard let code = productSegment(type.rawValue), let location = productSegment(location) else {
+      return nil
+    }
+    return Self(
+      accept: .jsonLD, path: "/products/types/" + code + "/locations/" + location + "/latest")
+  }
+
+  /// The latest product of one kind issued for one location using a consumer-defined product code
+  /// enum.
+  /// - Parameters:
+  ///   - location: The product location's identifier.
+  ///   - type: A String-backed product code.
+  /// - Returns: The endpoint, or nil for an empty code or identifier, or an invalid encoded path.
+  public static func latestProduct<Code>(at location: String, ofType type: Code) -> Self?
+  where Code: RawRepresentable, Code.RawValue == String {
+    latestProduct(at: location, ofType: ProductCode(type))
+  }
+
+  /// One text product by identifier, `/products/{productId}`.
+  ///
+  /// The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD`` and sends no feature flags or query items. The identifier is encoded as
+  /// one path segment and is not upper-cased or otherwise normalized.
+  ///
+  /// ```swift
+  /// Endpoint.product(identifier: "a6addd61-6620-4718-9d53-effd7d8c2560")?.path
+  /// // "/products/a6addd61-6620-4718-9d53-effd7d8c2560"
+  /// ```
+  ///
+  /// - Parameter identifier: The product's identifier, such as
+  ///   `a6addd61-6620-4718-9d53-effd7d8c2560`, encoded as one path segment.
+  /// - Returns: The endpoint, or nil for an empty identifier or an invalid encoded path.
+  public static func product(identifier: String) -> Self? {
+    guard let identifier = productSegment(identifier) else { return nil }
+    return Self(accept: .jsonLD, path: "/products/" + identifier)
+  }
+}
+
+extension Endpoint where Response == TextProducts {
+  /// The text products matching a validated query, `/products`.
+  ///
+  /// The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD`` and sends no feature flags. The query supplies every parameter the route
+  /// accepts; the route declares no cursor, so nothing continues the list.
+  ///
+  /// ```swift
+  /// let query = try ProductQuery(limit: 2, locations: ["EWX"], types: [.areaForecastDiscussion])
+  /// Endpoint.products(matching: query).path  // "/products?limit=2&location=EWX&type=AFD"
+  /// ```
+  ///
+  /// - Parameter query: The validated filters, window, and page size.
+  /// - Returns: The endpoint for that query.
+  public static func products(matching query: ProductQuery) -> Self {
+    builtIn(accept: .jsonLD, path: "/products" + query.query)
+  }
+
+  /// The text products of one kind issued for one location,
+  /// `/products/types/{typeId}/locations/{locationId}`.
+  ///
+  /// The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD`` and sends no feature flags or query items. The code and the identifier
+  /// are each encoded as one path segment and are not upper-cased or otherwise normalized.
+  ///
+  /// ```swift
+  /// Endpoint.products(at: "EWX", ofType: .areaForecastDiscussion)?.path
+  /// // "/products/types/AFD/locations/EWX"
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - location: The product location's identifier, such as `EWX`.
+  ///   - type: The product's code, such as ``ProductCode/areaForecastDiscussion``.
+  /// - Returns: The endpoint, or nil for an empty code or identifier, or an invalid encoded path.
+  public static func products(at location: String, ofType type: ProductCode) -> Self? {
+    guard let code = productSegment(type.rawValue), let location = productSegment(location) else {
+      return nil
+    }
+    return Self(accept: .jsonLD, path: "/products/types/" + code + "/locations/" + location)
+  }
+
+  /// The text products of one kind issued for one location using a consumer-defined product code
+  /// enum.
+  /// - Parameters:
+  ///   - location: The product location's identifier.
+  ///   - type: A String-backed product code.
+  /// - Returns: The endpoint, or nil for an empty code or identifier, or an invalid encoded path.
+  public static func products<Code>(at location: String, ofType type: Code) -> Self?
+  where Code: RawRepresentable, Code.RawValue == String {
+    products(at: location, ofType: ProductCode(type))
+  }
+
+  /// The text products of one kind, `/products/types/{typeId}`.
+  ///
+  /// The service offers this resource only as JSON-LD, so the endpoint asks for
+  /// ``MediaType/jsonLD`` and sends no feature flags or query items. The code is encoded as one
+  /// path segment and is not upper-cased or otherwise normalized.
+  ///
+  /// ```swift
+  /// Endpoint.products(ofType: .areaForecastDiscussion)?.path  // "/products/types/AFD"
+  /// ```
+  ///
+  /// - Parameter type: The product's code, such as ``ProductCode/areaForecastDiscussion``.
+  /// - Returns: The endpoint, or nil for an empty code or an invalid encoded path.
+  public static func products(ofType type: ProductCode) -> Self? {
+    guard let code = productSegment(type.rawValue) else { return nil }
+    return Self(accept: .jsonLD, path: "/products/types/" + code)
+  }
+
+  /// The text products of one kind using a consumer-defined product code enum.
+  /// - Parameter type: A String-backed product code.
+  /// - Returns: The endpoint, or nil for an empty code or an invalid encoded path.
+  public static func products<Code>(ofType type: Code) -> Self?
+  where Code: RawRepresentable, Code.RawValue == String {
+    products(ofType: ProductCode(type))
+  }
+}
+
 extension Endpoint {
   // Every product route shares one validated segment, and the SDK reports an unusable product code
   // separately from an unusable location identifier.

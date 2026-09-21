@@ -39,10 +39,22 @@ supported, and no PDF or image is ever downloaded.
 The product catalogs are built: every kind of text product the service issues at
 `/products/types`, every location it issues them for at `/products/locations`, and each catalog
 narrowed by the other at `/products/types/{typeId}/locations` and
-`/products/locations/{locationId}/types`. Each answers one response as JSON-LD. A catalog names
-what exists and carries no product text: `/products`, `/products/{productId}`,
-`/products/types/{typeId}`, `/products/types/{typeId}/locations/{locationId}`, and that pairing's
-`/latest` route are not yet built, and plain-text product retrieval is not supported.
+`/products/locations/{locationId}/types`. Each answers one response as JSON-LD.
+
+The text products themselves are built as well, completing all nine product routes: a filtered
+query at `/products`, one product at `/products/{productId}`, the products of one kind at
+`/products/types/{typeId}`, that kind narrowed to a location at
+`/products/types/{typeId}/locations/{locationId}`, and that pairing's newest product at its
+`/latest` route, which is one request rather than a list followed by a detail lookup. A bulletin's
+words arrive as a JSON string and are kept exactly as the service sent them, with no trimming,
+normalization, wrapping, or interpretation. List entries carry no product text at all, and nothing
+substitutes an empty string or fetches a detail to fill one in. Only `/products` accepts options,
+through a `ProductQuery` whose 1 through 500 limit is omitted when nil; the other two list routes
+refuse one. No product route declares a cursor, so there is no product pagination, and no ordering,
+completeness, or freshness is claimed beyond the order the service listed its entries in. A
+product's `issuingOffice`, such as `KEWX`, is a different vocabulary from a product location
+identifier, such as `EWX`, and nothing converts between them. Plain-text (`text/plain`) product
+retrieval is not supported.
 
 Retries are not built.
 
@@ -592,7 +604,7 @@ Every briefing field is optional, and the dates decode as ISO 8601. The endpoint
 documents are PDFs, which this package does not retrieve, so hand the URL to your own stack or a
 browser. The briefing download routes and weather stories are not supported.
 
-### Product catalogs
+### Products
 
 ```swift
 let types = try await weather.productTypes()
@@ -631,7 +643,52 @@ location identifier is not a forecast office identifier, and nothing converts be
 Each catalog is one response, because the routes document no page size and no cursor, which
 describes the request rather than how large a catalog is. `ProductTypes` keeps service order and
 `ProductLocations` is a dictionary with no order; nothing sorts, filters, or searches a catalog, and
-no completeness or freshness claim is made. These routes return no product text.
+no completeness or freshness claim is made. These four routes return no product text.
+
+```swift
+let query = try ProductQuery(limit: 2, locations: ["EWX"], types: [.areaForecastDiscussion])
+let listed = try await weather.products(matching: query)
+print(listed.products.count)                         // 2
+print(listed.products.first?.productText ?? "none")  // "none", a list entry carries no text
+
+let everyDiscussion = try await weather.products(ofType: .areaForecastDiscussion)
+print(everyDiscussion.products.count)  // 4567
+
+let forAustin = try await weather.products(at: "EWX", ofType: .areaForecastDiscussion)
+print(forAustin.products.count)  // 33
+
+let latest = try await weather.latestProduct(at: "EWX", ofType: .areaForecastDiscussion)
+print(latest.issuingOffice ?? "")  // "KEWX"
+print(latest.productText ?? "")    // the bulletin, exactly as the service sent it
+
+if let entry = forAustin.products.first {
+  let product = try await weather.product(identifier: entry.id)
+  print(product.productText ?? "")
+}
+```
+
+`products(matching:)`, `products(ofType:)`, `products(at:ofType:)`, `product(identifier:)`, and
+`latestProduct(at:ofType:)` each send one request and return `TextProducts` or `TextProduct`. Each
+is also a `WeatherRequest` factory and an `Endpoint`; the factories taking a code, a location, or an
+identifier are failable at the endpoint level, and executing their requests reports an unusable
+argument before sending with `NWSError.invalidProductCode`, `NWSError.invalidProductIdentifier`, or
+`NWSError.invalidProductLocation`, checking the code first. A code, location, or identifier the
+service does not catalog is sent, and its refusal arrives as `NWSError.problem`.
+
+`latestProduct(at:ofType:)` is one request: the service selects the product, and the package never
+lists products and fetches a detail behind it. List entries carry a product's metadata only, so
+`TextProduct.productText` is nil for every one of them, which is the shape of a list rather than an
+empty bulletin. A retrieved bulletin keeps whatever whitespace, blank lines, line endings, and
+heading lines the service sent; nothing trims, normalizes, wraps, or interprets it, and an empty
+string stays distinct from a missing value. A product's `issuingOffice`, such as `KEWX`, is a WMO
+office identifier and not the product location identifier the route was asked for, such as `EWX`.
+
+Only `/products` accepts options, supplied by `ProductQuery`: comma-separated filters by code,
+location, issuing office, and WMO collective identifier, a whole-second ISO 8601 UTC window, and a
+limit validated as 1 through 500 that is omitted entirely when nil. The other two list routes take
+no query items and refuse a limit. No product route declares a cursor, so there is no product
+pagination and no product sequences, and plain-text (`text/plain`) product retrieval is not
+supported: every product request asks for `application/ld+json`.
 
 ### Direct endpoints and other networking stacks
 
@@ -673,7 +730,8 @@ quality codes are typed open values that preserve unknown `rawValue`s.
 
 The client throws `NWSError`: NWS problem details, transport or decoding failures, invalid
 service links or redirects, excess redirect hops, invalid pagination, invalid station, alert, zone,
-office, or headline identifiers, zone types, and alert locations, or a station list with no stations. Cancellation is
+office, headline, or product identifiers, zone types, product codes, and alert or product
+locations, or a station list with no stations. Cancellation is
 `NWSError.transport(.cancelled)`, with a cancellation check before each HTTP call.
 When the service rejects a request parameter, such as an unknown marine region, the thrown
 `ProblemDetail` lists each rejection in `parameterErrors`, including the values it accepts.

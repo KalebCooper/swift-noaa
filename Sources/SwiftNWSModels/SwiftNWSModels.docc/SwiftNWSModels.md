@@ -51,8 +51,10 @@ download link is a URL the package never requests. See <doc:OfficeData>.
 `/products/types` and `/products/locations` and from the routes that narrow each by the other.
 Types keep service order and pair an open ``ProductCode`` with the name the service displays for
 it. Locations decode as a dictionary whose value is optional, because the service lists most
-identifiers without a description and an undescribed identifier stays usable. A catalog names what
-the service issues; no model here carries a product's text. See <doc:ProductData>.
+identifiers without a description and an undescribed identifier stays usable. ``TextProduct`` and
+``TextProducts`` decode the products themselves, and ``ProductQuery`` carries the filters, window,
+and page size `/products` accepts. A list entry's text is nil because the routes send none, and a
+retrieved bulletin keeps every character the service transmitted. See <doc:ProductData>.
 
 Forecast and grid validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
 ``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
@@ -73,6 +75,7 @@ not require full Foundation or a networking stack.
 - ``ObservationQuery``
 - ``ObservationSource``
 - ``ObservationStationQuery``
+- ``ProductQuery``
 - ``WeatherCoordinate``
 - ``WeatherRequest``
 - ``ZoneObservationQuery``
@@ -130,6 +133,8 @@ not require full Foundation or a networking stack.
 - ``ProductType``
 - ``ProductTypes``
 - ``QuantitativeValue``
+- ``TextProduct``
+- ``TextProducts``
 - ``WeatherAlert``
 - ``WeatherForecast``
 - ``WeatherGlossary``

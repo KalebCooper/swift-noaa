@@ -50,8 +50,13 @@ and weather stories are not supported, and no PDF or image is downloaded. Four p
 routes name what the service issues: ``NWSClient/productTypes()`` and
 ``NWSClient/productLocations()`` read the whole catalog of product codes and of location
 identifiers, and ``NWSClient/productLocations(for:)-(ProductCode)`` and
-``NWSClient/productTypes(at:)`` narrow each one by the other. A catalog names what exists; the
-routes that return a product's text are not yet built. Active-alert,
+``NWSClient/productTypes(at:)`` narrow each one by the other. Five more read the products
+themselves: ``NWSClient/products(matching:)`` filters `/products` through a `ProductQuery`,
+``NWSClient/products(ofType:)-(ProductCode)`` and
+``NWSClient/products(at:ofType:)-(_,ProductCode)`` list one kind of product, and
+``NWSClient/product(identifier:)`` and ``NWSClient/latestProduct(at:ofType:)-(_,ProductCode)``
+return a bulletin with its text kept exactly as the service sent it. List entries carry no text,
+no product route is paged, and plain-text product retrieval is not supported. Active-alert,
 alert-history, station-directory, and observation-history page and feature sequences follow validated
 continuation links on demand.
 The station directory is the canonical implementation. Existing single-page methods do not

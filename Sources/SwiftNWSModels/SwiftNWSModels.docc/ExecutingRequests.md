@@ -59,10 +59,13 @@ Constructing or inspecting it sends nothing.
 
 - An endpoint resolution contains `Endpoint<Response>`. Decode the complete body as
   `Response`, without adding or removing a GeoJSON wrapper. `WeatherRequest.activeAlertCount`,
-  `WeatherRequest.alertTypes`, `WeatherRequest.glossary`, `WeatherRequest.productLocations`, and
+  `WeatherRequest.alertTypes`, `WeatherRequest.glossary`, `WeatherRequest.productLocations`,
+  `WeatherRequest.products(matching:)`, and
   `WeatherRequest.productTypes` use this resolution with endpoints that
   ask for ``MediaType/jsonLD``, and `WeatherRequest.observations(inForecastZone:)` uses it with an
-  endpoint whose ``ZoneObservationQuery`` already validated the zone and limit. The two product
+  endpoint whose ``ZoneObservationQuery`` already validated the zone and limit.
+  `Endpoint.products(matching:)` is not failable because its ``ProductQuery`` validated its own
+  limit, so send its path as written, including the comma-separated filter values. The two product
   catalogs that take no argument are plain endpoint properties, so their requests add no resolution
   case of their own.
 - Forecast resolutions contain a coordinate and options. Resolve the point, validate its forecast
@@ -113,6 +116,16 @@ Constructing or inspecting it sends nothing.
   ``OfficeHeadlines`` responses. Unwrap `Endpoint.officeHeadlines(officeIdentifier:)`, reject an
   empty or unusable identifier before sending, and return that one response. The route documents no
   page size or cursor, so send neither and synthesize no continuation.
+- A `latestProduct` resolution contains a location identifier and a ``ProductCode`` and is only
+  created for ``TextProduct`` responses. Check the code first, so the failure names which argument
+  was unusable, then unwrap `Endpoint.latestProduct(at:ofType:)`, report a nil result as an
+  unusable product location before sending, and decode the whole JSON-LD body. This is one request:
+  the service selects the product, so do not list products, sort them, or fetch a detail after a
+  first entry.
+- A `product` resolution contains a product identifier and is only created for ``TextProduct``
+  responses. Unwrap `Endpoint.product(identifier:)`, report a nil result as an unusable product
+  identifier before sending, send it once, and decode the whole JSON-LD body. Keep
+  ``TextProduct/productText`` exactly as sent, with no trimming, normalization, or re-encoding.
 - A `productLocations` resolution contains a ``ProductCode`` and is only created for
   ``ProductLocations`` responses. Unwrap `Endpoint.productLocations(for:)`, report a nil result as
   an unusable product code before sending, send it once, and decode the whole JSON-LD body. The
@@ -120,6 +133,15 @@ Constructing or inspecting it sends nothing.
   the service does not catalog is sent rather than rejected. The route documents no page size or
   cursor, so send neither and synthesize no continuation. Keep every location the service listed
   without a description.
+- A `productsOfType` resolution contains a ``ProductCode`` and an optional location identifier and
+  is only created for ``TextProducts`` responses. A nil location selects
+  `Endpoint.products(ofType:)` and a location selects `Endpoint.products(at:ofType:)`, which is a
+  bounded choice inside one operation rather than dispatch over arbitrary resources. Check the code
+  first, report a nil endpoint as an unusable code or location before sending, and decode the whole
+  JSON-LD body, keeping the order the service listed the products in. Neither route accepts query
+  options, so send none, and never rewrite either as a `/products` query: their filters and
+  retention can differ. Every entry's ``TextProduct/productText`` is nil, which is the shape of a
+  list; do not substitute an empty string or fetch a detail to fill it in.
 - A `productTypes` resolution contains a location identifier and is only created for
   ``ProductTypes`` responses. Unwrap `Endpoint.productTypes(at:)`, report a nil result as an
   unusable product location before sending, send it once, and decode the whole JSON-LD body,

@@ -101,10 +101,38 @@ All notable changes are documented here, following
   `areaForecastDiscussion` (`AFD`), `publicZoneForecast` (`ZFP`), and `specialWeatherStatement`
   (`SPS`) named and every other code usable through `init(rawValue:)`, preserving the service's
   exact value.
-- The catalogs name what the service issues and carry no product text. `/products`,
-  `/products/{productId}`, `/products/types/{typeId}`,
-  `/products/types/{typeId}/locations/{locationId}`, and that pairing's `/latest` route are not yet
-  built, and plain-text product retrieval is not supported.
+- The text products themselves at all three access levels, completing the nine product routes:
+  `products(matching:)` for `/products`, `product(identifier:)` for `/products/{productId}`,
+  `products(ofType:)` for `/products/types/{typeId}`, `products(at:ofType:)` for
+  `/products/types/{typeId}/locations/{locationId}`, and `latestProduct(at:ofType:)` for that
+  pairing's `/latest` route, each also available as a `WeatherRequest` factory and an `Endpoint`.
+  The service offers these resources only as JSON-LD, so each endpoint asks for `MediaType.jsonLD`
+  and sends no feature flags. `latestProduct(at:ofType:)` is one request, because the service
+  selects the product; nothing lists products and then fetches a detail. Every level also accepts a
+  String-backed product code of the caller's own.
+- `TextProduct` and `TextProducts`, decoding a product from the single-product and latest routes
+  and a list from the `@graph` array of the three list routes, in service order. Only the
+  identifier is required; `url` decodes from the `@id` identity link and `issuanceTime` decodes as
+  ISO 8601 independently of the decoder's date strategy. `productText` is the bulletin exactly as
+  the service transmitted it, keeping whatever whitespace, blank lines, line endings, and heading
+  lines it carries, with no trimming, normalization, wrapping, re-encoding, or interpretation. List
+  entries carry no text key at all, so a nil value is the shape of a list rather than an empty
+  bulletin, and an empty string, an absent key, and a `null` stay three distinct answers. A
+  product's `issuingOffice`, such as `KEWX`, is a WMO office identifier and a different vocabulary
+  from a product location identifier, such as `EWX`; nothing converts between them.
+- `ProductQuery`, carrying the filters `/products` documents by product code, location, issuing
+  office, and WMO collective identifier, each sent as one comma-separated parameter, plus a window
+  whose bounds are sent as whole-second ISO 8601 instants in UTC and a limit validated as 1 through
+  500 and omitted entirely when nil, because the route documents no default page size. The other
+  two product list routes take no query items and refuse a limit.
+- `NWSError.invalidProductIdentifier`, thrown before sending for an empty product identifier or one
+  that produces an invalid encoded path. An operation taking both a product code and a location
+  checks the code first, so the failure names which argument was unusable, and a code, location, or
+  identifier the service does not catalog is sent and refused as `NWSError.problem`.
+- No product route declares a cursor and no recorded response carried a continuation, so there is
+  no product pagination and there are no product page or item sequences. Plain-text (`text/plain`)
+  product retrieval is not supported: every product request asks for `application/ld+json`, and a
+  bulletin arrives as a JSON string inside that body.
 
 ### Changed
 
