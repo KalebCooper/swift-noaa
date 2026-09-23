@@ -16,6 +16,20 @@ execution. Every HTTP operation has an
 endpoint, reusable request, and client surface. Recorded fixtures, tests, both DocC catalogs, and the
 demo cover these features.
 
+Since 0.1.0, the zone phase is complete. All six probed zone routes are built: the directory
+(`/zones` and `/zones/{type}`), one zone (`/zones/{type}/{zoneId}`), a zone's text forecast
+(`/zones/{type}/{zoneId}/forecast`), and a forecast zone's observations and stations
+(`/zones/forecast/{zoneId}/observations` and `/zones/forecast/{zoneId}/stations`), each at the
+endpoint, request, and client levels, with a feature's GeoJSON geometry retained as raw JSON.
+
+Every one of them answers one response, and that is a limitation rather than a completeness claim.
+The directory declares no cursor. The zone observation route's continuation link names one station's
+observation history, which drops the zone's other stations. The zone station route's declared limit
+and cursor made no difference to the recorded responses, and its continuation link names the same
+stations again at a later offset before leading to empty pages. The client follows neither link and
+sends no cursor for either route, so there are no zone sequences. Zone forecast periods are text
+only. Nothing here is a claim about other zone routes the service may offer.
+
 Release validation runs locally before publication. The Android and hosted CI lanes must pass
 on the pushed release commit before approving the 0.1.0 tag. Tagging and pushing require owner approval.
 
@@ -100,8 +114,12 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   (`/stations/{stationId}/observations` with `start`, `end`, and `limit`), and
   `/stations/{stationId}/observations/{time}`. Observation history ships with single-page endpoint
   and request access plus page and item sequences in its first vertical slice.
-- **Zones:** `/zones`, `/zones/{type}`, `/zones/{type}/{zoneId}`, the zone forecast, and a forecast
-  zone's observations and stations.
+- **Zones:** built. The directory across every type or for one type, one zone's properties, a zone's
+  text forecast, and a forecast zone's observations and stations, with the direct endpoints
+  retaining the feature's geometry. Each of the six routes answers one response: the directory
+  declares no cursor, and the observation and station continuation links lead to one station's
+  history and to repeated then empty pages, so neither is followed. The station route's declared
+  limit and cursor are not offered, because the recorded responses ignored them.
 - **Offices:** `/offices/{officeId}`, headlines, and briefings.
 - **Alerts, complete:** alert history on `/alerts` with its time and status filters,
   `/alerts/active/count`, `/alerts/active/region/{region}`, and `/alerts/types`. Alert history ships

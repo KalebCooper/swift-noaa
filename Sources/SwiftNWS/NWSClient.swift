@@ -368,8 +368,8 @@ public struct NWSClient: Sendable {
   /// coordinate's point on the first read and yields exactly one page. A custom endpoint request
   /// yields one page.
   ///
-  /// - Parameter request: A station query, a nearby-station request, or a custom one-page endpoint
-  ///   request.
+  /// - Parameter request: A station query, a nearby-station or forecast-zone request, or a custom
+  ///   one-page endpoint request.
   /// - Returns: An independent, demand-driven page sequence.
   public func observationStationPages(
     for request: WeatherRequest<FeatureCollection<ObservationStation>>
@@ -377,6 +377,8 @@ public struct NWSClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       ObservationStationPageSequence(client: self, endpoint: endpoint, followsLinks: false)
+    case .forecastZoneStations(let identifier):
+      ObservationStationPageSequence(client: self, forecastZone: identifier)
     case .nearbyObservationStations(let location):
       ObservationStationPageSequence(client: self, nearby: location)
     case .observationStations(let query):
@@ -384,7 +386,7 @@ public struct NWSClient: Sendable {
         client: self, endpoint: .observationStations(query: query), followsLinks: true)
     default:
       preconditionFailure(
-        "Only endpoint, nearby-station, and station-query resolutions describe station collections."
+        "Only endpoint, forecast-zone, nearby-station, and station-query resolutions describe station collections."
       )
     }
   }
@@ -399,13 +401,36 @@ public struct NWSClient: Sendable {
   }
 
   /// Creates a lazy feature traversal for a reusable station request.
-  /// - Parameter request: A station query, which follows links, or a nearby-station or custom
-  ///   endpoint request, which yields one page.
+  /// - Parameter request: A station query, which follows links, or a nearby-station,
+  ///   forecast-zone, or custom endpoint request, which yields one page.
   /// - Returns: Station features with their GeoJSON metadata.
   public func observationStations(
     for request: WeatherRequest<FeatureCollection<ObservationStation>>
   ) -> ObservationStationSequence {
     ObservationStationSequence(pages: observationStationPages(for: request))
+  }
+
+  /// Retrieves the observation stations of a forecast zone.
+  ///
+  /// Sends one request for `/zones/forecast/{zoneId}/stations` and returns its collection in the
+  /// service's order. The page's continuation link is not followed, because it does not continue
+  /// this list: it names every station again at a later offset and leads only to empty pages.
+  ///
+  /// ```swift
+  /// let stations = try await client.observationStations(inForecastZone: "TXZ192")
+  /// for station in stations.features {
+  ///   print(station.properties.stationIdentifier)
+  /// }
+  /// ```
+  ///
+  /// - Parameter identifier: The forecast zone's identifier, such as `TXZ192`.
+  /// - Returns: The station list, with each station's GeoJSON metadata.
+  /// - Throws: ``NWSError/invalidZoneIdentifier(_:)`` for an empty identifier or invalid encoded
+  ///   path, or any error from ``send(_:)``.
+  public func observationStations(inForecastZone identifier: String) async throws(NWSError)
+    -> FeatureCollection<ObservationStation>
+  {
+    try await value(for: .observationStations(inForecastZone: identifier))
   }
 
   /// Retrieves the observation stations the service lists for a coordinate's grid cell.
@@ -446,6 +471,26 @@ public struct NWSClient: Sendable {
     for request: WeatherRequest<FeatureCollection<WeatherObservation>>
   ) -> ObservationSequence {
     ObservationSequence(pages: observationPages(for: request))
+  }
+
+  /// Retrieves recent observations from the stations of a forecast zone.
+  ///
+  /// Sends one request for `/zones/forecast/{zoneId}/observations` and returns its collection in
+  /// the service's order. The page's continuation link is not followed, because it does not
+  /// continue this list: it names one station's observation history instead.
+  ///
+  /// ```swift
+  /// let query = try ZoneObservationQuery(limit: 10, zoneIdentifier: "TXZ192")
+  /// let readings = try await client.observations(inForecastZone: query)
+  /// ```
+  ///
+  /// - Parameter query: The validated zone, window, and limit.
+  /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
+  /// - Throws: Any ``NWSError`` from ``value(for:)``.
+  public func observations(inForecastZone query: ZoneObservationQuery) async throws(NWSError)
+    -> FeatureCollection<WeatherObservation>
+  {
+    try await value(for: .observations(inForecastZone: query))
   }
 
   /// Creates a lazy feature traversal for an observation-history query.
@@ -553,6 +598,11 @@ public struct NWSClient: Sendable {
       return try await send(
         endpoint.decoding(Feature<Value>.self)
       ).properties
+    case .forecastZoneStations(let identifier):
+      let endpoint = try forecastZoneStationsEndpoint(identifier: identifier)
+      // Only WeatherRequest<FeatureCollection<ObservationStation>> can be created with this
+      // resolution. The page's continuation link is not followed.
+      return try await send(endpoint.decoding(Value.self))
     case .latestObservation(let source):
       let identifier: String
       switch source {
@@ -612,6 +662,17 @@ public struct NWSClient: Sendable {
       return try await send(
         endpoint.decoding(Feature<Value>.self)
       ).properties
+    case .zoneForecast(let identifier, let type):
+      guard Endpoint<Feature<Value>>.zoneTypeSegment(type) != nil else {
+        throw .invalidZoneType(type.rawValue)
+      }
+      guard let endpoint = Endpoint.zoneForecast(identifier: identifier, type: type) else {
+        throw .invalidZoneIdentifier(identifier)
+      }
+      // Only WeatherRequest<ZoneForecast> can be created with this resolution.
+      return try await send(
+        endpoint.decoding(Feature<Value>.self)
+      ).properties
     case .zonesOfType(let query, let type):
       guard let endpoint = Endpoint.zones(matching: query, ofType: type) else {
         throw .invalidZoneType(type.rawValue)
@@ -657,6 +718,42 @@ public struct NWSClient: Sendable {
     async throws(NWSError) -> WeatherZone
   where Kind: RawRepresentable, Kind.RawValue == String {
     try await zone(effective: effective, identifier: identifier, type: ZoneType(type))
+  }
+
+  /// Retrieves a zone's text forecast.
+  ///
+  /// Sends one request for `/zones/{type}/{zoneId}/forecast` and returns the feature's
+  /// properties: named periods carrying only text, with no times, temperatures, or units. The
+  /// zone's polygon is available by sending `Endpoint.zoneForecast(identifier:type:)` directly.
+  ///
+  /// ```swift
+  /// let forecast = try await weather.zoneForecast(identifier: "TXZ192", type: .forecast)
+  /// print(forecast.periods.first?.detailedForecast ?? "")
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - identifier: The zone's identifier, such as `TXZ192`.
+  ///   - type: The route's zone type, such as `ZoneType.forecast`.
+  /// - Returns: The forecast's properties.
+  /// - Throws: ``NWSError/invalidZoneType(_:)`` for an empty type or invalid encoded path,
+  ///   ``NWSError/invalidZoneIdentifier(_:)`` for an empty identifier or invalid encoded path, or
+  ///   any error from ``send(_:)``.
+  public func zoneForecast(identifier: String, type: ZoneType) async throws(NWSError)
+    -> ZoneForecast
+  {
+    try await value(for: .zoneForecast(identifier: identifier, type: type))
+  }
+
+  /// Retrieves a zone's text forecast using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - identifier: The zone's identifier.
+  ///   - type: A String-backed zone type.
+  /// - Returns: The forecast's properties.
+  /// - Throws: The errors of ``zoneForecast(identifier:type:)-(_,ZoneType)``.
+  public func zoneForecast<Kind>(identifier: String, type: Kind) async throws(NWSError)
+    -> ZoneForecast
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    try await zoneForecast(identifier: identifier, type: ZoneType(type))
   }
 
   /// Lists the zones of one type matching a query.
@@ -759,6 +856,16 @@ public struct NWSClient: Sendable {
       request.path = next.path
       return .request(request)
     }
+  }
+
+  /// Validates a forecast zone's identifier and names its stations endpoint, without I/O.
+  func forecastZoneStationsEndpoint(
+    identifier: String
+  ) throws(NWSError) -> Endpoint<FeatureCollection<ObservationStation>> {
+    guard let endpoint = Endpoint.observationStations(inForecastZone: identifier) else {
+      throw .invalidZoneIdentifier(identifier)
+    }
+    return endpoint
   }
 
   /// Resolves a coordinate's point and validates its observation-stations link.

@@ -15,6 +15,24 @@ All notable changes are documented here, following
   as `NWSError.invalidZoneType` or `NWSError.invalidZoneIdentifier` before sending. Each list is one
   request and one response: the service declares no cursor for the directory and the recorded
   responses carry no continuation, so there are no zone sequences.
+- Zone forecasts through `zoneForecast(identifier:type:)`, reading
+  `/zones/{type}/{zoneId}/forecast` at all three access levels and returning `ZoneForecast`: when
+  the service last updated the forecast, a link to the zone, and `ZoneForecastPeriod` values that
+  carry a number, a name, and forecast text and nothing else. The route accepts no units query and
+  no feature flags.
+- A forecast zone's observations through `observations(inForecastZone:)`, reading
+  `/zones/forecast/{zoneId}/observations` with a `ZoneObservationQuery` that validates the zone
+  identifier and an optional limit from 1 through 500 at construction and sends window bounds as
+  whole-second ISO 8601 instants in UTC. One response carries the readings of several stations.
+- A forecast zone's stations through `observationStations(inForecastZone:)`, reading
+  `/zones/forecast/{zoneId}/stations`. The route declares a limit and a cursor that the recorded
+  responses ignored, so neither is offered in the named factory. Passing the request to
+  `observationStationPages(for:)` or `observationStations(for:)` yields its single page and
+  finishes.
+- Both zone lists are one response. The observation response's continuation link names one station's
+  observation history, which drops the zone's other stations, and the station response's link names
+  the same stations again at a later offset before leading to empty pages, so the client follows
+  neither and sends no cursor for either.
 - `WeatherZone`, decoding a forecast, county, fire weather, or marine zone with its office fields,
   effective and expiration dates, station links, radar station, state, and time zones, keeping an
   empty station list distinct from an absent radar station and an empty state code distinct from a

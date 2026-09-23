@@ -1,10 +1,18 @@
 # Decoding zone data
 
+Decode the forecast, county, fire weather, and marine zones the service describes, their text
+forecasts, and a forecast zone's observations and stations, with any networking stack.
+
 ## Overview
 
 A zone is a named area the service issues products for. `/zones/{type}/{zoneId}` describes one, and
 `/zones` and `/zones/{type}` list them. Both shapes decode through ``WeatherZone``: the detail route
 as `Feature<WeatherZone>`, the directory routes as `FeatureCollection<WeatherZone>`.
+
+Three more routes hang off a zone. `/zones/{type}/{zoneId}/forecast` decodes as
+`Feature<ZoneForecast>`, and a forecast zone's `/observations` and `/stations` decode as the same
+`FeatureCollection<WeatherObservation>` and `FeatureCollection<ObservationStation>` the station
+routes use.
 
 ```swift
 import SwiftNWSModels
@@ -53,6 +61,60 @@ returns nil otherwise. A link it rejects must not be followed. The same initiali
 the service returns, at whatever response type that link answers. A zone's own office links are kept
 as data for that reason: office resources have no models in this package yet, and holding a URL is
 not permission to follow it blindly.
+
+## Forecasts
+
+`/zones/{type}/{zoneId}/forecast` answers a feature whose geometry is the zone's polygon and whose
+properties decode as ``ZoneForecast``:
+
+```swift
+guard let endpoint = Endpoint.zoneForecast(identifier: "TXZ192", type: .forecast) else { return }
+print(endpoint.path)  // "/zones/forecast/TXZ192/forecast"
+
+let forecast = try JSONDecoder().decode(Feature<ZoneForecast>.self, from: body).properties
+print(forecast.updated, forecast.periods.count)
+```
+
+| Property | Type | Notes |
+|---|---|---|
+| ``ZoneForecast/periods`` | `[ZoneForecastPeriod]` | The periods in service order. |
+| ``ZoneForecast/updated`` | `Date` | When the service last updated the forecast. |
+| ``ZoneForecast/zone`` | `URL` | A link to the zone the forecast covers. |
+| ``ZoneForecastPeriod/detailedForecast`` | `String` | The period's forecast text. |
+| ``ZoneForecastPeriod/name`` | `String` | The period's name, such as `This Afternoon`. |
+| ``ZoneForecastPeriod/number`` | `Int` | The period's number, as the service assigned it. |
+
+All six values are required, and a response missing one fails to decode. A period carries no start
+or end time, temperature, wind, or probability of precipitation, because the route accepts no units
+query and no feature flags and the service sends none of them. Do not derive a twelve-hour period
+from a name or renumber the periods; ``ZoneForecast/updated`` decodes as ISO 8601 regardless of the
+decoder's date strategy, as the zone dates do.
+
+## Observations and stations
+
+A forecast zone's observations and stations are separate single-response routes:
+
+```swift
+let query = try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192")
+print(Endpoint.observations(inForecastZone: query).path)
+// "/zones/forecast/TXZ192/observations?limit=2"
+print(Endpoint.observationStations(inForecastZone: "TXZ192")?.path as Any)
+// "/zones/forecast/TXZ192/stations"
+
+let readings = try JSONDecoder().decode(FeatureCollection<WeatherObservation>.self, from: body)
+```
+
+``ZoneObservationQuery`` validates its zone identifier and a limit from 1 through 500 at
+construction, sends window bounds as whole-second ISO 8601 instants in UTC, and omits the limit when
+none is given. The observations come from the stations the service associates with the zone, so one
+response can carry several stations, and the service decides which readings a window matches and in
+what order they arrive. The station route declares a limit and a cursor that the recorded responses
+ignored, so the named factory sends neither.
+
+Neither route continues. The observations response links to one station's observation history, which
+drops the rest of the zone, and the stations response links to the same stations again at a later
+offset and then to empty pages. Read both links as provider metadata: do not follow them, do not
+synthesize a cursor, and do not rebuild a zone's list out of individual station histories.
 
 ## Fields
 
@@ -129,6 +191,9 @@ let marine = ZoneRegionCode(MarineRegionCode.atlantic)
 ### Zones
 
 - ``WeatherZone``
+- ``ZoneForecast``
+- ``ZoneForecastPeriod``
+- ``ZoneObservationQuery``
 - ``ZoneQuery``
 - ``ZoneRegionCode``
 - ``ZoneType``

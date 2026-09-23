@@ -1,7 +1,7 @@
 # Reading observation stations
 
-Look up one station, list the stations near a coordinate, or traverse the station directory one
-page or one feature at a time.
+Look up one station, list the stations near a coordinate or in a forecast zone, or traverse the
+station directory one page or one feature at a time.
 
 ## Look up one station
 
@@ -51,6 +51,22 @@ the list: it names every station for the grid again at a later offset, and follo
 empty pages, each with another link. The client therefore never follows it. Page and feature
 sequences built from `WeatherRequest.observationStations(near:)` resolve the point on the first read,
 yield that one page, and finish.
+
+## List the stations of a forecast zone
+
+```swift
+let stations = try await weather.observationStations(inForecastZone: "TXZ192")
+for station in stations.features {
+  print(station.properties.stationIdentifier, station.properties.name)
+}
+```
+
+``NWSClient/observationStations(inForecastZone:)`` sends one request to
+`/zones/forecast/{zoneId}/stations` and returns that page in the service's order. It is a different
+collection from the directory below, and it does not continue: the service declares a limit and a
+cursor for the route that the recorded responses ignored, and its continuation link names the same
+stations again at a later offset before leading to empty pages. Passing the request to the sequence
+executors yields that one page and finishes. See <doc:Zones>.
 
 ## Traverse the directory
 
@@ -104,6 +120,7 @@ mapping, and transport behavior as direct endpoint requests.
 
 A `WeatherRequest(endpoint:)` passed to the station sequence executors yields only that endpoint's
 page, even if it contains pagination. Only the library-owned station-query resolution opts into
-continuation. Nearest-observation lookups still use the first station on their returned page, without
-additional pages, distance ordering, freshness filtering, or fallback. A station's past observations
+continuation; the nearby-station and forecast-zone resolutions are one response each.
+Nearest-observation lookups still use the first station on their returned page, without additional
+pages, distance ordering, freshness filtering, or fallback. A station's past observations
 are read through <doc:ObservationHistory>.

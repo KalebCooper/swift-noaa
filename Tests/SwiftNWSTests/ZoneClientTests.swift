@@ -11,17 +11,24 @@ import Testing
 struct ZoneClientTests {
   private static let continuation = "https://api.weather.gov/zones?area=TX&limit=2&cursor=cGFnZQ"
   private static let detailPath = "/zones/forecast/TXZ192"
+  private static let forecastPath = "/zones/forecast/TXZ192/forecast"
+  private static let observationsPath = "/zones/forecast/TXZ192/observations?limit=2"
+  private static let stationsPath = "/zones/forecast/TXZ192/stations"
+  private static let windowPath =
+    "/zones/forecast/TXZ192/observations?end=2026-09-20T00:00:00Z&limit=3&start=2026-09-19T00:00:00Z"
   private static let rootPath = "/zones?area=TX&limit=2"
   private static let typedPath = "/zones/forecast?area=TX&limit=2"
 
-  private let texas = try! ZoneQuery(areas: [.texas], limit: 2)
+  private var texas: ZoneQuery {
+    get throws { try ZoneQuery(areas: [.texas], limit: 2) }
+  }
 
   @Test("A cancelled lookup sends nothing", arguments: [0, 1, 2], [false, true])
   @MainActor
   func aCancelledLookupSendsNothing(operation: Int, useRequest: Bool) async throws {
     let transport = MockTransport()
     let client = makeClient(transport)
-    let query = texas
+    let query = try texas
     let task = Task {
       await #expect(throws: NWSError.self) {
         switch (operation, useRequest) {
@@ -114,7 +121,7 @@ struct ZoneClientTests {
     let transport = MockTransport()
     try answer(transport, path: Self.typedPath, with: .zonesOfType)
     let client = makeClient(transport)
-    let query = texas
+    let query = try texas
     let result: FeatureCollection<WeatherZone> =
       switch layer {
       case 0: try await client.zones(matching: query, ofType: .forecast)
@@ -136,7 +143,7 @@ struct ZoneClientTests {
     let transport = MockTransport()
     try answer(transport, path: Self.rootPath, with: .zones)
     let client = makeClient(transport)
-    let query = texas
+    let query = try texas
     let result: FeatureCollection<WeatherZone> =
       switch layer {
       case 0: try await client.zones(matching: query)
@@ -157,7 +164,7 @@ struct ZoneClientTests {
     let path = "/zones?area=TX&limit=2&type=county,fire"
     try answer(transport, path: path, with: .zones)
     let client = makeClient(transport)
-    let query = texas
+    let query = try texas
 
     let result: FeatureCollection<WeatherZone> =
       if useRequest {
@@ -181,7 +188,7 @@ struct ZoneClientTests {
     let path = ofType ? Self.typedPath : Self.rootPath
     answer(transport, path: path, with: try continued(ofType ? .zonesOfType : .zones))
     let client = makeClient(transport)
-    let query = texas
+    let query = try texas
 
     let result: FeatureCollection<WeatherZone> =
       switch (layer, ofType) {
@@ -260,7 +267,7 @@ struct ZoneClientTests {
   func anEmptyOrUnusableZoneTypeIsRejectedWithoutSending(type: String, layer: Int) async throws {
     let transport = MockTransport()
     let client = makeClient(transport)
-    let query = texas
+    let query = try texas
     let zoneType = ZoneType(rawValue: type)
 
     let failure = await #expect(throws: NWSError.self) {
@@ -381,6 +388,214 @@ struct ZoneClientTests {
     #expect(transport.requests.map(\.request.path) == [Self.detailPath])
   }
 
+  @Test(
+    "A cancelled forecast, observation, or station lookup sends nothing",
+    arguments: [0, 1, 2], [false, true])
+  @MainActor
+  func aCancelledForecastObservationOrStationLookupSendsNothing(operation: Int, useRequest: Bool)
+    async throws
+  {
+    let transport = MockTransport()
+    let client = makeClient(transport)
+    let query = try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192")
+    let task = Task {
+      await #expect(throws: NWSError.self) {
+        switch (operation, useRequest) {
+        case (0, true):
+          _ = try await client.value(for: .zoneForecast(identifier: "TXZ192", type: .forecast))
+        case (0, false): _ = try await client.zoneForecast(identifier: "TXZ192", type: .forecast)
+        case (1, true): _ = try await client.value(for: .observations(inForecastZone: query))
+        case (1, false): _ = try await client.observations(inForecastZone: query)
+        case (_, true):
+          _ = try await client.value(for: .observationStations(inForecastZone: "TXZ192"))
+        case (_, false): _ = try await client.observationStations(inForecastZone: "TXZ192")
+        }
+      }
+    }
+    // The inherited main actor keeps the task from starting before cancellation.
+    task.cancel()
+    guard case .transport(.cancelled) = await task.value else {
+      Issue.record("Expected transport cancellation")
+      return
+    }
+    #expect(transport.requests.isEmpty)
+  }
+
+  @Test(
+    "Zone forecast access layers agree and send GeoJSON without feature flags or units",
+    arguments: [0, 1, 2, 3])
+  func zoneForecastAccessLayersAgreeAndSendGeoJSONWithoutFeatureFlagsOrUnits(layer: Int)
+    async throws
+  {
+    let transport = MockTransport()
+    try answer(transport, path: Self.forecastPath, with: .zoneForecast)
+    let client = makeClient(transport)
+    let result: ZoneForecast =
+      switch layer {
+      case 0: try await client.zoneForecast(identifier: "TXZ192", type: .forecast)
+      case 1: try await client.value(for: .zoneForecast(identifier: "TXZ192", type: .forecast))
+      case 2: try await client.zoneForecast(identifier: "TXZ192", type: AppZoneType.forecast)
+      default:
+        try await client.send(
+          try #require(Endpoint.zoneForecast(identifier: "TXZ192", type: .forecast))
+        ).properties
+      }
+    let recorded = try JSONDecoder().decode(
+      Feature<ZoneForecast>.self, from: Fixture.zoneForecast.data())
+    #expect(result == recorded.properties)
+    #expect(result.periods.count == 6)
+    #expect(transport.requests.map(\.request.path) == [Self.forecastPath])
+    #expect(transport.requests[0].request.headerFields[.accept] == "application/geo+json")
+    let flags = try #require(HTTPField.Name("Feature-Flags"))
+    #expect(transport.requests[0].request.headerFields[flags] == nil)
+  }
+
+  @Test("The direct endpoint keeps the forecast's polygon that the everyday method drops")
+  func theDirectEndpointKeepsTheForecastsPolygonThatTheEverydayMethodDrops() async throws {
+    let transport = MockTransport()
+    try answer(transport, path: Self.forecastPath, with: .zoneForecast)
+    let client = makeClient(transport)
+    let feature = try await client.send(
+      try #require(Endpoint.zoneForecast(identifier: "TXZ192", type: .forecast)))
+    guard case .object(let geometry) = feature.geometry else {
+      Issue.record("Expected the recorded polygon")
+      return
+    }
+    #expect(geometry["type"] == .string("Polygon"))
+  }
+
+  @Test(
+    "Zone observation access layers agree, send one request, and never follow the station link",
+    arguments: [0, 1, 2], [false, true])
+  func zoneObservationAccessLayersAgreeSendOneRequestAndNeverFollowTheStationLink(
+    layer: Int, window: Bool
+  ) async throws {
+    let transport = MockTransport()
+    try answer(
+      transport, path: Self.observationsPath,
+      with: window ? .zoneObservationsWindow : .zoneObservations)
+    let client = makeClient(transport)
+    let query =
+      window
+      ? try ZoneObservationQuery(
+        end: Date(timeIntervalSince1970: 1_789_862_400), limit: 3,
+        start: Date(timeIntervalSince1970: 1_789_776_000), zoneIdentifier: "TXZ192")
+      : try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192")
+    let result: FeatureCollection<WeatherObservation> =
+      switch layer {
+      case 0: try await client.observations(inForecastZone: query)
+      case 1: try await client.value(for: .observations(inForecastZone: query))
+      default: try await client.send(.observations(inForecastZone: query))
+      }
+    let recorded = try JSONDecoder().decode(
+      FeatureCollection<WeatherObservation>.self,
+      from: (window ? Fixture.zoneObservationsWindow : Fixture.zoneObservations).data())
+    #expect(result == recorded)
+    #expect(result.features.count == (window ? 3 : 2))
+    // The recorded continuation names one station's history, not this list.
+    #expect(result.pagination?.next?.contains("/stations/KATT/observations") == true)
+    #expect(
+      transport.requests.map(\.request.path) == [window ? Self.windowPath : Self.observationsPath])
+    #expect(transport.requests[0].request.headerFields[.accept] == "application/geo+json")
+  }
+
+  @Test(
+    "An empty or unusable type or identifier is rejected before a zone forecast request",
+    arguments: [false, true])
+  func anEmptyOrUnusableTypeOrIdentifierIsRejectedBeforeAZoneForecastRequest(useRequest: Bool)
+    async throws
+  {
+    let transport = MockTransport()
+    let client = makeClient(transport)
+    let emptyType = await #expect(throws: NWSError.self) {
+      if useRequest {
+        _ = try await client.value(for: .zoneForecast(identifier: "", type: ZoneType(rawValue: "")))
+      } else {
+        _ = try await client.zoneForecast(identifier: "", type: ZoneType(rawValue: ""))
+      }
+    }
+    guard case .invalidZoneType("") = emptyType else {
+      Issue.record("Expected an invalid type, got \(String(describing: emptyType))")
+      return
+    }
+    let emptyIdentifier = await #expect(throws: NWSError.self) {
+      if useRequest {
+        _ = try await client.value(for: .zoneForecast(identifier: "..", type: .forecast))
+      } else {
+        _ = try await client.zoneForecast(identifier: "..", type: .forecast)
+      }
+    }
+    guard case .invalidZoneIdentifier("..") = emptyIdentifier else {
+      Issue.record("Expected an invalid identifier, got \(String(describing: emptyIdentifier))")
+      return
+    }
+    #expect(transport.requests.isEmpty)
+  }
+
+  @Test("An unknown zone forecast type reaches the service and its problem details are preserved")
+  func anUnknownZoneForecastTypeReachesTheServiceAndItsProblemDetailsArePreserved() async throws {
+    let transport = MockTransport()
+    try answer(
+      transport, path: "/zones/future/TXZ192/forecast", status: .notFound,
+      with: .unknownRegionProblem)
+    let client = makeClient(transport)
+    let failure = await #expect(throws: NWSError.self) {
+      _ = try await client.zoneForecast(identifier: "TXZ192", type: ZoneType(rawValue: "future"))
+    }
+    guard case .problem(let problem) = failure else {
+      Issue.record("Expected problem details, got \(String(describing: failure))")
+      return
+    }
+    #expect(problem.status == 404)
+    #expect(transport.requests.map(\.request.path) == ["/zones/future/TXZ192/forecast"])
+  }
+
+  @Test("A malformed zone forecast body is a transport decoding failure", arguments: [false, true])
+  func aMalformedZoneForecastBodyIsATransportDecodingFailure(useRequest: Bool) async throws {
+    let transport = MockTransport()
+    transport.setHandler(forPath: Self.forecastPath) { _ in
+      .success(MockTransport.Answer(Response(body: Data("{\"zone\":".utf8), status: .ok)))
+    }
+    let client = makeClient(transport)
+    let failure = await #expect(throws: NWSError.self) {
+      if useRequest {
+        _ = try await client.value(for: .zoneForecast(identifier: "TXZ192", type: .forecast))
+      } else {
+        _ = try await client.zoneForecast(identifier: "TXZ192", type: .forecast)
+      }
+    }
+    guard case .transport(.decode) = failure else {
+      Issue.record("Expected a decoding failure, got \(String(describing: failure))")
+      return
+    }
+  }
+
+  @Test("Stored forecast, observation, and station requests infer their responses without I/O")
+  func storedForecastObservationAndStationRequestsInferTheirResponsesWithoutIO() async throws {
+    let transport = MockTransport()
+    try answer(transport, path: Self.forecastPath, with: .zoneForecast)
+    try answer(transport, path: Self.observationsPath, with: .zoneObservations)
+    try answer(transport, path: Self.stationsPath, with: .zoneStations)
+    let client = makeClient(transport)
+    let forecast = WeatherRequest.zoneForecast(identifier: "TXZ192", type: .forecast)
+    let observations = WeatherRequest.observations(
+      inForecastZone: try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192"))
+    let stations = WeatherRequest.observationStations(inForecastZone: "TXZ192")
+    #expect(transport.requests.isEmpty)
+
+    let periods = try await client.value(for: forecast).periods
+    let readings = try await client.value(for: observations).features
+    let listed = try await client.value(for: stations).features
+    let named = try await client.value(for: .travisForecast)
+
+    #expect(periods == named.periods)
+    #expect(readings.count == 2)
+    #expect(listed.count == 24)
+    #expect(
+      transport.requests.map(\.request.path) == [
+        Self.forecastPath, Self.observationsPath, Self.stationsPath, Self.forecastPath,
+      ])
+  }
 
   @Test("Stored zone requests infer their responses without I/O")
   func storedZoneRequestsInferTheirResponsesWithoutIO() async throws {
@@ -389,7 +604,7 @@ struct ZoneClientTests {
     try answer(transport, path: Self.typedPath, with: .zonesOfType)
     let client = makeClient(transport)
     let detail = WeatherRequest.zone(identifier: "TXZ192", type: .forecast)
-    let typed = WeatherRequest.zones(matching: texas, ofType: .forecast)
+    let typed = WeatherRequest.zones(matching: try texas, ofType: .forecast)
     #expect(transport.requests.isEmpty)
 
     let zone = try await client.value(for: detail)
@@ -449,8 +664,14 @@ extension WeatherRequest where Response == WeatherZone {
   fileprivate static var travis: Self { .zone(identifier: "TXZ192", type: .forecast) }
 }
 
+extension WeatherRequest where Response == ZoneForecast {
+  fileprivate static var travisForecast: Self {
+    .zoneForecast(identifier: "TXZ192", type: .forecast)
+  }
+}
+
 extension WeatherRequest where Response == FeatureCollection<WeatherZone> {
   fileprivate static var texasZones: Self {
-    .zones(matching: try! ZoneQuery(areas: [.texas], limit: 2))
+    get throws { .zones(matching: try ZoneQuery(areas: [.texas], limit: 2)) }
   }
 }

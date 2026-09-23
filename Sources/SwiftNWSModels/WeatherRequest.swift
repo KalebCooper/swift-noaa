@@ -39,6 +39,13 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// units query or feature flags, and a disallowed link is a failure rather than a rebuilt path.
     case forecastGrid(location: WeatherCoordinate)
 
+    /// Retrieve the observation stations of a forecast zone as one response.
+    ///
+    /// Only requests returning FeatureCollection<ObservationStation> carry this resolution. An
+    /// empty identifier, or one that produces an invalid encoded path, is a failure before any
+    /// request. The response's continuation link is never followed.
+    case forecastZoneStations(identifier: String)
+
     /// Fetch a point, follow its hourly forecast link with the options, and return the properties.
     /// Only requests returning WeatherForecast carry this resolution.
     case hourlyForecast(location: WeatherCoordinate, options: ForecastOptions)
@@ -89,6 +96,13 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// feature's geometry is available only through the direct endpoint.
     case zone(effective: Date?, identifier: String, type: ZoneType)
 
+    /// Retrieve a zone's text forecast and return its GeoJSON properties.
+    ///
+    /// Only requests returning ``ZoneForecast`` carry this resolution. An empty type or
+    /// identifier, or one that produces an invalid encoded path, is a failure before any request.
+    /// The feature's geometry is available only through the direct endpoint.
+    case zoneForecast(identifier: String, type: ZoneType)
+
     /// Retrieve the zones of one type matching a query as one response.
     ///
     /// Only requests returning FeatureCollection<WeatherZone> carry this resolution. An empty type
@@ -127,6 +141,22 @@ extension WeatherRequest where Response == ObservationStation {
 }
 
 extension WeatherRequest where Response == FeatureCollection<ObservationStation> {
+  /// Describes the observation stations of a forecast zone, `/zones/forecast/{zoneId}/stations`.
+  ///
+  /// Executing the request rejects an empty identifier before sending and returns the one
+  /// response the service answers; its continuation link is never followed. The station page and
+  /// item sequences accept the request and yield that one response.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.observationStations(inForecastZone: "TXZ192")
+  /// ```
+  ///
+  /// - Parameter identifier: The forecast zone's identifier, such as `TXZ192`.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func observationStations(inForecastZone identifier: String) -> Self {
+    Self(resolution: .forecastZoneStations(identifier: identifier))
+  }
+
   /// Describes the observation stations the service lists for a coordinate's grid cell.
   ///
   /// The list is one page in the service's order, which does not guarantee distance order.
@@ -150,6 +180,24 @@ extension WeatherRequest where Response == FeatureCollection<ObservationStation>
 }
 
 extension WeatherRequest where Response == FeatureCollection<WeatherObservation> {
+  /// Describes recent observations from the stations of a forecast zone,
+  /// `/zones/forecast/{zoneId}/observations`.
+  ///
+  /// The request sends `Endpoint.observations(inForecastZone:)` and returns its one response
+  /// unchanged; the response's continuation link is never followed. The observation page and item
+  /// sequences accept the request and yield that one response.
+  ///
+  /// ```swift
+  /// let query = try ZoneObservationQuery(limit: 10, zoneIdentifier: "TXZ192")
+  /// let request = WeatherRequest.observations(inForecastZone: query)
+  /// ```
+  ///
+  /// - Parameter query: The validated zone, window, and limit.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func observations(inForecastZone query: ZoneObservationQuery) -> Self {
+    Self(endpoint: .observations(inForecastZone: query))
+  }
+
   /// Describes an observation-history query with optional continuation.
   /// - Parameter query: The validated station, window, page size, and initial cursor.
   /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
@@ -411,5 +459,34 @@ extension WeatherRequest where Response == WeatherZone {
   public static func zone<Kind>(effective: Date? = nil, identifier: String, type: Kind) -> Self
   where Kind: RawRepresentable, Kind.RawValue == String {
     zone(effective: effective, identifier: identifier, type: ZoneType(type))
+  }
+}
+
+extension WeatherRequest where Response == ZoneForecast {
+  /// Describes a zone's text forecast, `/zones/{type}/{zoneId}/forecast`.
+  ///
+  /// Executing the request rejects an empty type or identifier before sending and returns the
+  /// forecast's properties. The feature's geometry is available through the direct endpoint.
+  ///
+  /// ```swift
+  /// let request = WeatherRequest.zoneForecast(identifier: "TXZ192", type: .forecast)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - identifier: The zone's identifier, such as `TXZ192`.
+  ///   - type: The route's zone type.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zoneForecast(identifier: String, type: ZoneType) -> Self {
+    Self(resolution: .zoneForecast(identifier: identifier, type: type))
+  }
+
+  /// Describes a zone's text forecast using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - identifier: The zone's identifier.
+  ///   - type: A String-backed zone type.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func zoneForecast<Kind>(identifier: String, type: Kind) -> Self
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    zoneForecast(identifier: identifier, type: ZoneType(type))
   }
 }

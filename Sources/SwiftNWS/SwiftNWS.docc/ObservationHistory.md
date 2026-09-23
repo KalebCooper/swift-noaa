@@ -76,3 +76,9 @@ A `WeatherRequest(endpoint:)` passed to the observation sequence executors yield
 endpoint's page, even if it contains pagination. Only the library-owned observation-query resolution
 opts into continuation. ``NWSClient/latestObservation(from:)`` remains a single-response lookup and
 does not read history.
+
+A forecast zone's recent observations, through ``NWSClient/observations(inForecastZone:)``, are a
+separate collection rather than a window into this one. That route answers readings from several
+stations at once and returns one response: its continuation link names a single station's history,
+so following it would silently narrow the result, and the client never does. Reading a station's
+history remains the verified traversal described here. See <doc:Zones>.

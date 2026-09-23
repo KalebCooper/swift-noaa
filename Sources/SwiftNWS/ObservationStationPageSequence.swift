@@ -3,7 +3,8 @@ import SwiftNWSModels
 /// A lazy sequence of station-directory pages in service order.
 ///
 /// A station-directory query follows continuation links. A nearby-station request resolves its
-/// coordinate's point on the first read and yields exactly one page. No request is sent until
+/// coordinate's point on the first read and yields exactly one page. A forecast-zone request
+/// validates its identifier on the first read and yields exactly one page. No request is sent until
 /// iteration. Each iterator starts independently and fetches only on
 /// demand. An empty page can continue. Stop when you have enough; traversal need not be finite.
 /// Invalid continuation metadata throws before its page is returned. Any error ends the iterator.
@@ -45,6 +46,11 @@ public struct ObservationStationPageSequence: AsyncSequence, Sendable {
   init(client: NWSClient, endpoint: Endpoint<Element>, followsLinks: Bool) {
     self.pages = CollectionPageSequence(
       client: client, endpoint: endpoint, followsLinks: followsLinks)
+  }
+
+  init(client: NWSClient, forecastZone identifier: String) {
+    self.pages = CollectionPageSequence(
+      client: client, followsLinks: false, start: .forecastZoneStations(identifier))
   }
 
   init(client: NWSClient, nearby location: WeatherCoordinate) {

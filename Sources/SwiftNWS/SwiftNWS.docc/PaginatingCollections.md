@@ -105,3 +105,13 @@ time, and none of them has a zone page or feature sequence to read:
 
 - The service declares no cursor for `/zones` or `/zones/{type}`, and the recorded directory
   responses carry no continuation at all.
+- A forecast zone's observations return a continuation link that names one station's observation
+  history, which drops the other stations the zone answered with. Following it would change the
+  collection, so the client does not.
+- A forecast zone's stations return a continuation link that names the same stations again at a
+  later offset and then only empty pages. The route's declared limit and cursor made no difference
+  to the recorded responses either, so neither is offered.
+
+A forecast-zone station request can still be passed to ``NWSClient/observationStationPages(for:)``
+and ``NWSClient/observationStations(for:)``. Those sequences yield that single response and finish;
+they are an adapter over one page, not evidence that the route continues. See <doc:Zones>.

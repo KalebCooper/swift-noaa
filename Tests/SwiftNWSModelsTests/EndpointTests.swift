@@ -125,6 +125,44 @@ struct EndpointTests {
         == "/zones/county/TXZ192?effective=2026-09-20T00:00:00Z")
   }
 
+  @Test("Zone forecast, observation, and station routes name exact paths and ask for GeoJSON")
+  func zoneForecastObservationAndStationRoutesNameExactPathsAndAskForGeoJSON() throws {
+    let forecast = try #require(Endpoint.zoneForecast(identifier: "TXZ192", type: .forecast))
+    let observations = Endpoint.observations(
+      inForecastZone: try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192"))
+    let stations = try #require(Endpoint.observationStations(inForecastZone: "TXZ192"))
+    #expect(forecast.path == "/zones/forecast/TXZ192/forecast")
+    #expect(observations.path == "/zones/forecast/TXZ192/observations?limit=2")
+    #expect(stations.path == "/zones/forecast/TXZ192/stations")
+    #expect(forecast.accept == .geoJSON)
+    #expect(observations.accept == .geoJSON)
+    #expect(stations.accept == .geoJSON)
+    #expect(forecast.featureFlags.isEmpty)
+    #expect(observations.featureFlags.isEmpty)
+    #expect(stations.featureFlags.isEmpty)
+    #expect(!forecast.path.contains("units"))
+    #expect(
+      Endpoint.zoneForecast(identifier: "TXZ192", type: AppZoneType.forecast)?.path
+        == "/zones/forecast/TXZ192/forecast")
+    #expect(
+      Endpoint.zoneForecast(identifier: "A/B?x=#%", type: ZoneType(rawValue: "fu/ture"))?.path
+        == "/zones/fu%2Fture/A%2FB%3Fx%3D%23%25/forecast")
+    #expect(
+      Endpoint.observationStations(inForecastZone: "Zoné")?.path
+        == "/zones/forecast/Zon%C3%A9/stations")
+    #expect(
+      Endpoint.observationStations(inForecastZone: "txz192")?.path
+        == "/zones/forecast/txz192/stations")
+  }
+
+  @Test(
+    "Empty and dot forecast and station path arguments are rejected", arguments: ["", ".", ".."])
+  func emptyAndDotForecastAndStationPathArgumentsAreRejected(argument: String) {
+    #expect(Endpoint.zoneForecast(identifier: argument, type: .forecast) == nil)
+    #expect(Endpoint.zoneForecast(identifier: "TXZ192", type: ZoneType(rawValue: argument)) == nil)
+    #expect(Endpoint.observationStations(inForecastZone: argument) == nil)
+  }
+
   @Test("Zone path arguments occupy exactly one segment each and keep their case")
   func zonePathArgumentsOccupyExactlyOneSegmentEachAndKeepTheirCase() throws {
     #expect(

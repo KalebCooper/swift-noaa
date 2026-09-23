@@ -19,7 +19,14 @@ window, a station's observation history, one station's metadata, the observation
 an exact instant, and lazy station-directory, active-alert, alert-history,
 and observation-history pagination. WMO readings can be converted with Foundation.
 
-General zone and office endpoints, and retries, are outside this release.
+Since 0.1.0, the zone endpoints are built: the directory at `/zones` and `/zones/{type}`, one zone
+at `/zones/{type}/{zoneId}`, a zone's text forecast, and a forecast zone's observations and
+stations, with a feature's GeoJSON geometry retained as raw JSON. Every zone route answers one
+response: the directory declares no cursor, and the observation and station routes return
+continuation links that lead somewhere other than the rest of the list, so the client does not
+follow them.
+
+Office and product endpoints and retries are not built.
 
 ## Usage
 
@@ -454,6 +461,38 @@ size or cursor for the directory and the recorded responses carry no continuatio
 one request and one response capped by its limit; there are no zone sequences. The recorded lists
 also send `"geometry": null` for every zone, so the geometry option states what the request asks for
 rather than what comes back.
+
+```swift
+let forecast = try await weather.zoneForecast(identifier: "TXZ192", type: .forecast)
+for period in forecast.periods {
+  print(period.number, period.name, period.detailedForecast)
+}
+
+let readings = try await weather.observations(
+  inForecastZone: try ZoneObservationQuery(limit: 10, zoneIdentifier: "TXZ192"))
+let stations = try await weather.observationStations(inForecastZone: "TXZ192")
+```
+
+`zoneForecast(identifier:type:)` reads `/zones/{type}/{zoneId}/forecast` and returns the feature's
+`ZoneForecast` properties: when the service last updated the forecast, a link to the zone, and the
+periods in service order. A period carries a number, a name, and one paragraph of forecast text, and
+nothing else. The route accepts no units query and no feature flags, so there are no times,
+temperatures, or wind values to read, and the client does not renumber or reorder the periods.
+
+`observations(inForecastZone:)` reads `/zones/forecast/{zoneId}/observations` and returns the
+readings of the stations the service associates with the zone, so one response can carry several
+stations. `ZoneObservationQuery` validates the zone identifier and an optional limit from 1 through
+500 at construction and sends window bounds as whole-second ISO 8601 instants in UTC.
+`observationStations(inForecastZone:)` reads `/zones/forecast/{zoneId}/stations` and returns that
+one page in service order.
+
+Both of those lists are one response, and neither continues. The observation response links to a
+single station's history, which drops the zone's other stations, and the station response links to
+the same stations again at a later offset before leading to empty pages. The client never follows
+either link. The station route's declared limit and cursor made no difference to the recorded
+responses, so the named factory sends neither; a custom `Endpoint(path:)` can still send them.
+Passing a forecast-zone station request to `observationStationPages(for:)` or
+`observationStations(for:)` yields that single page and finishes.
 
 Zone request factories always return a request, and execution reports an unusable type or
 identifier. Every level also accepts a `String`-backed type of your own in place of `ZoneType`.

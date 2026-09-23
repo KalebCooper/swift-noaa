@@ -101,6 +101,82 @@ extension Endpoint where Response == Feature<WeatherZone> {
   }
 }
 
+extension Endpoint where Response == Feature<ZoneForecast> {
+  /// Retrieves a zone's text forecast, `/zones/{type}/{zoneId}/forecast`.
+  ///
+  /// The endpoint asks for GeoJSON with no feature flags; the route accepts no units. Recorded
+  /// responses carry the zone's polygon, which ``Feature/geometry`` retains.
+  ///
+  /// ```swift
+  /// Endpoint.zoneForecast(identifier: "TXZ192", type: .forecast)?.path
+  /// // "/zones/forecast/TXZ192/forecast"
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - identifier: The zone's identifier, such as `TXZ192`, encoded as one path segment.
+  ///   - type: The route's zone type, encoded as one path segment.
+  /// - Returns: The endpoint, or nil for an empty identifier or type or an invalid encoded path.
+  public static func zoneForecast(identifier: String, type: ZoneType) -> Self? {
+    guard let segment = zoneTypeSegment(type), !identifier.isEmpty else { return nil }
+    return Self(path: "/zones/" + segment + "/" + encodedSegment(identifier) + "/forecast")
+  }
+
+  /// Retrieves a zone's text forecast using a consumer-defined zone type enum.
+  /// - Parameters:
+  ///   - identifier: The zone's identifier, encoded as one path segment.
+  ///   - type: A String-backed zone type, encoded as one path segment.
+  /// - Returns: The endpoint, or nil for an empty identifier or type or an invalid encoded path.
+  public static func zoneForecast<Kind>(identifier: String, type: Kind) -> Self?
+  where Kind: RawRepresentable, Kind.RawValue == String {
+    zoneForecast(identifier: identifier, type: ZoneType(type))
+  }
+}
+
+extension Endpoint where Response == FeatureCollection<WeatherObservation> {
+  /// Lists recent observations from the stations of a forecast zone,
+  /// `/zones/forecast/{zoneId}/observations`.
+  ///
+  /// The endpoint asks for GeoJSON with no feature flags and sends the query's window and limit.
+  /// The service answers one response whose continuation link names one station's observation
+  /// history rather than the rest of the zone's list; the SDK never follows it.
+  ///
+  /// ```swift
+  /// let query = try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192")
+  /// Endpoint.observations(inForecastZone: query).path
+  /// // "/zones/forecast/TXZ192/observations?limit=2"
+  /// ```
+  ///
+  /// - Parameter query: The validated zone, window, and limit.
+  /// - Returns: The GeoJSON collection endpoint.
+  public static func observations(inForecastZone query: ZoneObservationQuery) -> Self {
+    builtIn(
+      path: "/zones/forecast/" + encodedSegment(query.zoneIdentifier) + "/observations"
+        + query.query)
+  }
+}
+
+extension Endpoint where Response == FeatureCollection<ObservationStation> {
+  /// Lists the observation stations of a forecast zone, `/zones/forecast/{zoneId}/stations`.
+  ///
+  /// The endpoint asks for GeoJSON with no feature flags. The service answers one response: its
+  /// continuation link names every station again at a later offset and leads only to empty pages,
+  /// so the SDK never follows it, and the route's limit and cursor parameters, which recorded
+  /// responses ignored, are not offered here.
+  ///
+  /// ```swift
+  /// Endpoint.observationStations(inForecastZone: "TXZ192")?.path
+  /// // "/zones/forecast/TXZ192/stations"
+  /// ```
+  ///
+  /// - Parameter identifier: The forecast zone's identifier, such as `TXZ192`, encoded as one
+  ///   path segment.
+  /// - Returns: The endpoint, or nil for an empty identifier or an invalid encoded path.
+  public static func observationStations(inForecastZone identifier: String) -> Self? {
+    guard !identifier.isEmpty else { return nil }
+    return Self(path: "/zones/forecast/" + encodedSegment(identifier) + "/stations")
+  }
+}
+
 extension Endpoint {
   // Every typed zone route shares one validated type segment, and the SDK reports an unusable
   // type separately from an unusable identifier.

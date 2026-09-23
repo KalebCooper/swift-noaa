@@ -71,6 +71,26 @@ struct WeatherRequestTests {
     #expect(request == .latestObservation(from: .station("FUTURE-STATION")))
   }
 
+  @Test("Zone forecast, observation, and station requests expose their resolutions without I/O")
+  func zoneForecastObservationAndStationRequestsExposeTheirResolutionsWithoutIO() throws {
+    let forecast = WeatherRequest.zoneForecast(identifier: "TXZ192", type: .forecast)
+    #expect(forecast.resolution == .zoneForecast(identifier: "TXZ192", type: .forecast))
+    #expect(forecast == .zoneForecast(identifier: "TXZ192", type: AppZoneType.forecast))
+    #expect(Set([forecast, .zoneForecast(identifier: "TXZ192", type: .forecast)]).count == 1)
+
+    let query = try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192")
+    let observations = WeatherRequest.observations(inForecastZone: query)
+    #expect(observations.resolution == .endpoint(.observations(inForecastZone: query)))
+    #expect(observations != .observations(query: try ObservationQuery(stationIdentifier: "KATT")))
+
+    let stations = WeatherRequest.observationStations(inForecastZone: "TXZ192")
+    #expect(stations.resolution == .forecastZoneStations(identifier: "TXZ192"))
+    #expect(stations != .observationStations(query: try ObservationStationQuery()))
+
+    let unusable = WeatherRequest.observationStations(inForecastZone: "")
+    #expect(unusable.resolution == .forecastZoneStations(identifier: ""))
+  }
+
   @Test("Zone requests expose their resolutions without I/O")
   func zoneRequestsExposeTheirResolutionsWithoutIO() throws {
     let query = try ZoneQuery(areas: [.texas], limit: 2)

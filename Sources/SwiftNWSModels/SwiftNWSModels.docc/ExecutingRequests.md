@@ -39,10 +39,15 @@ if let endpoint = Endpoint<Feature<ObservationStation>>(path: "/stations/KATT") 
 ```
 
 Named factories taking station or alert identifiers, areas, regions, or zones also return nil when
-the resulting path is invalid or the identifier is empty. Area, region, and zone request factories
-are failable for the same reason. Check the optional before execution. Other identifier request
-factories defer validation to execution; unwrap their endpoint factory and report failure before
-sending. Observation queries validate their station path during construction.
+the resulting path is invalid or the identifier is empty. The active-alert area, region, and zone
+request factories are failable for the same reason. Check the optional before execution. Other
+identifier request factories defer validation to execution; unwrap their endpoint factory and report
+failure before sending. The zone directory, detail, forecast, and forecast-zone station request
+factories work that way: they always return a request, and executing it reports an unusable type or
+identifier. `Endpoint.zones(matching:types:)` is not failable, because its path carries no type
+segment, and `Endpoint.observations(inForecastZone:)` is not failable because its query validated
+the zone identifier. Observation and zone-observation queries validate their station and zone paths
+during construction.
 
 Validate a redirect's original encoded path before resolving a relative URL, because resolution
 can remove dot segments. Then apply the same endpoint origin and path checks to the resolved URL.
@@ -88,11 +93,23 @@ Constructing or inspecting it sends nothing.
   observation-stations link with `Endpoint.observationStations(near:)`, and return that one page.
   Do not follow its `pagination.next`, in one-page or sequence execution: for this list the link
   names every station for the grid again at a later offset and leads only to empty pages.
+- A `forecastZoneStations` resolution contains a forecast zone identifier and is only created for
+  `FeatureCollection<ObservationStation>` responses. Unwrap
+  `Endpoint.observationStations(inForecastZone:)`, reject an empty or unusable identifier, and
+  return that one page. Do not follow its `pagination.next`, in one-page or sequence execution: the
+  link names the zone's stations again at a later offset and leads only to empty pages. The route's
+  declared limit and cursor had no effect on the recorded responses, so this resolution sends
+  neither.
 - A `zone` resolution contains an optional effective instant, an identifier, and a ``ZoneType``, and
   is only created for ``WeatherZone`` responses. Reject an empty or unusable type before the
   identifier, so the failure names which argument was unusable, then send
   `Endpoint.zone(effective:identifier:type:)` and return the feature's properties. The feature's
   geometry is reachable only through the endpoint, not through this resolution's result.
+- A `zoneForecast` resolution contains an identifier and a ``ZoneType``, and is only created for
+  ``ZoneForecast`` responses. Reject an empty or unusable type before the identifier, as the `zone`
+  resolution does, then send `Endpoint.zoneForecast(identifier:type:)` and return the feature's
+  properties. The route takes no units query and no feature flags, and the feature's geometry is
+  reachable only through the endpoint.
 - A `zonesOfType` resolution contains a ``ZoneQuery`` and a ``ZoneType``, and is only created for
   `FeatureCollection<WeatherZone>` responses. Reject an empty or unusable type, send
   `Endpoint.zones(matching:ofType:)`, and return that one response. The root directory uses an
@@ -123,7 +140,9 @@ if let pagination = page.pagination {
 ```
 
 The station-query, active-alert, alert-history, and observation-history resolutions support
-one-page execution and opt-in continuation. The nearby-station resolution is always one page. A custom endpoint resolution remains one HTTP operation.
+one-page execution and opt-in continuation. The nearby-station and forecast-zone-station resolutions
+are always one page. A custom endpoint resolution remains one HTTP operation, which is what a
+forecast zone's observations use.
 Queries validate limits from 1 through 500 and preserve an initial cursor; an observation query
 omits the limit when none is given and rejects an empty station identifier or invalid encoded path. Empty identifier and
 state arrays omit their filters, and window bounds are sent as whole-second ISO 8601 instants.

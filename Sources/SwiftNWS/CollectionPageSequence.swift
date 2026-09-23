@@ -12,6 +12,10 @@ struct CollectionPageSequence<Properties: Decodable & Sendable>: AsyncSequence, 
     /// Begin at a known endpoint.
     case endpoint(Endpoint<Element>)
 
+    /// Validate a forecast zone's identifier on the first read, then begin at its stations
+    /// endpoint.
+    case forecastZoneStations(String)
+
     /// Resolve a coordinate's point on the first read, then begin at its validated
     /// observation-stations link.
     case nearbyObservationStations(WeatherCoordinate)
@@ -35,14 +39,19 @@ struct CollectionPageSequence<Properties: Decodable & Sendable>: AsyncSequence, 
     /// Fetches a page on demand, validating its continuation before returning it.
     /// - Parameter actor: The caller's isolation, forwarded through page fetching. Read an iterator
     ///   serially; concurrent calls to the same iterator are unsupported.
-    /// - Throws: A pagination, redirect, problem-detail, transport, or cancellation error, or
-    ///   ``NWSError/invalidLink(_:)`` when a point's station link is disallowed.
+    /// - Throws: A pagination, redirect, problem-detail, transport, or cancellation error,
+    ///   ``NWSError/invalidLink(_:)`` when a point's station link is disallowed, or
+    ///   ``NWSError/invalidZoneIdentifier(_:)`` when a forecast zone's identifier is unusable.
     mutating func next(
       isolation actor: isolated (any Actor)? = #isolation
     ) async throws(NWSError) -> Element? {
       guard !finished else { return nil }
       finished = true
       guard !Task.isCancelled else { throw .transport(.cancelled) }
+      if current == nil, case .forecastZoneStations(let identifier) = sequence.start {
+        let stations = try sequence.client.forecastZoneStationsEndpoint(identifier: identifier)
+        begin(at: stations.decoding(Element.self))
+      }
       if current == nil, case .nearbyObservationStations(let location) = sequence.start {
         let stations = try await sequence.client.nearbyObservationStationsEndpoint(for: location)
         guard !Task.isCancelled else { throw .transport(.cancelled) }

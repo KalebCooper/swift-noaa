@@ -26,6 +26,13 @@ the station's elevation and link, the raw METAR message, 24-hour temperature ext
 three-, and six-hour precipitation, the decoded present weather as ``WeatherPhenomenon`` values,
 and the reported ``CloudLayer`` values. A field the service omits stays `nil`.
 
+``WeatherZone`` decodes a forecast, county, fire weather, or marine zone, from
+`/zones/{type}/{zoneId}` or from the `/zones` and `/zones/{type}` directories that ``ZoneQuery``
+filters. ``ZoneForecast`` decodes a zone's text forecast, whose ``ZoneForecastPeriod`` values carry
+a number, a name, and forecast text and nothing else, and ``ZoneObservationQuery`` describes a
+forecast zone's observations. Each zone route answers one response. ``Feature`` retains the
+provider's GeoJSON geometry as raw ``JSONValue`` when the service sends one. See <doc:ZoneData>.
+
 ``ForecastGrid`` decodes a grid cell's raw forecast data: every quantitative layer keyed by an
 open ``ForecastGridLayerName``, typed weather and hazards layers, and any layer or property the
 package does not know yet. See <doc:ForecastGridData>.
@@ -51,6 +58,7 @@ not require full Foundation or a networking stack.
 - ``ObservationStationQuery``
 - ``WeatherCoordinate``
 - ``WeatherRequest``
+- ``ZoneObservationQuery``
 - ``ZoneQuery``
 - <doc:ExecutingRequests>
 
@@ -101,6 +109,8 @@ not require full Foundation or a networking stack.
 - ``WeatherObservation``
 - ``WeatherPhenomenon``
 - ``WeatherZone``
+- ``ZoneForecast``
+- ``ZoneForecastPeriod``
 - <doc:ZoneData>
 
 ### Forecast grids

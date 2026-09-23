@@ -97,9 +97,22 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// a `null` radar station.
   case zoneCounty = "ZoneCounty"
 
+  /// `/zones/forecast/TXZ192/forecast`, the Travis forecast zone's six text-only periods with the
+  /// zone's polygon.
+  case zoneForecast = "ZoneForecast"
+
   /// `/zones/marine/GMZ330`, the Matagorda Bay zone answered by the marine route with the reported
   /// type `coastal`, a `null` state, and a 93-ring polygon.
   case zoneMarine = "ZoneMarine"
+
+  /// `/zones/forecast/TXZ192/observations?limit=2`, two observations from different stations in the
+  /// Travis forecast zone, with a continuation link that names one station's history instead.
+  case zoneObservations = "ZoneObservations"
+
+  /// `/zones/forecast/TXZ192/observations?start=2026-09-19T00:00:00Z&end=2026-09-20T00:00:00Z&limit=3`,
+  /// three observations from different stations inside a time window, with the same
+  /// station-history continuation link.
+  case zoneObservationsWindow = "ZoneObservationsWindow"
 
   /// `/zones?area=TX&limit=2`, the first two Texas zones of every type, with `null` geometry and no
   /// continuation.
@@ -108,6 +121,10 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// `/zones/forecast?area=TX&limit=2`, the first two Texas forecast zones, reported as `public`,
   /// with `null` geometry and no continuation.
   case zonesOfType = "ZonesOfType"
+
+  /// `/zones/forecast/TXZ192/stations`, the 24 stations of the Travis forecast zone, with a
+  /// continuation link that names every station again at a later offset.
+  case zoneStations = "ZoneStations"
 
   /// The recorded body.
   ///

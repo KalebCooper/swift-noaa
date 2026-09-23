@@ -126,6 +126,43 @@ struct ZoneTests {
     #expect(zones.pagination == nil)
   }
 
+  @Test("The recorded zone station list keeps every station and its ignored continuation")
+  func theRecordedZoneStationListKeepsEveryStationAndItsIgnoredContinuation() throws {
+    let stations = try JSONDecoder().decode(
+      FeatureCollection<ObservationStation>.self, from: Fixture.zoneStations.data())
+    #expect(stations.features.count == 24)
+    #expect(stations.features.first?.properties.stationIdentifier == "K3T5")
+    #expect(stations.features.last?.properties.stationIdentifier == "KTPL")
+    #expect(stations.features.allSatisfy { $0.properties.forecast != nil })
+    #expect(stations.pagination?.next?.hasPrefix("https://api.weather.gov/stations?id") == true)
+    #expect(stations.pagination?.next?.hasSuffix("&cursor=eyJzIjo1MDB9") == true)
+  }
+
+  @Test(
+    "The recorded zone observation lists keep multi-station results and their station-history link",
+    arguments: [false, true])
+  func theRecordedZoneObservationListsKeepMultiStationResultsAndTheirStationHistoryLink(
+    window: Bool
+  ) throws {
+    let observations = try JSONDecoder().decode(
+      FeatureCollection<WeatherObservation>.self,
+      from: (window ? Fixture.zoneObservationsWindow : Fixture.zoneObservations).data())
+    let stations = observations.features.compactMap(\.properties.station?.absoluteString)
+    #expect(stations.count == observations.features.count)
+    #expect(
+      stations
+        == (window
+          ? [
+            "https://api.weather.gov/stations/KHYI", "https://api.weather.gov/stations/KILE",
+            "https://api.weather.gov/stations/K3T5",
+          ]
+          : ["https://api.weather.gov/stations/KAUS", "https://api.weather.gov/stations/KBAZ"]))
+    #expect(Set(stations).count == stations.count)
+    #expect(
+      observations.pagination?.next?.hasPrefix(
+        "https://api.weather.gov/stations/KATT/observations?cursor=") == true)
+  }
+
   @Test("Unknown zone types, region codes, and an empty state survive a Codable round trip")
   func unknownZoneTypesRegionCodesAndAnEmptyStateSurviveACodableRoundTrip() throws {
     let zone = WeatherZone(
