@@ -4,150 +4,82 @@ Describe weather requests and decode National Weather Service responses with any
 
 ## Overview
 
-This product has no SDK or third-party networking dependency. It provides validated coordinates,
-open station identifiers through ``ObservationSource``, typed ``WeatherRequest`` values,
-single-HTTP ``Endpoint`` values, and portable response models.
+This product has no SDK or third-party dependency and imports no networking module. It provides:
 
-Current conditions and forecasts are available. Forecast requests carry explicit typed units and
-representation flags. Provider-enumerated codes are open values: named static members cover the
-live schema while `rawValue` preserves additions. String-backed consumer enums can be passed to
-request options and endpoints. Active alert factories support geographic and CAP filters and the
-area, marine region, and zone paths, and alert-history queries add a time window, page size, and
-cursor. ``ActiveAlertCount`` and ``AlertTypes`` decode the JSON-LD count and event-type resources. Observation-history queries name a
-station and a window. Station and timed-observation endpoints read one station's metadata and the
-observation a station made at an exact instant.
+- ``Endpoint`` values, each one HTTP request: a validated path with its query, the media type to
+  ask for, and any forecast feature flags, typed by the response it decodes.
+- ``WeatherRequest`` values, each one operation. A request wraps an endpoint or describes a
+  multi-step lookup in its public ``WeatherRequest/resolution``, such as resolving a coordinate's
+  point before reading its forecast, so any executor can carry it out.
+- Validated inputs, such as ``WeatherCoordinate``, ``AlertQuery``, and ``ProductQuery``, that reject
+  a bad value when they are created rather than when a request is sent.
+- `Codable` models for every supported response, including the GeoJSON ``Feature`` and
+  ``FeatureCollection`` envelopes and the service's ``ProblemDetail`` errors.
 
-Station-directory, active-alert, alert-history, and observation-history requests declare when a
-custom executor may follow collection continuations. ``PaginationInfo`` validates a returned NWS link without adding an SDK or networking
-dependency. A plain endpoint request remains one response.
+```swift
+let endpoint = Endpoint.point(for: try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431))
+// GET https://api.weather.gov/points/30.2672,-97.7431
+// Accept: application/geo+json
+```
 
-``WeatherObservation`` decodes every field of the service's observation schema: the readings,
-the station's elevation and link, the raw METAR message, 24-hour temperature extremes, one-,
-three-, and six-hour precipitation, the decoded present weather as ``WeatherPhenomenon`` values,
-and the reported ``CloudLayer`` values. A field the service omits stays `nil`.
+A consumer with its own networking stack sends the endpoint with a User-Agent of its own and decodes
+the body as the endpoint's response type. <doc:ExecutingRequests> covers every resolution case,
+continuation links, and the point cache policy. The `SwiftNWS` SDK does all of this for you.
 
-``WeatherZone`` decodes a forecast, county, fire weather, or marine zone, from
-`/zones/{type}/{zoneId}` or from the `/zones` and `/zones/{type}` directories that ``ZoneQuery``
-filters. ``ZoneForecast`` decodes a zone's text forecast, whose ``ZoneForecastPeriod`` values carry
-a number, a name, and forecast text and nothing else, and ``ZoneObservationQuery`` describes a
-forecast zone's observations. Each zone route answers one response. ``Feature`` retains the
-provider's GeoJSON geometry as raw ``JSONValue`` when the service sends one. See <doc:ZoneData>.
+### What the models keep
 
-``ForecastGrid`` decodes a grid cell's raw forecast data: every quantitative layer keyed by an
-open ``ForecastGridLayerName``, typed weather and hazards layers, and any layer or property the
-package does not know yet. See <doc:ForecastGridData>.
-
-``WeatherGlossary`` decodes the service's glossary of weather terms as an array of
-``GlossaryEntry`` values, because the service repeats terms, and each definition keeps the markup,
-character entities, and line endings the service sent. See <doc:GlossaryData>.
-
-``WeatherOffice`` decodes a forecast office's metadata from `/offices/{officeId}`, and
-``OfficeHeadlines`` and ``OfficeHeadline`` decode the editorial headlines it publishes, in service
-order, with each headline's content kept as unrendered HTML. ``OfficeBriefingResponse`` decodes the
-office's current briefing as an optional ``OfficeBriefing``, nil when the office has none. Its
-download link is a URL the package never requests. See <doc:OfficeData>.
-
-``ProductTypes`` and ``ProductLocations`` decode the service's product catalogs, from
-`/products/types` and `/products/locations` and from the routes that narrow each by the other.
-Types keep service order and pair an open ``ProductCode`` with the name the service displays for
-it. Locations decode as a dictionary whose value is optional, because the service lists most
-identifiers without a description and an undescribed identifier stays usable. ``TextProduct`` and
-``TextProducts`` decode the products themselves, and ``ProductQuery`` carries the filters, window,
-and page size `/products` accepts. A list entry's text is nil because the routes send none, and a
-retrieved bulletin keeps every character the service transmitted. See <doc:ProductData>.
-
-Forecast and grid validity intervals decode as ``ValidTimeInterval``, an ISO 8601 start and duration whose
-``ISO8601Duration`` keeps the text's calendar components and reports an exact length when it has
-one. The exact text stays available as `rawValue`.
-
-Quantities preserve their WMO unit code and nullable value without conversion. The optional
-`SwiftNWS` SDK adds Foundation measurement conversion and percentage fractions; these models do
-not require full Foundation or a networking stack.
+The models preserve what the service sends. Quantities keep their WMO unit code and nullable value
+without conversion, and the `SwiftNWS` SDK adds Foundation measurement conversion. Provider codes
+are open values: named static members cover the live schema, and `rawValue` keeps any code the
+service adds later. A String-backed enum of your own can be passed wherever a code is accepted.
+Lists keep service order, fields the service omits or sends as `null` stay `nil`, and text such as
+glossary definitions, headline content, and product bulletins is kept exactly as sent, markup and
+line endings included.
 
 ## Topics
 
-### Request descriptions
+### Essentials
 
-- ``ActiveAlertFilter``
-- ``AlertQuery``
 - ``Endpoint``
-- ``MediaType``
-- ``ObservationQuery``
-- ``ObservationSource``
-- ``ObservationStationQuery``
-- ``ProductQuery``
-- ``WeatherCoordinate``
 - ``WeatherRequest``
-- ``ZoneObservationQuery``
-- ``ZoneQuery``
+- ``MediaType``
+- ``Feature``
+- ``FeatureCollection``
+- ``ProblemDetail``
+- ``JSONValue``
 - <doc:ExecutingRequests>
 
-### Code values
+### Locations and observations
 
-- ``AlertCategory``
-- ``AlertResponse``
-- ``AlertScope``
-- ``AreaCode``
-- ``CloudLayerAmount``
-- ``ForecastFeatureFlag``
-- ``ForecastTemperatureTrend``
-- ``ForecastTemperatureUnit``
-- ``ForecastUnits``
-- ``ForecastWindDirection``
-- ``MarineRegionCode``
-- ``ProductCode``
-- ``QualityControlCode``
+- ``WeatherCoordinate``
+- ``WeatherPoint``
+- ``ObservationSource``
+- ``WeatherObservation``
+- ``WeatherPhenomenon``
 - ``WeatherPhenomenonIntensity``
 - ``WeatherPhenomenonKind``
 - ``WeatherPhenomenonModifier``
-- ``ZoneRegionCode``
-- ``ZoneType``
-
-### Response models
-
-- ``ActiveAlertCount``
-- ``AlertCertainty``
-- ``AlertMessageType``
-- ``AlertReference``
-- ``AlertSeverity``
-- ``AlertStatus``
-- ``AlertTypes``
-- ``AlertUrgency``
 - ``CloudLayer``
-- ``Feature``
-- ``FeatureCollection``
-- ``ForecastOptions``
-- ``ForecastPeriod``
-- ``ForecastTemperature``
-- ``ForecastWind``
-- ``GlossaryEntry``
-- ``JSONValue``
+- ``CloudLayerAmount``
+- ``ObservationQuery``
+
+### Stations
+
 - ``ObservationStation``
-- ``OfficeBriefing``
-- ``OfficeBriefingResponse``
-- ``OfficeHeadline``
-- ``OfficeHeadlines``
-- ``ProblemDetail``
-- ``ProductLocations``
-- ``ProductType``
-- ``ProductTypes``
-- ``QuantitativeValue``
-- ``TextProduct``
-- ``TextProducts``
-- ``WeatherAlert``
+- ``ObservationStationQuery``
+
+### Forecasts
+
 - ``WeatherForecast``
-- ``WeatherGlossary``
-- ``WeatherObservation``
-- ``WeatherOffice``
-- ``WeatherPhenomenon``
-- ``WeatherPoint``
-- ``WeatherZone``
-- ``ZoneForecast``
-- ``ZoneForecastPeriod``
-- <doc:GlossaryData>
-- <doc:OfficeData>
-- <doc:ProductData>
-- <doc:ZoneData>
+- ``ForecastPeriod``
+- ``ForecastOptions``
+- ``ForecastUnits``
+- ``ForecastFeatureFlag``
+- ``ForecastTemperature``
+- ``ForecastTemperatureTrend``
+- ``ForecastTemperatureUnit``
+- ``ForecastWind``
+- ``ForecastWindDirection``
 
 ### Forecast grids
 
@@ -163,12 +95,70 @@ not require full Foundation or a networking stack.
 - ``ForecastWeatherIntensity``
 - ``ForecastWeatherPhenomenon``
 
-### Time intervals
+### Alerts
 
-- ``ISO8601Duration``
+- ``WeatherAlert``
+- ``ActiveAlertFilter``
+- ``AlertQuery``
+- ``ActiveAlertCount``
+- ``AlertTypes``
+- ``AlertReference``
+- ``AreaCode``
+- ``MarineRegionCode``
+- ``AlertCategory``
+- ``AlertCertainty``
+- ``AlertMessageType``
+- ``AlertResponse``
+- ``AlertScope``
+- ``AlertSeverity``
+- ``AlertStatus``
+- ``AlertUrgency``
+
+### Zones
+
+- <doc:ZoneData>
+- ``WeatherZone``
+- ``ZoneQuery``
+- ``ZoneType``
+- ``ZoneRegionCode``
+- ``ZoneForecast``
+- ``ZoneForecastPeriod``
+- ``ZoneObservationQuery``
+
+### Offices
+
+- <doc:OfficeData>
+- ``WeatherOffice``
+- ``OfficeHeadlines``
+- ``OfficeHeadline``
+- ``OfficeBriefingResponse``
+- ``OfficeBriefing``
+
+### Products
+
+- <doc:ProductData>
+- ``TextProduct``
+- ``TextProducts``
+- ``ProductQuery``
+- ``ProductCode``
+- ``ProductTypes``
+- ``ProductType``
+- ``ProductLocations``
+
+### Glossary
+
+- <doc:GlossaryData>
+- ``WeatherGlossary``
+- ``GlossaryEntry``
+
+### Quantities and time
+
+- ``QuantitativeValue``
+- ``QualityControlCode``
 - ``ValidTimeInterval``
+- ``ISO8601Duration``
 
 ### Pagination
 
-- ``NWSPaginationError``
 - ``PaginationInfo``
+- ``NWSPaginationError``

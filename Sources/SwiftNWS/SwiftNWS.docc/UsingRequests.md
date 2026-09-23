@@ -116,12 +116,10 @@ does not read those headers. On Apple platforms, the `URLSession` you pass appli
 protocol's default policy. The portable AsyncHTTPClient transport has no cache. To cache responses
 off Apple platforms, add caching at the transport.
 
-## Migrate raw coordinates
+## Create coordinates
 
-Create a coordinate with `try WeatherCoordinate(latitude:longitude:)`, then call
+Every coordinate lookup takes a `WeatherCoordinate`, such as
 `latestObservation(from: .nearest(to: coordinate))` or `Endpoint.point(for: coordinate)`.
-The initializer validates ranges before rounding to four decimal places and throws
-`WeatherCoordinate.ValidationError` for invalid input.
-
-The old raw-coordinate overloads have been removed. Configuration-based client initializers,
-direct endpoints, and `send(_:)` remain available.
+`try WeatherCoordinate(latitude:longitude:)` rejects nonfinite values and values outside latitude
+-90...90 and longitude -180...180 with `WeatherCoordinate.ValidationError`, then rounds to the four
+decimal places the service accepts without a redirect.
