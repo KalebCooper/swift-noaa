@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+## [0.2.0] - 2026-09-22
+
 ### Added
 
 - Zone directory and single-zone lookups at all three access levels: `zones(matching:types:)` for
@@ -184,11 +186,6 @@ All notable changes are documented here, following
   `observationPages(query:)`, and `observationStationPages(query:)` across `NWSClient`,
   `WeatherRequest`, and `Endpoint`, matching every other list. This is a source break with no
   deprecated overload.
-- Rename `zone(effective:identifier:type:)` to `zone(identifier:type:effective:)` across
-  `NWSClient`, `WeatherRequest`, `Endpoint`, and the `WeatherRequest.Resolution.zone` case, so the
-  defaulted instant comes last.
-- Rename `RetryPolicy.transientServiceFailures` to `RetryPolicy.nwsTransientFailures`, so a policy
-  another package adds to `RetryPolicy` cannot collide with it at the call site.
 - Document the forecast feature flags: the service lists two, both modeled; a quantity flag answers
   its field in WMO SI units whatever `units` says; an unknown flag is ignored rather than rejected;
   and a flag can stop being needed once the service adopts its shape as the default.

@@ -19,7 +19,7 @@ window, a station's observation history, one station's metadata, the observation
 an exact instant, and lazy station-directory, active-alert, alert-history,
 and observation-history pagination. WMO readings can be converted with Foundation.
 
-Since 0.1.0, the zone endpoints are built: the directory at `/zones` and `/zones/{type}`, one zone
+The 0.2.0 release adds the zone endpoints: the directory at `/zones` and `/zones/{type}`, one zone
 at `/zones/{type}/{zoneId}`, a zone's text forecast, and a forecast zone's observations and
 stations, with a feature's GeoJSON geometry retained as raw JSON. Every zone route answers one
 response: the directory declares no cursor, and the observation and station routes return
