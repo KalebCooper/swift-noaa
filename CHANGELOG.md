@@ -133,6 +133,17 @@ All notable changes are documented here, following
   no product pagination and there are no product page or item sequences. Plain-text (`text/plain`)
   product retrieval is not supported: every product request asks for `application/ld+json`, and a
   bulletin arrives as a JSON string inside that body.
+- An opt-in retry policy. Both configuration-based `NWSClient` initializers take a `retryPolicy`,
+  defaulting to `RetryPolicy.disabled`, and the `clock` that times the waits between attempts,
+  defaulting to a continuous clock. `RetryPolicy.transientServiceFailures` makes at most three
+  attempts, waiting one second and then five, and retries timeouts and `429`, `500`, `502`, `503`,
+  and `504` answers; a numeric `Retry-After` replaces the scheduled wait. The budget covers one HTTP
+  request, so each step of a lookup, each redirect hop, and each page of a sequence has its own.
+  When the last attempt fails, the error is the one it would have been without retrying. There is
+  no per-request override. `init(userAgent:)` is unchanged and sends each request once.
+- A stated position on HTTP caching: the SDK caches nothing beyond `PointCache`, sends no
+  conditional requests, and does not read the service's `Cache-Control` or ETag headers. The
+  `URLSession` passed on Apple platforms applies its own cache.
 
 ### Changed
 

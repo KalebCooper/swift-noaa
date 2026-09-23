@@ -23,16 +23,38 @@ public struct NWSClient: Sendable {
 
   /// Creates a client that sends through a swifty-networking transport.
   ///
+  /// The client sends each request once unless you pass a retry policy. With
+  /// `RetryPolicy.transientServiceFailures`, a request the service answers with a
+  /// transient failure is sent again after a wait on `clock`. Each step of a multi-request lookup,
+  /// each redirect hop, and each page of a sequence has its own attempt budget. See
+  /// <doc:UsingRequests#Retrying-transient-failures>.
+  ///
+  /// ```swift
+  /// let client = NWSClient(
+  ///   configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)"),
+  ///   retryPolicy: .transientServiceFailures,
+  ///   transport: transport
+  /// )
+  /// ```
+  ///
   /// - Parameters:
+  ///   - clock: The clock that times the waits between attempts; defaults to a continuous clock.
+  ///     The point cache keeps its own clock.
   ///   - configuration: The values every request is sent with.
   ///   - pointCache: Shared point mappings, or nil to disable caching.
+  ///   - retryPolicy: Which failed requests are sent again, how often, and after what wait;
+  ///     defaults to `RetryPolicy.disabled`, which sends each request once.
   ///   - transport: What sends each request.
   public init(
-    configuration: NWSConfiguration, pointCache: PointCache? = .init(), transport: any Transport
+    clock: any Clock<Duration> = ContinuousClock(), configuration: NWSConfiguration,
+    pointCache: PointCache? = .init(), retryPolicy: RetryPolicy = .disabled,
+    transport: any Transport
   ) {
     self.configuration = configuration
     self.pointCache = pointCache
-    self.client = HTTPClient(baseURL: Self.baseURL, redirectPolicy: .never, transport: transport)
+    self.client = HTTPClient(
+      baseURL: Self.baseURL, clock: clock, redirectPolicy: .never, retryPolicy: retryPolicy,
+      transport: transport)
   }
 
   /// Retrieves the number of active alerts by region type, marine region, area, and zone.

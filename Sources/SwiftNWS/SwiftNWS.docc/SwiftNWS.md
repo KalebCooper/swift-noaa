@@ -20,7 +20,10 @@ print(observation.stationId, observation.timestamp)
 
 The short initializer uses the shared URL session on Apple platforms. For a custom session or
 transport, use a configuration-based initializer. A User-Agent identifying your application and
-a contact is required; there is no default identity.
+a contact is required; there is no default identity. A configuration-based initializer also takes
+an opt-in retry policy for the service's transient failures and the clock that times its waits;
+see <doc:UsingRequests#Retrying-transient-failures>. The SDK does no HTTP caching beyond the point
+cache; see <doc:UsingRequests#HTTP-caching>.
 
 Every observation method returns the full `WeatherObservation`, including present weather,
 cloud layers, the raw METAR message, and precipitation totals, exactly as the service reported

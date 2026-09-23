@@ -71,7 +71,14 @@ carries the same CAP fields, and `WeatherAlert` decodes them. A consumer who nee
 document sends the endpoint's `path` with its own transport and `Accept` header; the Atom feed
 carries its own `.atom` continuation link, which this package does not follow.
 
-Retries are not built.
+Retries are opt-in. A client sends each request once unless it is created with a retry policy;
+`RetryPolicy.transientServiceFailures` sends a request again after a timeout or a `429`, `500`,
+`502`, `503`, or `504` answer, at most three attempts per HTTP request, waiting one second and then
+five on an injected clock. The service sends `Cache-Control` with a `max-age` from five seconds to a
+day, and weak ETags. The SDK performs no HTTP caching beyond the point cache, sends no conditional
+requests, and does not read those headers. On Apple platforms, the `URLSession` you pass applies its
+own `URLCache`; the portable AsyncHTTPClient transport has no cache, so caching off Apple platforms
+belongs at the transport.
 
 ## Usage
 
@@ -372,6 +379,25 @@ let cache = PointCache(capacity: 64, lifetime: .seconds(3_600))
 
 A custom `Clock` can be injected into `PointCache` for deterministic expiry. Clearing prevents earlier
 in-flight point lookups from repopulating the cache. Failures and cancelled lookups are not stored.
+
+### Retrying transient failures
+
+Each request is sent once by default. To retry the service's transient failures, pass the package
+policy to a configuration-based initializer:
+
+```swift
+let weather = NWSClient(
+  configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)"),
+  retryPolicy: .transientServiceFailures
+)
+```
+
+The policy retries timeouts and `429`, `500`, `502`, `503`, and `504` answers, making at most three
+attempts and waiting one second and then five; a numeric `Retry-After` replaces the wait. Each step
+of a lookup, each redirect hop, and each page of a sequence has its own attempts. When the last one
+fails, the error is what it would have been without retrying. The waits run on the initializer's
+`clock`, a continuous clock by default. There is no per-request policy; create a second client on
+the same transport for requests that need a different one.
 
 ### WMO units
 

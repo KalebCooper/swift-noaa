@@ -254,3 +254,14 @@ Expiry uses a monotonic clock. Client copies share the cache, which callers can 
 Only successful coordinate resolutions populate it; direct endpoint requests bypass it.
 This is SDK policy rather than part of request construction. A custom executor chooses its own
 cache policy. Forecast, grid, and observation responses are not cached by the point cache.
+
+## Transient failures and HTTP caching
+
+Every endpoint is a `GET`, so an executor can send one again safely. The service documents a rate
+limit whose answer may be retried once it clears, typically within five seconds, and its change log
+records `500` and `503` answers from forecast routes. The SDK retries only when its client is created
+with a retry policy: its package policy covers timeouts and `429`, `500`, `502`, `503`, and `504`,
+with at most three attempts per HTTP request. A custom executor chooses its own retry policy.
+
+The service sends `Cache-Control` with a `max-age` from five seconds to a day, and weak ETags. The SDK
+does not read them and sends no conditional requests; any HTTP caching belongs to the transport.

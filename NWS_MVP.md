@@ -220,8 +220,15 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   TAFs), `/icons`, and `/thumbnails`, unless a consumer need appears before 1.0.0. `/radio` is out
   of scope for the reason stated in the Points bullet above, not conditionally.
 - **Feature flags:** every flag the spec lists is modeled for every endpoint that accepts it.
-- **Resilience:** a stated retry policy for the 500 and 503 answers the API gives under load, with
-  backoff timed by an injected `Clock`, and a stated position on HTTP caching headers.
+- **Resilience:** built. Both configuration-based client initializers take an opt-in retry policy,
+  defaulting to none, and the `Clock` that times its waits. `RetryPolicy.transientServiceFailures`
+  makes at most three attempts per HTTP request, waiting one second and then five, over timeouts and
+  `429`, `500`, `502`, `503`, and `504`; a numeric `Retry-After` replaces the wait. No new error
+  case: the last attempt's failure is thrown as it would have been. HTTP caching is stated: the
+  service sends `Cache-Control` with a `max-age` from five seconds to a day, and weak ETags; the SDK
+  performs no HTTP caching beyond `PointCache`, sends no conditional requests, and does not read
+  those headers. On Apple platforms the `URLSession` passed applies its own `URLCache`; the portable
+  AsyncHTTPClient transport has no cache, so caching off Apple platforms belongs at the transport.
 - **Forward compatibility:** every enumeration tolerates unknown values, every `QuantitativeValue`
   tolerates a `null` value, and every model decodes the fixtures recorded for it.
 - **Spec drift:** a script, run by hand and never by the test suite, that compares the covered paths
