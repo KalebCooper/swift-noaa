@@ -65,7 +65,7 @@ struct RecordedResponseTests {
 
   @Test("A point decodes its grid, links, and nearest city")
   func aPointDecodesItsGridLinksAndNearestCity() throws {
-    let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    let point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
 
     #expect(point.id?.absoluteString == "https://api.weather.gov/points/30.2672,-97.7431")
     #expect(point.properties.gridId == "EWX")
@@ -76,7 +76,7 @@ struct RecordedResponseTests {
         == "https://api.weather.gov/gridpoints/EWX/156,91/stations")
     #expect(
       point.properties.relativeLocation?.properties
-        == Point.RelativeLocation(city: "Austin", state: "TX"))
+        == WeatherPoint.RelativeLocation(city: "Austin", state: "TX"))
     #expect(point.properties.timeZone == "America/Chicago")
   }
 

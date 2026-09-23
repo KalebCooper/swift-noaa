@@ -11,7 +11,7 @@ import SwiftNWSModels
 ///
 /// ```swift
 /// let query = try ObservationStationQuery(states: [.texas])
-/// for try await page in client.observationStationPages(query: query) {
+/// for try await page in client.observationStationPages(matching: query) {
 ///   print(page.features.count)
 ///   break
 /// }

@@ -15,7 +15,7 @@ import Foundation
 ///
 /// ```swift
 /// let query = try ObservationQuery(limit: 24, start: start, stationIdentifier: "KATT")
-/// let endpoint = Endpoint.observations(query: query)
+/// let endpoint = Endpoint.observations(matching: query)
 /// ```
 public struct ObservationQuery: Hashable, Sendable {
   /// Why an observation query could not be created.

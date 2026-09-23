@@ -81,11 +81,12 @@ struct WeatherRequestTests {
     let query = try ZoneObservationQuery(limit: 2, zoneIdentifier: "TXZ192")
     let observations = WeatherRequest.observations(inForecastZone: query)
     #expect(observations.resolution == .endpoint(.observations(inForecastZone: query)))
-    #expect(observations != .observations(query: try ObservationQuery(stationIdentifier: "KATT")))
+    #expect(
+      observations != .observations(matching: try ObservationQuery(stationIdentifier: "KATT")))
 
     let stations = WeatherRequest.observationStations(inForecastZone: "TXZ192")
     #expect(stations.resolution == .forecastZoneStations(identifier: "TXZ192"))
-    #expect(stations != .observationStations(query: try ObservationStationQuery()))
+    #expect(stations != .observationStations(matching: try ObservationStationQuery()))
 
     let unusable = WeatherRequest.observationStations(inForecastZone: "")
     #expect(unusable.resolution == .forecastZoneStations(identifier: ""))
@@ -102,14 +103,14 @@ struct WeatherRequestTests {
     #expect(typed == .zones(matching: query, ofType: AppZoneType.forecast))
 
     let detail = WeatherRequest.zone(identifier: "TXZ192", type: .forecast)
-    #expect(detail.resolution == .zone(effective: nil, identifier: "TXZ192", type: .forecast))
+    #expect(detail.resolution == .zone(identifier: "TXZ192", type: .forecast, effective: nil))
     #expect(detail == .zone(identifier: "TXZ192", type: AppZoneType.forecast))
     #expect(Set([detail, .zone(identifier: "TXZ192", type: .forecast)]).count == 1)
 
     // An unusable type or identifier is a request value; only execution rejects it.
     let unusable = WeatherRequest.zone(identifier: "", type: ZoneType(rawValue: ""))
     #expect(
-      unusable.resolution == .zone(effective: nil, identifier: "", type: ZoneType(rawValue: "")))
+      unusable.resolution == .zone(identifier: "", type: ZoneType(rawValue: ""), effective: nil))
   }
 }
 

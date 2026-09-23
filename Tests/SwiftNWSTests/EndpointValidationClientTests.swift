@@ -78,7 +78,7 @@ struct EndpointValidationClientTests {
     transport.enqueue(
       .success(.init(Response(body: try JSONEncoder().encode(page), status: .ok))))
     let client = NWSClient(configuration: .init(userAgent: "tests"), transport: transport)
-    var iterator = client.observationStationPages(query: try ObservationStationQuery())
+    var iterator = client.observationStationPages(matching: try ObservationStationQuery())
       .makeAsyncIterator()
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
     guard case .pagination(.invalidNext(let raw)) = error else {
@@ -94,7 +94,7 @@ struct EndpointValidationClientTests {
     arguments: ["/a/../b", "/a/%2e%2E", "/a%5Cb", "/%2fhost"], [0, 1, 2, 3])
   func invalidPointLinksFailBeforeTheLinkedRequest(path: String, operation: Int) async throws {
     let transport = MockTransport()
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
     let link = try #require(URL(string: "https://api.weather.gov" + path))
     point.properties.forecast = link
     point.properties.forecastHourly = link

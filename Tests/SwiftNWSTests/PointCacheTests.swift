@@ -111,8 +111,8 @@ struct PointCacheTests {
     return transport
   }
 
-  private func recordedPoint() throws -> Point {
-    try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+  private func recordedPoint() throws -> WeatherPoint {
+    try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data()).properties
   }
 }
 

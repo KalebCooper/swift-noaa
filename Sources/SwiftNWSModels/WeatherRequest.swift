@@ -153,12 +153,13 @@ public struct WeatherRequest<Response>: Hashable, Sendable {
     /// page size or cursor, so nothing is paged.
     case productTypes(location: String)
 
+    // Values are not alphabetical: the optional instant comes last, as in the zone factories.
     /// Retrieve one zone by type and identifier and return its GeoJSON properties.
     ///
     /// Only requests returning ``WeatherZone`` carry this resolution. An empty type or identifier,
     /// or one that produces an invalid encoded path, is a failure before any request. The
     /// feature's geometry is available only through the direct endpoint.
-    case zone(effective: Date?, identifier: String, type: ZoneType)
+    case zone(identifier: String, type: ZoneType, effective: Date?)
 
     /// Retrieve a zone's text forecast and return its GeoJSON properties.
     ///
@@ -238,7 +239,7 @@ extension WeatherRequest where Response == FeatureCollection<ObservationStation>
   /// Describes a station-directory query with optional continuation.
   /// - Parameter query: The validated filters and initial cursor.
   /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
-  public static func observationStations(query: ObservationStationQuery) -> Self {
+  public static func observationStations(matching query: ObservationStationQuery) -> Self {
     Self(resolution: .observationStations(query))
   }
 }
@@ -265,7 +266,7 @@ extension WeatherRequest where Response == FeatureCollection<WeatherObservation>
   /// Describes an observation-history query with optional continuation.
   /// - Parameter query: The validated station, window, page size, and initial cursor.
   /// - Returns: A reusable request; value execution retrieves one page and sequence execution follows links.
-  public static func observations(query: ObservationQuery) -> Self {
+  public static func observations(matching query: ObservationQuery) -> Self {
     Self(resolution: .observations(query))
   }
 }
@@ -496,6 +497,7 @@ extension WeatherRequest where Response == FeatureCollection<WeatherZone> {
 }
 
 extension WeatherRequest where Response == WeatherZone {
+  // Parameters are not alphabetical: the defaulted instant comes last.
   /// Describes one zone by type and identifier, `/zones/{type}/{zoneId}`.
   ///
   /// Executing the request rejects an empty type or identifier before sending and returns the
@@ -506,23 +508,24 @@ extension WeatherRequest where Response == WeatherZone {
   /// ```
   ///
   /// - Parameters:
-  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   ///   - identifier: The zone's identifier, such as `TXZ192`.
   ///   - type: The route's zone type.
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   /// - Returns: A reusable request that performs no I/O at construction.
-  public static func zone(effective: Date? = nil, identifier: String, type: ZoneType) -> Self {
-    Self(resolution: .zone(effective: effective, identifier: identifier, type: type))
+  public static func zone(identifier: String, type: ZoneType, effective: Date? = nil) -> Self {
+    Self(resolution: .zone(identifier: identifier, type: type, effective: effective))
   }
 
+  // Parameters are not alphabetical: the defaulted instant comes last.
   /// Describes one zone using a consumer-defined zone type enum.
   /// - Parameters:
-  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   ///   - identifier: The zone's identifier.
   ///   - type: A String-backed zone type.
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   /// - Returns: A reusable request that performs no I/O at construction.
-  public static func zone<Kind>(effective: Date? = nil, identifier: String, type: Kind) -> Self
+  public static func zone<Kind>(identifier: String, type: Kind, effective: Date? = nil) -> Self
   where Kind: RawRepresentable, Kind.RawValue == String {
-    zone(effective: effective, identifier: identifier, type: ZoneType(type))
+    zone(identifier: identifier, type: ZoneType(type), effective: effective)
   }
 }
 

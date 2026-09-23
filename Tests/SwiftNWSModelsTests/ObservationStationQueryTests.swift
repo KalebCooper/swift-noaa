@@ -16,7 +16,7 @@ struct ObservationStationQueryTests {
     #expect(query.identifiers.isEmpty)
     #expect(query.limit == 500)
     #expect(query.states.isEmpty)
-    #expect(Endpoint.observationStations(query: query).path == "/stations?limit=500")
+    #expect(Endpoint.observationStations(matching: query).path == "/stations?limit=500")
     #expect(Set([query, try ObservationStationQuery()]).count == 1)
   }
 
@@ -26,9 +26,9 @@ struct ObservationStationQueryTests {
       cursor: "a/b?&=+", identifiers: ["KATT", "KDCA"], limit: 1,
       states: [.init(rawValue: "TX"), .init(rawValue: "VA")])
     #expect(
-      Endpoint.observationStations(query: query).path
+      Endpoint.observationStations(matching: query).path
         == "/stations?cursor=a/b?%26%3D%2B&id=KATT,KDCA&limit=1&state=TX,VA")
-    let request = WeatherRequest.observationStations(query: query)
+    let request = WeatherRequest.observationStations(matching: query)
     #expect(request.resolution == .observationStations(query))
   }
 

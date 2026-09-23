@@ -16,7 +16,7 @@ struct ObservationStationPaginationTests {
     let client = makeClient(transport)
     let query = try ObservationStationQuery()
     let task = Task { () throws -> NWSError? in
-      var iterator = client.observationStationPages(query: query).makeAsyncIterator()
+      var iterator = client.observationStationPages(matching: query).makeAsyncIterator()
       let error = await #expect(throws: NWSError.self) { try await iterator.next() }
       #expect(try await iterator.next() == nil)
       return error
@@ -43,7 +43,7 @@ struct ObservationStationPaginationTests {
     let task = Task {
       defer { started.continuation.finish() }
       if items {
-        var iterator = client.observationStations(query: query).makeAsyncIterator()
+        var iterator = client.observationStations(matching: query).makeAsyncIterator()
         _ = try await iterator.next()
         started.continuation.yield()
         for await _ in resume.stream {}
@@ -51,7 +51,7 @@ struct ObservationStationPaginationTests {
         #expect(try await iterator.next() == nil)
         return error
       } else {
-        var iterator = client.observationStationPages(query: query).makeAsyncIterator()
+        var iterator = client.observationStationPages(matching: query).makeAsyncIterator()
         _ = try await iterator.next()
         started.continuation.yield()
         for await _ in resume.stream {}
@@ -78,7 +78,7 @@ struct ObservationStationPaginationTests {
       transport, page: page(next: "https://api.weather.gov" + path))
     try answer(transport, page: page())
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     #expect(try await iterator.next() != nil)
     #expect(transport.requests.count == 1)
@@ -138,7 +138,7 @@ struct ObservationStationPaginationTests {
     transport.enqueue(
       .success(.init(Response(body: Data(), headers: [.location: location], status: .found))))
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
     guard case .invalidLink = error else { Issue.record("Expected invalid redirect link"); return }
@@ -159,9 +159,9 @@ struct ObservationStationPaginationTests {
     try answer(transport, page: terminal)
     let client = makeClient(transport)
     var pages: [FeatureCollection<ObservationStation>] = []
-    for try await page in client.observationStationPages(query: query) { pages.append(page) }
+    for try await page in client.observationStationPages(matching: query) { pages.append(page) }
     var items: [Feature<ObservationStation>] = []
-    for try await item in client.observationStations(query: query) { items.append(item) }
+    for try await item in client.observationStations(matching: query) { items.append(item) }
     #expect(pages.count == 2)
     #expect(items == pages.flatMap(\.features))
     #expect(transport.requests.count == 4)
@@ -178,7 +178,7 @@ struct ObservationStationPaginationTests {
     let transport = MockTransport()
     try answer(transport, page: page(next: raw))
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
     guard case .pagination(.invalidNext(let actual)) = error else {
@@ -198,7 +198,7 @@ struct ObservationStationPaginationTests {
     let body = problem ? try Fixture.problemDetail.data() : Data("not json".utf8)
     transport.enqueue(.success(.init(Response(body: body, status: problem ? .notFound : .ok))))
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     #expect(try await iterator.next() != nil)
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
@@ -220,7 +220,7 @@ struct ObservationStationPaginationTests {
     invalid.pagination = PaginationInfo()
     try answer(transport, page: invalid)
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
     guard case .pagination(.missingNext) = error else {
@@ -238,7 +238,7 @@ struct ObservationStationPaginationTests {
         .success(.init(Response(body: Data(), headers: [.location: location], status: .found))))
     }
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
     guard case .tooManyRedirects = error else { Issue.record("Expected redirect limit"); return }
@@ -257,7 +257,7 @@ struct ObservationStationPaginationTests {
       transport, page: page(next: "https://api.weather.gov/stations?cursor=2"))
     try answer(transport, page: page())
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     #expect(try await iterator.next() != nil)
     #expect(try await iterator.next() != nil)
@@ -277,7 +277,7 @@ struct ObservationStationPaginationTests {
     try answer(transport, page: page(next: cycle ? second : first))
     try answer(transport, page: page(next: first))
     var iterator = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery()
+      matching: try ObservationStationQuery()
     ).makeAsyncIterator()
     if cycle { #expect(try await iterator.next() != nil) }
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
@@ -294,12 +294,12 @@ struct ObservationStationPaginationTests {
     let transport = MockTransport()
     let client = NWSClient(configuration: .init(userAgent: "tests"), transport: transport)
     let query = try ObservationStationQuery()
-    let request = WeatherRequest.observationStations(query: query)
-    let _: ObservationStationPageSequence = client.observationStationPages(query: query)
-    let _: ObservationStationSequence = client.observationStations(query: query)
+    let request = WeatherRequest.observationStations(matching: query)
+    let _: ObservationStationPageSequence = client.observationStationPages(matching: query)
+    let _: ObservationStationSequence = client.observationStations(matching: query)
     let _: ObservationStationPageSequence = client.observationStationPages(for: request)
     let _: ObservationStationSequence = client.observationStations(
-      for: .observationStations(query: query))
+      for: .observationStations(matching: query))
     let custom = WeatherRequest(
       endpoint: try #require(Endpoint<FeatureCollection<ObservationStation>>(path: "/custom")))
     let _: ObservationStationPageSequence = client.observationStationPages(for: custom)
@@ -316,7 +316,7 @@ struct ObservationStationPaginationTests {
     try answer(
       transport, page: page(next: "https://api.weather.gov/stations?cursor=2"))
     let sequence = makeClient(transport).observationStationPages(
-      query: try ObservationStationQuery())
+      matching: try ObservationStationQuery())
     var first = sequence.makeAsyncIterator()
     var second = sequence.makeAsyncIterator()
     #expect(transport.requests.isEmpty)
@@ -333,10 +333,10 @@ struct ObservationStationPaginationTests {
     for _ in 0..<4 { try answer(transport, page: expected) }
     let client = makeClient(transport)
     let query = try ObservationStationQuery(cursor: "start", limit: 1)
-    let request = WeatherRequest.observationStations(query: query)
-    let direct = try await client.send(.observationStations(query: query))
+    let request = WeatherRequest.observationStations(matching: query)
+    let direct = try await client.send(.observationStations(matching: query))
     let value = try await client.value(for: request)
-    var everyday = client.observationStationPages(query: query).makeAsyncIterator()
+    var everyday = client.observationStationPages(matching: query).makeAsyncIterator()
     var reusable = client.observationStationPages(for: request).makeAsyncIterator()
     #expect(direct == expected)
     #expect(value == direct)
@@ -353,14 +353,14 @@ struct ObservationStationPaginationTests {
   }
 
   private func compileResponses(_ client: NWSClient, query: ObservationStationQuery) async throws {
-    let page = try await client.value(for: .observationStations(query: query))
-    let direct = try await client.send(.observationStations(query: query))
+    let page = try await client.value(for: .observationStations(matching: query))
+    let direct = try await client.send(.observationStations(matching: query))
     let _: FeatureCollection<ObservationStation> = page
     let _: FeatureCollection<ObservationStation> = direct
-    for try await page in client.observationStationPages(query: query) {
+    for try await page in client.observationStationPages(matching: query) {
       let _: FeatureCollection<ObservationStation> = page
     }
-    for try await feature in client.observationStations(query: query) {
+    for try await feature in client.observationStations(matching: query) {
       let _: ObservationStation = feature.properties
     }
   }

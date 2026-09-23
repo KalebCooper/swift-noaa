@@ -13,10 +13,10 @@ import SwiftNWSModels
 
 let weather = NWSClient(userAgent: "(example.com, contact@example.com)")
 let query = try ObservationStationQuery(limit: 100, states: [.texas])
-let request = WeatherRequest.observationStations(query: query)
+let request = WeatherRequest.observationStations(matching: query)
 
 let firstPage = try await weather.value(for: request)
-let direct = try await weather.send(.observationStations(query: query))
+let direct = try await weather.send(.observationStations(matching: query))
 let pages = weather.observationStationPages(for: request)
 let stations = weather.observationStations(for: request)
 ```
@@ -36,7 +36,7 @@ library-owned resolution declares continuation semantics.
 Use a page sequence when the collection envelope or page boundaries matter:
 
 ```swift
-for try await page in weather.observationStationPages(query: query) {
+for try await page in weather.observationStationPages(matching: query) {
   print(page.features.count)
   break
 }
@@ -45,7 +45,7 @@ for try await page in weather.observationStationPages(query: query) {
 Use an item sequence for a flattened stream that still preserves each feature's GeoJSON metadata:
 
 ```swift
-for try await station in weather.observationStations(query: query) {
+for try await station in weather.observationStations(matching: query) {
   print(station.id as Any, station.properties.stationIdentifier)
   break
 }
@@ -62,8 +62,8 @@ not support concurrent reads.
 Active alerts offer the same two views through ``NWSClient/activeAlertPages(matching:)`` and the
 synchronous `activeAlerts(matching:)` overload, alert history through
 ``NWSClient/alertPages(matching:)`` and the synchronous `alerts(matching:)` overload, and a
-station's observation history through ``NWSClient/observationPages(query:)`` and the synchronous
-`observations(query:)` overload. Await the other overload to retrieve one page.
+station's observation history through ``NWSClient/observationPages(matching:)`` and the synchronous
+`observations(matching:)` overload. Await the other overload to retrieve one page.
 
 ## Handle cancellation and partial results
 
@@ -74,7 +74,7 @@ and before returning an item already buffered from a page:
 let traversal = Task {
   var stationIdentifiers: [String] = []
   do {
-    for try await station in weather.observationStations(query: query) {
+    for try await station in weather.observationStations(matching: query) {
       stationIdentifiers.append(station.properties.stationIdentifier)
     }
   } catch {

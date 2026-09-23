@@ -31,10 +31,10 @@ extension RetryPolicy {
   /// ```swift
   /// let client = NWSClient(
   ///   configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)"),
-  ///   retryPolicy: .transientServiceFailures
+  ///   retryPolicy: .nwsTransientFailures
   /// )
   /// ```
-  public static let transientServiceFailures = RetryPolicy(
+  public static let nwsTransientFailures = RetryPolicy(
     backoff: BackoffSchedule(delays: [.seconds(1), .seconds(5)]),
     maxAttempts: 3,
     retryable: { attempt in

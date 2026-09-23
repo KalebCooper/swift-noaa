@@ -26,3 +26,16 @@ point for a single HTTP operation. These retain the GeoJSON feature envelope and
 service link's origin. Options replace a link's units query while preserving its other encoded
 query items. Only the forecast request receives its Feature-Flags header. `ForecastOptions` and
 `Endpoint` also accept consumer-defined String-backed enums for feature flags and units.
+
+## Feature flags
+
+The specification declares the Feature-Flags header on the forecast and hourly forecast routes
+only, and other routes ignore it. It lists two flags, both modeled by `ForecastFeatureFlag`:
+`temperatureQuantity` (`forecast_temperature_qv`) and `windSpeedQuantity`
+(`forecast_wind_speed_qv`). A quantity flag answers its field in WMO SI units, such as
+`wmoUnit:degC` and `wmoUnit:km_h-1`, whatever `units` says; `units` still governs every unflagged
+field. The service ignores a flag it does not know rather than rejecting the request, so a
+misspelled flag changes nothing and raises no error. Flags follow the service's announced adoption
+windows: once a flagged shape becomes the default, the flag stops being needed without this package
+changing, because `ForecastTemperature` and `ForecastWind` decode both the scalar and the quantity
+shape.

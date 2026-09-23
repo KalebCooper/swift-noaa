@@ -18,7 +18,7 @@ struct ObservationQueryTests {
     #expect(query.limit == nil)
     #expect(query.start == nil)
     #expect(query.stationIdentifier == "KATT")
-    #expect(Endpoint.observations(query: query).path == "/stations/KATT/observations")
+    #expect(Endpoint.observations(matching: query).path == "/stations/KATT/observations")
     #expect(Set([query, try ObservationQuery(stationIdentifier: "KATT")]).count == 1)
   }
 
@@ -40,7 +40,7 @@ struct ObservationQueryTests {
   func stationIdentifiersOccupyExactlyOnePathSegment() throws {
     let query = try ObservationQuery(stationIdentifier: "A/B?x=#%")
     #expect(
-      Endpoint.observations(query: query).path
+      Endpoint.observations(matching: query).path
         == "/stations/A%2FB%3Fx%3D%23%25/observations")
   }
 
@@ -52,10 +52,10 @@ struct ObservationQueryTests {
     let query = try ObservationQuery(
       cursor: "a/b?&=+", end: end, limit: 2, start: start, stationIdentifier: "KATT")
     #expect(
-      Endpoint.observations(query: query).path
+      Endpoint.observations(matching: query).path
         == "/stations/KATT/observations?cursor=a/b?%26%3D%2B&end=2026-09-17T00:00:00Z&limit=2"
         + "&start=2026-09-16T00:00:00Z")
-    let request = WeatherRequest.observations(query: query)
+    let request = WeatherRequest.observations(matching: query)
     #expect(request.resolution == .observations(query))
   }
 }

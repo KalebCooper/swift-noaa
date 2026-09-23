@@ -11,7 +11,7 @@ import Foundation
 /// the service sends one; the package does not validate or interpret it.
 ///
 /// ```swift
-/// let point: Feature<Point> = try JSONDecoder().decode(Feature<Point>.self, from: body)
+/// let point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: body)
 /// print(point.properties.gridId)
 /// ```
 public struct Feature<Properties> {

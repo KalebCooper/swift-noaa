@@ -8,7 +8,7 @@ import Foundation
 ///
 /// The grid is the data behind the text forecasts: every layer the forecast office publishes for
 /// the cell, each as values over ISO 8601 intervals. Reach it by following a point's
-/// ``Point/forecastGridData`` link.
+/// ``WeatherPoint/forecastGridData`` link.
 ///
 /// ```swift
 /// let grid = try JSONDecoder().decode(Feature<ForecastGrid>.self, from: body).properties

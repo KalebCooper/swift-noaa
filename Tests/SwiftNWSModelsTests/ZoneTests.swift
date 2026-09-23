@@ -254,7 +254,7 @@ struct ZoneTests {
   @Test("Every previously recorded feature still decodes and compares after the geometry change")
   func everyPreviouslyRecordedFeatureStillDecodesAndComparesAfterTheGeometryChange() throws {
     let decoder = JSONDecoder()
-    let point = try decoder.decode(Feature<Point>.self, from: Fixture.point.data())
+    let point = try decoder.decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
     #expect(point.properties.gridId == "EWX")
     #expect(point.geometry != nil)
 

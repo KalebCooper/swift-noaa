@@ -20,6 +20,10 @@ dimensions. This covers every dimensional code in the recorded NWS responses. Fo
 conversion to a compatible destination unit. `wmoUnit:percent` exposes a fraction, such as 0.65
 for a reported value of 65.
 
+A forecast requested with a quantity feature flag answers the flagged temperature or wind speed and
+gusts in WMO SI units, `wmoUnit:degC` and `wmoUnit:km_h-1`, whatever its `units` option says, so
+convert it explicitly like any other reading. The option still governs the unflagged fields.
+
 Unknown codes, incompatible destination dimensions, and missing measurements return nil.
 No range bound is substituted for a missing value. The source quantity retains its bounds and
 unit code unchanged. Quality control uses `QualityControlCode`: known provider values have named

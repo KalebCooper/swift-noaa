@@ -107,9 +107,9 @@ struct ZoneClientTests {
     let zone: WeatherZone =
       if useRequest {
         try await client.value(
-          for: .zone(effective: effective, identifier: "TXZ192", type: .forecast))
+          for: .zone(identifier: "TXZ192", type: .forecast, effective: effective))
       } else {
-        try await client.zone(effective: effective, identifier: "TXZ192", type: .forecast)
+        try await client.zone(identifier: "TXZ192", type: .forecast, effective: effective)
       }
 
     #expect(zone.id == "TXZ192")

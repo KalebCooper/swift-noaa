@@ -8,7 +8,7 @@ import SwiftNWSModels
 ///
 /// ```swift
 /// let query = try ObservationQuery(limit: 24, stationIdentifier: "KATT")
-/// for try await page in client.observationPages(query: query) {
+/// for try await page in client.observationPages(matching: query) {
 ///   print(page.features.count)
 ///   break
 /// }

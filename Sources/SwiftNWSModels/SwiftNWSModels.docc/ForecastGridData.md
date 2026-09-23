@@ -4,12 +4,12 @@ Decode the raw forecast grid behind the text forecasts, with any networking stac
 
 ## Overview
 
-A point's ``Point/forecastGridData`` link names the grid cell's raw data,
+A point's ``WeatherPoint/forecastGridData`` link names the grid cell's raw data,
 `/gridpoints/{wfo}/{x},{y}`. Follow the link rather than building the path: the office identifier is
 case sensitive, and the service answers a lowercase one with `404`.
 
 ```swift
-let point = try JSONDecoder().decode(Feature<Point>.self, from: pointBody).properties
+let point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: pointBody).properties
 // Request point.forecastGridData with Accept: application/geo+json, then:
 let grid = try JSONDecoder().decode(Feature<ForecastGrid>.self, from: gridBody).properties
 ```

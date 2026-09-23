@@ -89,12 +89,12 @@ not require full Foundation or a networking stack.
 - ``AlertScope``
 - ``AreaCode``
 - ``CloudLayerAmount``
+- ``ForecastFeatureFlag``
 - ``ForecastTemperatureTrend``
 - ``ForecastTemperatureUnit``
 - ``ForecastUnits``
 - ``ForecastWindDirection``
 - ``MarineRegionCode``
-- ``NWSFeatureFlag``
 - ``ProductCode``
 - ``QualityControlCode``
 - ``WeatherPhenomenonIntensity``
@@ -127,7 +127,6 @@ not require full Foundation or a networking stack.
 - ``OfficeBriefingResponse``
 - ``OfficeHeadline``
 - ``OfficeHeadlines``
-- ``Point``
 - ``ProblemDetail``
 - ``ProductLocations``
 - ``ProductType``
@@ -141,6 +140,7 @@ not require full Foundation or a networking stack.
 - ``WeatherObservation``
 - ``WeatherOffice``
 - ``WeatherPhenomenon``
+- ``WeatherPoint``
 - ``WeatherZone``
 - ``ZoneForecast``
 - ``ZoneForecastPeriod``

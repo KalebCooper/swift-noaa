@@ -10,10 +10,10 @@ import SwiftNWSModels
 
 let weather = NWSClient(userAgent: "(example.com, contact@example.com)")
 let query = try ObservationQuery(limit: 24, start: start, stationIdentifier: "KATT")
-let request = WeatherRequest.observations(query: query)
+let request = WeatherRequest.observations(matching: query)
 
-let firstPage = try await weather.observations(query: query)
-let direct = try await weather.send(.observations(query: query))
+let firstPage = try await weather.observations(matching: query)
+let direct = try await weather.send(.observations(matching: query))
 
 for try await observation in weather.observations(for: request) {
   print(observation.properties.timestamp, observation.properties.temperature?.value ?? .nan)
@@ -28,9 +28,9 @@ the service applies its own page size. An empty station identifier or invalid en
 The service decides which observations a window matches and how it orders them; recorded responses
 list the newest observation first, but that order is not a documented guarantee.
 
-Awaiting `observations(query:)` retrieves one page. Iterating its synchronous overload returns
+Awaiting `observations(matching:)` retrieves one page. Iterating its synchronous overload returns
 ``ObservationSequence``, whose elements are `Feature<WeatherObservation>`. For complete pages, use
-``NWSClient/observationPages(query:)``. Both delegate to their reusable-request counterparts,
+``NWSClient/observationPages(matching:)``. Both delegate to their reusable-request counterparts,
 ``NWSClient/observations(for:)`` and ``NWSClient/observationPages(for:)``. Single-page `value(for:)`
 and `send` return one collection. Each feature's properties are the same `WeatherObservation` that
 ``NWSClient/latestObservation(from:)`` returns.

@@ -132,7 +132,7 @@ struct ProductTests {
   @Test("Every product endpoint names the route it was recorded from", arguments: [0, 1, 2, 3])
   func everyProductEndpointNamesTheRouteItWasRecordedFrom(operation: Int) throws {
     let accept: MediaType
-    let featureFlags: [NWSFeatureFlag]
+    let featureFlags: [ForecastFeatureFlag]
     let path: String
     switch operation {
     case 0:
@@ -366,7 +366,7 @@ struct ProductTests {
     "Every product text endpoint names the route it was recorded from", arguments: [0, 1, 2, 3])
   func everyProductTextEndpointNamesTheRouteItWasRecordedFrom(operation: Int) throws {
     let accept: MediaType
-    let featureFlags: [NWSFeatureFlag]
+    let featureFlags: [ForecastFeatureFlag]
     let path: String
     switch operation {
     case 0:

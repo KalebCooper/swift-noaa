@@ -39,7 +39,7 @@ print(oneType?.path as Any)  // "/zones/forecast?area=TX&limit=2"
 ```
 
 The root factory is not failable because its path carries no type segment. The typed factory and
-`Endpoint.zone(effective:identifier:type:)` return nil for a type or identifier that cannot be one
+`Endpoint.zone(identifier:type:effective:)` return nil for a type or identifier that cannot be one
 path segment, such as an empty string or a value whose encoded form would change the route.
 
 The directory declares no page size, default, or cursor, and the recorded responses carry no

@@ -19,7 +19,7 @@ Send a GET to `https://api.weather.gov` plus the endpoint's path, set the Accept
 its media type, and provide a User-Agent identifying your application and a contact. When
 `endpoint.featureFlags` is nonempty, join each value's `rawValue` with commas for the
 Feature-Flags header.
-Decode the successful response as `Feature<Point>` for this endpoint. Your networking stack
+Decode the successful response as `Feature<WeatherPoint>` for this endpoint. Your networking stack
 owns status handling, cancellation, and decoding.
 
 `/points/{latitude},{longitude}/radio` is not supported. It answers only `application/ssml+xml`,
@@ -95,8 +95,8 @@ Constructing or inspecting it sends nothing.
 - An `alerts` resolution contains an ``AlertQuery``. Send `Endpoint.alerts(matching:)` for one page,
   and apply the same continuation and redirect rules as active alerts for a sequence.
 - An `observations` resolution contains an ``ObservationQuery``. Send
-  `Endpoint.observations(query:)` for one page, decode `FeatureCollection<WeatherObservation>`, and
-  apply the continuation rules below for a sequence.
+  `Endpoint.observations(matching:)` for one page, decode `FeatureCollection<WeatherObservation>`,
+  and apply the continuation rules below for a sequence.
 - A latest-observation resolution contains ``ObservationSource`` and is only created for
   ``WeatherObservation`` responses. For an explicit station, reject invalid identifiers,
   unwrap and send `Endpoint.latestObservation(stationIdentifier:)`, and return the feature's properties.
@@ -172,10 +172,10 @@ Constructing or inspecting it sends nothing.
   link names the zone's stations again at a later offset and leads only to empty pages. The route's
   declared limit and cursor had no effect on the recorded responses, so this resolution sends
   neither.
-- A `zone` resolution contains an optional effective instant, an identifier, and a ``ZoneType``, and
+- A `zone` resolution contains an identifier, a ``ZoneType``, and an optional effective instant, and
   is only created for ``WeatherZone`` responses. Reject an empty or unusable type before the
   identifier, so the failure names which argument was unusable, then send
-  `Endpoint.zone(effective:identifier:type:)` and return the feature's properties. The feature's
+  `Endpoint.zone(identifier:type:effective:)` and return the feature's properties. The feature's
   geometry is reachable only through the endpoint, not through this resolution's result.
 - A `zoneForecast` resolution contains an identifier and a ``ZoneType``, and is only created for
   ``ZoneForecast`` responses. Reject an empty or unusable type before the identifier, as the `zone`
@@ -201,8 +201,8 @@ each HTTP call.
 
 ```swift
 let query = try ObservationStationQuery(limit: 100, states: [.texas])
-let request = WeatherRequest.observationStations(query: query)
-let endpoint = Endpoint.observationStations(query: query)
+let request = WeatherRequest.observationStations(matching: query)
+let endpoint = Endpoint.observationStations(matching: query)
 
 // After your networking stack decodes a FeatureCollection<ObservationStation>:
 if let pagination = page.pagination {

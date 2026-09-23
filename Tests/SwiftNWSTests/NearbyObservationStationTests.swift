@@ -152,7 +152,7 @@ struct NearbyObservationStationTests {
     async throws
   {
     let transport = MockTransport()
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
     let link = try #require(URL(string: "https://example.com/gridpoints/EWX/156,91/stations"))
     point.properties.observationStations = link
     let body = try JSONEncoder().encode(point)
@@ -205,7 +205,7 @@ struct NearbyObservationStationTests {
     }
     #expect(actual == location)
     #expect(stored == .observationStations(near: location))
-    #expect(stored != .observationStations(query: try ObservationStationQuery()))
+    #expect(stored != .observationStations(matching: try ObservationStationQuery()))
   }
 
   private func callSites(_ client: NWSClient, location: WeatherCoordinate) async throws {

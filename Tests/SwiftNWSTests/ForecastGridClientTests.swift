@@ -121,7 +121,7 @@ struct ForecastGridClientTests {
   @Test("A disallowed grid data link is not followed", arguments: [false, true])
   func aDisallowedGridDataLinkIsNotFollowed(useRequest: Bool) async throws {
     let transport = MockTransport()
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
     let link = try #require(URL(string: "https://example.com/gridpoints/EWX/156,91"))
     point.properties.forecastGridData = link
     let body = try JSONEncoder().encode(point)
@@ -245,7 +245,7 @@ struct ForecastGridClientTests {
     #expect(transport.requests.isEmpty)
   }
 
-  private func callSites(_ client: NWSClient, location: WeatherCoordinate, point: Point)
+  private func callSites(_ client: NWSClient, location: WeatherCoordinate, point: WeatherPoint)
     async throws
   {
     let _: ForecastGrid = try await client.forecastGrid(for: location)
@@ -293,8 +293,8 @@ struct ForecastGridClientTests {
     return transport
   }
 
-  private func recordedPoint() throws -> Point {
-    try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+  private func recordedPoint() throws -> WeatherPoint {
+    try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data()).properties
   }
 }
 

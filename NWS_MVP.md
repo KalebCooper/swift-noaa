@@ -219,9 +219,13 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
 - **Out of scope, stated as such:** `/radar`, `/aviation` (SIGMETs, center weather advisories,
   TAFs), `/icons`, and `/thumbnails`, unless a consumer need appears before 1.0.0. `/radio` is out
   of scope for the reason stated in the Points bullet above, not conditionally.
-- **Feature flags:** every flag the spec lists is modeled for every endpoint that accepts it.
+- **Feature flags:** built. The spec lists two flags, `forecast_temperature_qv` and
+  `forecast_wind_speed_qv`, declared on the forecast and hourly forecast routes only;
+  `ForecastFeatureFlag` models both, and tests pin that list and that no other endpoint sends a
+  flag. A quantity flag answers in WMO SI units whatever `units` says, the service ignores unknown
+  flags, and flags follow the service's adoption windows; README and DocC state all three.
 - **Resilience:** built. Both configuration-based client initializers take an opt-in retry policy,
-  defaulting to none, and the `Clock` that times its waits. `RetryPolicy.transientServiceFailures`
+  defaulting to none, and the `Clock` that times its waits. `RetryPolicy.nwsTransientFailures`
   makes at most three attempts per HTTP request, waiting one second and then five, over timeouts and
   `429`, `500`, `502`, `503`, and `504`; a numeric `Retry-After` replaces the wait. No new error
   case: the last attempt's failure is thrown as it would have been. HTTP caching is stated: the
@@ -235,8 +239,11 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   and schemas with the live OpenAPI spec and lists what changed.
 - **Test support for consumers:** a `SwiftNWSTesting` product with a client over a mock transport
   and the recorded fixtures, so an app can test its weather code without the network.
-- **API review:** every public name checked against the Swift API Design Guidelines, and no public
-  type named after an Apple module a consumer is likely to import alongside it.
+- **API review:** built. Every public name checked against the Swift API Design Guidelines, and no
+  public type named after an Apple module a consumer is likely to import alongside it. The pass
+  renamed `Point` to `WeatherPoint` and `NWSFeatureFlag` to `ForecastFeatureFlag`, gave the
+  observation and station queries the `matching:` label every other list uses, moved the zone
+  lookup's defaulted `effective:` last, and scoped the retry policy as `nwsTransientFailures`.
 - **Documentation:** DocC articles on getting started, the `User-Agent` requirement, points and
   grids, units, feature flags, errors, and Linux and Android setup.
 - **Platforms:** CI building on macOS, tvOS, watchOS, and visionOS as well as testing on iOS,

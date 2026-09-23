@@ -12,10 +12,10 @@ import Foundation
 /// rarely changes.
 ///
 /// ```swift
-/// let point = try JSONDecoder().decode(Feature<Point>.self, from: body).properties
+/// let point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: body).properties
 /// print(point.gridId, point.gridX, point.gridY)  // "EWX 156 91"
 /// ```
-public struct Point: Codable, Hashable, Sendable {
+public struct WeatherPoint: Codable, Hashable, Sendable {
   /// The city and state nearest a point.
   public struct RelativeLocation: Codable, Hashable, Sendable {
     /// The name of the nearest city.

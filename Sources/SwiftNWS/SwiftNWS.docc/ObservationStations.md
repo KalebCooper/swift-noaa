@@ -80,10 +80,10 @@ import SwiftNWSModels
 
 let weather = NWSClient(userAgent: "(example.com, contact@example.com)")
 let query = try ObservationStationQuery(limit: 100, states: [.texas])
-let request = WeatherRequest.observationStations(query: query)
+let request = WeatherRequest.observationStations(matching: query)
 
 let firstPage = try await weather.value(for: request)
-let direct = try await weather.send(.observationStations(query: query))
+let direct = try await weather.send(.observationStations(matching: query))
 
 for try await station in weather.observationStations(for: request) {
   print(station.id as Any, station.properties.stationIdentifier)
@@ -91,9 +91,9 @@ for try await station in weather.observationStations(for: request) {
 }
 ```
 
-``NWSClient/observationStations(query:)`` returns ``ObservationStationSequence``, whose elements
+``NWSClient/observationStations(matching:)`` returns ``ObservationStationSequence``, whose elements
 are `Feature<ObservationStation>`, preserving the modeled GeoJSON metadata. For complete pages,
-use ``NWSClient/observationStationPages(query:)``. Both delegate to their reusable-request
+use ``NWSClient/observationStationPages(matching:)``. Both delegate to their reusable-request
 counterparts. Single-page `value(for:)` and `send` return one collection.
 
 This is the package's canonical collection implementation. See <doc:PaginatingCollections> for the

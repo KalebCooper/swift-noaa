@@ -61,7 +61,8 @@ struct ForecastResponseTests {
 
   @Test("Forecast links preserve queries and replace units")
   func forecastLinksPreserveQueriesAndReplaceUnits() throws {
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
+      .properties
     point.forecast = try #require(
       URL(string: "https://API.WEATHER.GOV:443/gridpoints/NEW/1,2/forecast?x=a%2Fb&units=us"))
     let endpoint = try #require(

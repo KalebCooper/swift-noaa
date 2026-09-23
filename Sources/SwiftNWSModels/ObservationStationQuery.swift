@@ -9,7 +9,7 @@ import Foundation
 ///
 /// ```swift
 /// let query = try ObservationStationQuery(identifiers: ["KATT"], limit: 100, states: [.texas])
-/// let endpoint = Endpoint.observationStations(query: query)
+/// let endpoint = Endpoint.observationStations(matching: query)
 /// ```
 public struct ObservationStationQuery: Hashable, Sendable {
   /// Why a station query could not be created.

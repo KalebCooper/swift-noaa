@@ -51,7 +51,7 @@ struct NWSClientTests {
   @Test("A disallowed station-list link is refused before it is sent", arguments: [false, true])
   func aDisallowedStationListLinkIsRefusedBeforeItIsSent(useRequest: Bool) async throws {
     let transport = MockTransport()
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
     let link = try #require(URL(string: "https://example.com/stations"))
     point.properties.observationStations = link
     let body = try JSONEncoder().encode(point)

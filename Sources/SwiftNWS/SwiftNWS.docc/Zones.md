@@ -20,7 +20,7 @@ if let endpoint = Endpoint.zone(identifier: "TXZ192", type: .forecast) {
 }
 ```
 
-`zone(effective:identifier:type:)` sends one request to `/zones/{type}/{zoneId}` and returns the
+`zone(identifier:type:effective:)` sends one request to `/zones/{type}/{zoneId}` and returns the
 feature's `WeatherZone` properties: the identifier, name, reported type, responsible office
 fields, effective and expiration dates, observation station links, radar station, state, and time
 zones, each present only when the service sends it. The direct endpoint keeps the GeoJSON envelope,
@@ -38,7 +38,7 @@ An effective instant selects the definition of the zone in effect at that instan
 ISO 8601 in UTC at whole-second precision:
 
 ```swift
-let asOf = try await weather.zone(effective: lastYear, identifier: "TXZ192", type: .forecast)
+let asOf = try await weather.zone(identifier: "TXZ192", type: .forecast, effective: lastYear)
 ```
 
 An empty type, or one that cannot be a single path segment, throws ``NWSError/invalidZoneType(_:)``
@@ -183,7 +183,7 @@ Each operation has the same spelling at all three levels:
 
 | Operation | Everyday method | Reusable request | Endpoint |
 |---|---|---|---|
-| One zone | `zone(effective:identifier:type:)` | `WeatherRequest.zone(effective:identifier:type:)` | `Endpoint.zone(effective:identifier:type:)` |
+| One zone | `zone(identifier:type:effective:)` | `WeatherRequest.zone(identifier:type:effective:)` | `Endpoint.zone(identifier:type:effective:)` |
 | One type's zones | `zones(matching:ofType:)` | `WeatherRequest.zones(matching:ofType:)` | `Endpoint.zones(matching:ofType:)` |
 | Every type's zones | `zones(matching:types:)` | `WeatherRequest.zones(matching:types:)` | `Endpoint.zones(matching:types:)` |
 | A zone's forecast | `zoneForecast(identifier:type:)` | `WeatherRequest.zoneForecast(identifier:type:)` | `Endpoint.zoneForecast(identifier:type:)` |
@@ -195,7 +195,7 @@ request executes, not when it is created, so a stored request is a plain value i
 endpoint factories differ: `Endpoint.zones(matching:types:)` is not failable because its path has no
 type segment, and `Endpoint.observations(inForecastZone:)` is not failable because its query
 validated the zone identifier at construction, while `Endpoint.zones(matching:ofType:)`,
-`Endpoint.zone(effective:identifier:type:)`, `Endpoint.zoneForecast(identifier:type:)`, and
+`Endpoint.zone(identifier:type:effective:)`, `Endpoint.zoneForecast(identifier:type:)`, and
 `Endpoint.observationStations(inForecastZone:)` return nil for a type or identifier that cannot be
 one path segment.
 

@@ -49,9 +49,9 @@ struct EndpointPathTests {
   func builtInQueryFactoriesEncodeArbitraryValuesWithoutChangingThePath() throws {
     let cursor = "../\\ #%\n雪"
     let station = Endpoint.observationStations(
-      query: try ObservationStationQuery(cursor: cursor, identifiers: [cursor]))
+      matching: try ObservationStationQuery(cursor: cursor, identifiers: [cursor]))
     let observations = Endpoint.observations(
-      query: try ObservationQuery(cursor: cursor, stationIdentifier: "A B"))
+      matching: try ObservationQuery(cursor: cursor, stationIdentifier: "A B"))
     let alerts = Endpoint.alerts(matching: try AlertQuery(cursor: cursor))
     let active = Endpoint.activeAlerts(matching: .init(event: [cursor]))
     for path in [station.path, observations.path, alerts.path, active.path] {
@@ -62,7 +62,8 @@ struct EndpointPathTests {
 
   @Test("Forecast reconstruction preserves opaque query fields and safely encodes units")
   func forecastReconstructionPreservesOpaqueQueryFieldsAndSafelyEncodesUnits() throws {
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
+      .properties
     let path = "/gridpoints/EWX/156,91/forecast?cursor=a%2fb%3D&id%5B%5D=A&id%5B%5D=B&%75nits=us"
     point.forecast = try #require(
       URL(string: "https://api.weather.gov" + path, encodingInvalidCharacters: false))

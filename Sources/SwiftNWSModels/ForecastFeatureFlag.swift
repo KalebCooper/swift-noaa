@@ -1,8 +1,17 @@
-/// An extensible NWS Feature-Flags header value.
+/// An extensible value for the forecast routes' Feature-Flags header.
 ///
-/// Known values match the live forecast schema. Consumer-defined values remain available in
+/// The specification declares the header on the forecast and hourly forecast routes only, and other
+/// routes ignore it. The statics match the two values the specification lists. A quantity flag
+/// answers its field as a ``QuantitativeValue`` in WMO SI units whatever ``ForecastOptions/units``
+/// says; the units option still governs every unflagged field. The service ignores a flag it does
+/// not know rather than rejecting the request, and it retires flags after an announced adoption
+/// window, when the flagged shape becomes the default. Consumer-defined values remain available in
 /// ``rawValue`` for service additions the package does not know yet.
-public struct NWSFeatureFlag: Hashable, RawRepresentable, Sendable {
+///
+/// ```swift
+/// let options = ForecastOptions(featureFlags: [.temperatureQuantity])
+/// ```
+public struct ForecastFeatureFlag: Hashable, RawRepresentable, Sendable {
   /// Requests forecast temperatures as quantitative values.
   public static let temperatureQuantity = Self(rawValue: "forecast_temperature_qv")
 

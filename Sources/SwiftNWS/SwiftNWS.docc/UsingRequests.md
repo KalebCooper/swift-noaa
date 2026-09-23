@@ -81,13 +81,13 @@ unless the client was created with a retry policy; see
 
 The service documents a rate limit whose answer may be retried once it clears, typically within five
 seconds, and its change log records `500` and `503` answers from forecast routes. A client sends
-each request once by default. Pass `RetryPolicy.transientServiceFailures` to send a request again
+each request once by default. Pass `RetryPolicy.nwsTransientFailures` to send a request again
 when the transport times out or the service answers `429`, `500`, `502`, `503`, or `504`:
 
 ```swift
 let weather = NWSClient(
   configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)"),
-  retryPolicy: .transientServiceFailures
+  retryPolicy: .nwsTransientFailures
 )
 ```
 

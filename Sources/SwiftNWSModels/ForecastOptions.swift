@@ -5,7 +5,7 @@
 /// ```
 public struct ForecastOptions: Hashable, Sendable {
   /// The explicitly requested representation flags.
-  public var featureFlags: Set<NWSFeatureFlag>
+  public var featureFlags: Set<ForecastFeatureFlag>
 
   /// The requested unit system.
   public var units: ForecastUnits
@@ -14,7 +14,7 @@ public struct ForecastOptions: Hashable, Sendable {
   /// - Parameters:
   ///   - featureFlags: Opt-in representations; empty preserves the service default.
   ///   - units: The requested unit system, defaulting to US customary.
-  public init(featureFlags: Set<NWSFeatureFlag> = [], units: ForecastUnits = .us) {
+  public init(featureFlags: Set<ForecastFeatureFlag> = [], units: ForecastUnits = .us) {
     self.featureFlags = featureFlags
     self.units = units
   }
@@ -25,10 +25,10 @@ public struct ForecastOptions: Hashable, Sendable {
   ///   - units: The requested unit system, defaulting to US customary.
   public init<Flag>(featureFlags: Set<Flag>, units: ForecastUnits = .us)
   where Flag: Hashable & RawRepresentable, Flag.RawValue == String {
-    var converted: Set<NWSFeatureFlag> = []
+    var converted: Set<ForecastFeatureFlag> = []
     converted.reserveCapacity(featureFlags.count)
     for featureFlag in featureFlags {
-      converted.insert(NWSFeatureFlag(featureFlag))
+      converted.insert(ForecastFeatureFlag(featureFlag))
     }
     self.init(featureFlags: converted, units: units)
   }
@@ -42,10 +42,10 @@ public struct ForecastOptions: Hashable, Sendable {
     Flag: Hashable & RawRepresentable, Flag.RawValue == String,
     Units: RawRepresentable, Units.RawValue == String
   {
-    var converted: Set<NWSFeatureFlag> = []
+    var converted: Set<ForecastFeatureFlag> = []
     converted.reserveCapacity(featureFlags.count)
     for featureFlag in featureFlags {
-      converted.insert(NWSFeatureFlag(featureFlag))
+      converted.insert(ForecastFeatureFlag(featureFlag))
     }
     self.init(featureFlags: converted, units: ForecastUnits(units))
   }
@@ -54,7 +54,7 @@ public struct ForecastOptions: Hashable, Sendable {
   /// - Parameters:
   ///   - featureFlags: Opt-in representations; empty preserves the service default.
   ///   - units: A String-backed unit system.
-  public init<Units>(featureFlags: Set<NWSFeatureFlag> = [], units: Units)
+  public init<Units>(featureFlags: Set<ForecastFeatureFlag> = [], units: Units)
   where Units: RawRepresentable, Units.RawValue == String {
     self.init(featureFlags: featureFlags, units: ForecastUnits(units))
   }

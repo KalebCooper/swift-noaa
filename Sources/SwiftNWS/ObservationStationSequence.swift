@@ -6,7 +6,7 @@ import SwiftNWSModels
 ///
 /// ```swift
 /// let query = try ObservationStationQuery(states: [.texas])
-/// for try await station in client.observationStations(query: query) {
+/// for try await station in client.observationStations(matching: query) {
 ///   print(station.properties.stationIdentifier)
 ///   break
 /// }

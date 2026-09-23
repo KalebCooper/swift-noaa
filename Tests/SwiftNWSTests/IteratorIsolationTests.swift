@@ -39,7 +39,7 @@ struct IteratorIsolationTests {
     let body = try Fixture.observationStations.data()
     transport.enqueue(.success(.init(Response(body: body, status: .ok))))
     let client = NWSClient(configuration: .init(userAgent: "tests"), transport: transport)
-    var iterator = client.observationStations(query: try ObservationStationQuery())
+    var iterator = client.observationStations(matching: try ObservationStationQuery())
       .makeAsyncIterator()
     #expect(try await iterator.next(isolation: MainActor.shared) != nil)
     #expect(try await iterator.next(isolation: MainActor.shared) != nil)
@@ -71,15 +71,16 @@ struct IteratorIsolationTests {
     let observations = try prepare(
       transport, fixture: .observationHistory, as: WeatherObservation.self)
     let observationQuery = try ObservationQuery(stationIdentifier: "KATT")
-    try await check(client.observationPages(query: observationQuery), count: 1, isolation: actor)
+    try await check(client.observationPages(matching: observationQuery), count: 1, isolation: actor)
     try await check(
-      client.observations(query: observationQuery), count: observations, isolation: actor)
+      client.observations(matching: observationQuery), count: observations, isolation: actor)
     let stations = try prepare(
       transport, fixture: .observationStations, as: ObservationStation.self)
     let stationQuery = try ObservationStationQuery()
-    try await check(client.observationStationPages(query: stationQuery), count: 1, isolation: actor)
     try await check(
-      client.observationStations(query: stationQuery), count: stations, isolation: actor)
+      client.observationStationPages(matching: stationQuery), count: 1, isolation: actor)
+    try await check(
+      client.observationStations(matching: stationQuery), count: stations, isolation: actor)
     #expect(transport.requests.count == 16)
   }
 

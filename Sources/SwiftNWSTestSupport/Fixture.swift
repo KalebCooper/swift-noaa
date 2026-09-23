@@ -6,7 +6,7 @@ import Foundation
 /// decodes exactly what the service sent.
 ///
 /// ```swift
-/// let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+/// let point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
 /// ```
 package enum Fixture: String, CaseIterable, Sendable {
   /// `/alerts/active/count`, requested as `application/ld+json`, with every breakdown populated.

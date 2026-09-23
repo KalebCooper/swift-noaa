@@ -23,7 +23,7 @@ final class ConditionsModel {
   private let client = NWSClient(
     configuration: NWSConfiguration(
       userAgent: "(SwiftNWSDemo, https://github.com/KalebCooper/swift-noaa)"),
-    retryPolicy: .transientServiceFailures
+    retryPolicy: .nwsTransientFailures
   )
 
   /// Geocodes an address with MapKit, since the National Weather Service API has no geocoding.

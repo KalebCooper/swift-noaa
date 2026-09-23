@@ -72,7 +72,7 @@ document sends the endpoint's `path` with its own transport and `Accept` header;
 carries its own `.atom` continuation link, which this package does not follow.
 
 Retries are opt-in. A client sends each request once unless it is created with a retry policy;
-`RetryPolicy.transientServiceFailures` sends a request again after a timeout or a `429`, `500`,
+`RetryPolicy.nwsTransientFailures` sends a request again after a timeout or a `429`, `500`,
 `502`, `503`, or `504` answer, at most three attempts per HTTP request, waiting one second and then
 five on an injected clock. The service sends `Cache-Control` with a `max-age` from five seconds to a
 day, and weak ETags. The SDK performs no HTTP caching beyond the point cache, sends no conditional
@@ -146,6 +146,17 @@ filtering is implicit. Direct `Endpoint.forecast(for:options:)` and
 `Endpoint.hourlyForecast(for:options:)` factories accept a decoded point. Forecast units,
 feature flags, temperature units and trends, wind directions, and measurement quality flags are
 typed open values: known schema codes have named static members, while `rawValue` retains additions.
+
+The specification declares the Feature-Flags header on the forecast and hourly forecast routes
+only, and other routes ignore it. It lists two flags, both modeled by `ForecastFeatureFlag`:
+`temperatureQuantity` (`forecast_temperature_qv`) and `windSpeedQuantity`
+(`forecast_wind_speed_qv`). A quantity flag answers its field in WMO SI units, such as
+`wmoUnit:degC` and `wmoUnit:km_h-1`, whatever `units` says; `units` still governs every unflagged
+field. The service ignores a flag it does not know rather than rejecting the request, so a
+misspelled flag changes nothing and raises no error. Flags follow the service's announced adoption
+windows: once a flagged shape becomes the default, the flag stops being needed without this package
+changing, because `ForecastTemperature` and `ForecastWind` decode both the scalar and the quantity
+shape.
 
 ### Forecast grids
 
@@ -301,14 +312,14 @@ requests. `Endpoint.alerts(matching:)` describes one page for another networking
 
 ```swift
 let query = try ObservationStationQuery(limit: 100, states: [.texas])
-let request = WeatherRequest.observationStations(query: query)
+let request = WeatherRequest.observationStations(matching: query)
 
 // Read a single page at either access level.
 let page = try await weather.value(for: request)
-let direct = try await weather.send(.observationStations(query: query))
+let direct = try await weather.send(.observationStations(matching: query))
 
 // Or follow pages on demand, retaining each station's GeoJSON metadata.
-for try await station in weather.observationStations(query: query) {
+for try await station in weather.observationStations(matching: query) {
   print(station.id as Any, station.properties.stationIdentifier)
   break
 }
@@ -388,7 +399,7 @@ policy to a configuration-based initializer:
 ```swift
 let weather = NWSClient(
   configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)"),
-  retryPolicy: .transientServiceFailures
+  retryPolicy: .nwsTransientFailures
 )
 ```
 
@@ -465,12 +476,12 @@ models. Arbitrary custom multi-step workflows belong in your own async functions
 
 ```swift
 let query = try ObservationQuery(limit: 24, start: start, stationIdentifier: "KATT")
-let firstPage = try await weather.observations(query: query)
-for try await observation in weather.observations(query: query) {
+let firstPage = try await weather.observations(matching: query)
+for try await observation in weather.observations(matching: query) {
   print(observation.properties.timestamp, observation.properties.temperature?.value ?? .nan)
   break
 }
-for try await page in weather.observationPages(for: .observations(query: query)) {
+for try await page in weather.observationPages(for: .observations(matching: query)) {
   print(page.features.count)
   break
 }
@@ -483,7 +494,7 @@ which observations a window matches and how it orders them; recorded responses l
 first, but that is not a documented guarantee. `ObservationPageSequence` and `ObservationSequence`
 follow the same lazy, single-traversal contract as the station sequences, and each feature's
 properties are the same `WeatherObservation` that `latestObservation(from:)` returns.
-`Endpoint.observations(query:)` describes one page for another networking stack.
+`Endpoint.observations(matching:)` describes one page for another networking stack.
 
 To read one observation again, pass its exact timestamp:
 
@@ -512,15 +523,15 @@ let forecastZones = try await weather.zones(matching: query, ofType: .forecast)
 let countiesAndFireZones = try await weather.zones(matching: query, types: [.county, .fire])
 ```
 
-`zone(effective:identifier:type:)` reads `/zones/{type}/{zoneId}` and returns the feature's
+`zone(identifier:type:effective:)` reads `/zones/{type}/{zoneId}` and returns the feature's
 `WeatherZone` properties: the identifier, name, reported type, office fields, effective and
 expiration dates, observation station links, radar station, state, and time zones, each present only
 when the service sends it. The type in the route and the type a zone reports are different values.
 The `forecast` route answers zones reported as `public`, the `marine` route answers `coastal` and
 `offshore` zones, and the URL the service returns does not mirror the route asked on. An effective
 instant selects the definition in effect at that instant and is sent in ISO 8601 UTC at whole-second
-precision. `WeatherRequest.zone(effective:identifier:type:)` returns the same properties, and
-`Endpoint.zone(effective:identifier:type:)` keeps the GeoJSON envelope, so a zone's polygon stays
+precision. `WeatherRequest.zone(identifier:type:effective:)` returns the same properties, and
+`Endpoint.zone(identifier:type:effective:)` keeps the GeoJSON envelope, so a zone's polygon stays
 available in `Feature.geometry`. An empty or unusable type throws `NWSError.invalidZoneType` and an
 unusable identifier throws `NWSError.invalidZoneIdentifier`, both before any request.
 
@@ -796,7 +807,7 @@ package itself closed in Xcode, since Xcode lets a local package be open in only
 
 | Product | What it is | Depends on |
 |---|---|---|
-| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `AlertQuery`, `ObservationQuery`, `ObservationStationQuery`, `WeatherRequest`, `Endpoint`, and portable response models: `Point`, `ObservationStation`, `WeatherObservation` with its `WeatherPhenomenon` and `CloudLayer` values, `WeatherForecast`, `WeatherAlert`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
+| `SwiftNWSModels` | `WeatherCoordinate`, `ObservationSource`, `AlertQuery`, `ObservationQuery`, `ObservationStationQuery`, `WeatherRequest`, `Endpoint`, and portable response models: `WeatherPoint`, `ObservationStation`, `WeatherObservation` with its `WeatherPhenomenon` and `CloudLayer` values, `WeatherForecast`, `WeatherAlert`, `QuantitativeValue`, `ProblemDetail`, and the GeoJSON `Feature` and `FeatureCollection` wrappers. Usable on any data layer. | Nothing. |
 | `SwiftNWS` | `NWSClient`, which sends endpoints and follows the links between responses, with `NWSConfiguration` and one typed error, `NWSError`. It re-exports swifty-networking's `HTTPCore`, so `Transport` and `TransportError` need no import of their own. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
 
 A consumer with its own networking stack adds only `SwiftNWSModels` and fetches no dependency at all.

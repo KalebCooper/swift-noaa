@@ -40,14 +40,16 @@ struct EndpointTests {
 
   @Test("A grid data link from another origin is refused")
   func aGridDataLinkFromAnotherOriginIsRefused() throws {
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
+      .properties
     point.forecastGridData = try #require(URL(string: "https://example.com/gridpoints/EWX/156,91"))
     #expect(Endpoint.forecastGrid(for: point) == nil)
   }
 
   @Test("A grid data link keeps its encoded query")
   func aGridDataLinkKeepsItsEncodedQuery() throws {
-    var point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data()).properties
+    var point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
+      .properties
     point.forecastGridData = try #require(
       URL(string: "https://api.weather.gov/gridpoints/EWX/156,91?future=a%2Bb"))
     #expect(Endpoint.forecastGrid(for: point)?.path == "/gridpoints/EWX/156,91?future=a%2Bb")
@@ -55,7 +57,7 @@ struct EndpointTests {
 
   @Test("The grid endpoint follows the point's grid data link")
   func theGridEndpointFollowsThePointsGridDataLink() throws {
-    let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    let point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
     let endpoint = try #require(Endpoint.forecastGrid(for: point.properties))
     #expect(endpoint.path == "/gridpoints/EWX/156,91")
     #expect(endpoint.accept == .geoJSON)
@@ -71,7 +73,7 @@ struct EndpointTests {
 
   @Test("observationStations(near:) follows the point's link")
   func observationStationsFollowsThePointsLink() throws {
-    let point = try JSONDecoder().decode(Feature<Point>.self, from: Fixture.point.data())
+    let point = try JSONDecoder().decode(Feature<WeatherPoint>.self, from: Fixture.point.data())
 
     #expect(
       Endpoint.observationStations(near: point.properties)?.path
@@ -121,7 +123,7 @@ struct EndpointTests {
     // 2026-09-20T00:00:00.5Z, sent with whole-second precision.
     let effective = Date(timeIntervalSince1970: 1_789_862_400.5)
     #expect(
-      Endpoint.zone(effective: effective, identifier: "TXZ192", type: .county)?.path
+      Endpoint.zone(identifier: "TXZ192", type: .county, effective: effective)?.path
         == "/zones/county/TXZ192?effective=2026-09-20T00:00:00Z")
   }
 

@@ -24,7 +24,7 @@ public struct NWSClient: Sendable {
   /// Creates a client that sends through a swifty-networking transport.
   ///
   /// The client sends each request once unless you pass a retry policy. With
-  /// `RetryPolicy.transientServiceFailures`, a request the service answers with a
+  /// `RetryPolicy.nwsTransientFailures`, a request the service answers with a
   /// transient failure is sent again after a wait on `clock`. Each step of a multi-request lookup,
   /// each redirect hop, and each page of a sequence has its own attempt budget. See
   /// <doc:UsingRequests#Retrying-transient-failures>.
@@ -32,7 +32,7 @@ public struct NWSClient: Sendable {
   /// ```swift
   /// let client = NWSClient(
   ///   configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)"),
-  ///   retryPolicy: .transientServiceFailures,
+  ///   retryPolicy: .nwsTransientFailures,
   ///   transport: transport
   /// )
   /// ```
@@ -368,7 +368,7 @@ public struct NWSClient: Sendable {
       ObservationPageSequence(client: self, endpoint: endpoint, followsLinks: false)
     case .observations(let query):
       ObservationPageSequence(
-        client: self, endpoint: .observations(query: query), followsLinks: true)
+        client: self, endpoint: .observations(matching: query), followsLinks: true)
     default:
       preconditionFailure(
         "Only endpoint and observation-query resolutions can describe observation collections.")
@@ -378,8 +378,8 @@ public struct NWSClient: Sendable {
   /// Creates a lazy page traversal for an observation-history query.
   /// - Parameter query: The validated station, window, page size, and initial cursor.
   /// - Returns: Observation pages in service order.
-  public func observationPages(query: ObservationQuery) -> ObservationPageSequence {
-    observationPages(for: .observations(query: query))
+  public func observationPages(matching query: ObservationQuery) -> ObservationPageSequence {
+    observationPages(for: .observations(matching: query))
   }
 
   /// Retrieves the metadata for one observation station.
@@ -420,7 +420,7 @@ public struct NWSClient: Sendable {
       ObservationStationPageSequence(client: self, nearby: location)
     case .observationStations(let query):
       ObservationStationPageSequence(
-        client: self, endpoint: .observationStations(query: query), followsLinks: true)
+        client: self, endpoint: .observationStations(matching: query), followsLinks: true)
     default:
       preconditionFailure(
         "Only endpoint, forecast-zone, nearby-station, and station-query resolutions describe station collections."
@@ -431,10 +431,10 @@ public struct NWSClient: Sendable {
   /// Creates a lazy page traversal for a station query.
   /// - Parameter query: The validated filters and initial cursor.
   /// - Returns: Station pages in service order.
-  public func observationStationPages(query: ObservationStationQuery)
+  public func observationStationPages(matching query: ObservationStationQuery)
     -> ObservationStationPageSequence
   {
-    observationStationPages(for: .observationStations(query: query))
+    observationStationPages(for: .observationStations(matching: query))
   }
 
   /// Creates a lazy feature traversal for a reusable station request.
@@ -497,8 +497,10 @@ public struct NWSClient: Sendable {
   /// Creates a lazy feature traversal for a station query.
   /// - Parameter query: The validated filters and initial cursor.
   /// - Returns: Station features in service order.
-  public func observationStations(query: ObservationStationQuery) -> ObservationStationSequence {
-    observationStations(for: .observationStations(query: query))
+  public func observationStations(matching query: ObservationStationQuery)
+    -> ObservationStationSequence
+  {
+    observationStations(for: .observationStations(matching: query))
   }
 
   /// Creates a lazy feature traversal for a reusable observation-history request.
@@ -533,18 +535,18 @@ public struct NWSClient: Sendable {
   /// Creates a lazy feature traversal for an observation-history query.
   /// - Parameter query: The validated station, window, page size, and initial cursor.
   /// - Returns: Observation features in service order. Use the async overload to retrieve one page.
-  public func observations(query: ObservationQuery) -> ObservationSequence {
-    observations(for: .observations(query: query))
+  public func observations(matching query: ObservationQuery) -> ObservationSequence {
+    observations(for: .observations(matching: query))
   }
 
   /// Retrieves one page of a station's observation history.
   /// - Parameter query: The validated station, window, page size, and initial cursor.
   /// - Returns: The returned GeoJSON collection in service order; no automatic pagination.
   /// - Throws: Any ``NWSError`` from ``value(for:)``.
-  public func observations(query: ObservationQuery) async throws(NWSError)
+  public func observations(matching query: ObservationQuery) async throws(NWSError)
     -> FeatureCollection<WeatherObservation>
   {
-    try await value(for: .observations(query: query))
+    try await value(for: .observations(matching: query))
   }
 
   /// Retrieves one forecast office's metadata.
@@ -1006,10 +1008,10 @@ public struct NWSClient: Sendable {
         endpoint.decoding(Feature<Value>.self)
       ).properties
     case .observationStations(let query):
-      let endpoint = Endpoint.observationStations(query: query)
+      let endpoint = Endpoint.observationStations(matching: query)
       return try await send(endpoint.decoding(Value.self))
     case .observations(let query):
-      let endpoint = Endpoint.observations(query: query)
+      let endpoint = Endpoint.observations(matching: query)
       return try await send(endpoint.decoding(Value.self))
     case .office(let identifier):
       guard let endpoint = Endpoint.office(identifier: identifier) else {
@@ -1071,11 +1073,11 @@ public struct NWSClient: Sendable {
       // Only WeatherRequest<ProductTypes> can be created with this resolution. The route takes no
       // page size or cursor, so nothing is paged.
       return try await send(endpoint.decoding(Value.self))
-    case .zone(let effective, let identifier, let type):
+    case .zone(let identifier, let type, let effective):
       guard Endpoint<Feature<Value>>.zoneTypeSegment(type) != nil else {
         throw .invalidZoneType(type.rawValue)
       }
-      guard let endpoint = Endpoint.zone(effective: effective, identifier: identifier, type: type)
+      guard let endpoint = Endpoint.zone(identifier: identifier, type: type, effective: effective)
       else { throw .invalidZoneIdentifier(identifier) }
       // Only WeatherRequest<WeatherZone> can be created with this resolution.
       return try await send(
@@ -1102,10 +1104,11 @@ public struct NWSClient: Sendable {
     }
   }
 
+  // Parameters are not alphabetical: the defaulted instant comes last.
   /// Retrieves one zone by type and identifier.
   ///
   /// Sends one request for `/zones/{type}/{zoneId}` and returns the feature's properties. The
-  /// zone's polygon is available by sending `Endpoint.zone(effective:identifier:type:)` directly.
+  /// zone's polygon is available by sending `Endpoint.zone(identifier:type:effective:)` directly.
   ///
   /// ```swift
   /// let zone = try await weather.zone(identifier: "TXZ192", type: .forecast)
@@ -1113,30 +1116,31 @@ public struct NWSClient: Sendable {
   /// ```
   ///
   /// - Parameters:
-  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   ///   - identifier: The zone's identifier, such as `TXZ192`.
   ///   - type: The route's zone type, such as `ZoneType.forecast` or `ZoneType.county`.
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   /// - Returns: The zone's properties.
   /// - Throws: ``NWSError/invalidZoneType(_:)`` for an empty type or invalid encoded path,
   ///   ``NWSError/invalidZoneIdentifier(_:)`` for an empty identifier or invalid encoded path,
   ///   or any error from ``value(for:)``.
-  public func zone(effective: Date? = nil, identifier: String, type: ZoneType)
+  public func zone(identifier: String, type: ZoneType, effective: Date? = nil)
     async throws(NWSError) -> WeatherZone
   {
-    try await value(for: .zone(effective: effective, identifier: identifier, type: type))
+    try await value(for: .zone(identifier: identifier, type: type, effective: effective))
   }
 
+  // Parameters are not alphabetical: the defaulted instant comes last.
   /// Retrieves one zone using a consumer-defined zone type enum.
   /// - Parameters:
-  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   ///   - identifier: The zone's identifier.
   ///   - type: A String-backed zone type.
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   /// - Returns: The zone's properties.
-  /// - Throws: The errors of ``zone(effective:identifier:type:)-(_,_,ZoneType)``.
-  public func zone<Kind>(effective: Date? = nil, identifier: String, type: Kind)
+  /// - Throws: The errors of ``zone(identifier:type:effective:)-(_,ZoneType,_)``.
+  public func zone<Kind>(identifier: String, type: Kind, effective: Date? = nil)
     async throws(NWSError) -> WeatherZone
   where Kind: RawRepresentable, Kind.RawValue == String {
-    try await zone(effective: effective, identifier: identifier, type: ZoneType(type))
+    try await zone(identifier: identifier, type: ZoneType(type), effective: effective)
   }
 
   /// Retrieves a zone's text forecast.
@@ -1324,7 +1328,7 @@ public struct NWSClient: Sendable {
     return next
   }
 
-  private func point(for location: WeatherCoordinate) async throws(NWSError) -> Point {
+  private func point(for location: WeatherCoordinate) async throws(NWSError) -> WeatherPoint {
     guard !Task.isCancelled else { throw .transport(.cancelled) }
     let cached = pointCache?.lookup(location)
     if let point = cached?.point { return point }

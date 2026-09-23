@@ -22,7 +22,9 @@ public struct Endpoint<Response>: Hashable, Sendable {
   public var accept: MediaType
 
   /// The comma-separated values to send in the Feature-Flags header.
-  public var featureFlags: [NWSFeatureFlag]
+  ///
+  /// Only the forecast and hourly forecast routes act on the header; other routes ignore it.
+  public var featureFlags: [ForecastFeatureFlag]
 
   /// The validated encoded path and optional query, relative to `https://api.weather.gov`.
   /// The exact spelling is retained and cannot be changed after initialization.
@@ -44,7 +46,7 @@ public struct Endpoint<Response>: Hashable, Sendable {
   ///   - accept: The media type to ask for; defaults to ``MediaType/geoJSON``.
   ///   - featureFlags: Explicit response representations to request.
   ///   - link: An absolute URL from a response.
-  public init?(accept: MediaType = .geoJSON, featureFlags: [NWSFeatureFlag] = [], link: URL) {
+  public init?(accept: MediaType = .geoJSON, featureFlags: [ForecastFeatureFlag] = [], link: URL) {
     guard let components = URLComponents(url: link, resolvingAgainstBaseURL: false),
       components.scheme?.lowercased() == "https",
       components.host?.lowercased() == "api.weather.gov",
@@ -65,10 +67,10 @@ public struct Endpoint<Response>: Hashable, Sendable {
   ///   - link: An absolute URL from a response.
   public init?<Flag>(accept: MediaType = .geoJSON, featureFlags: [Flag], link: URL)
   where Flag: RawRepresentable, Flag.RawValue == String {
-    var converted: [NWSFeatureFlag] = []
+    var converted: [ForecastFeatureFlag] = []
     converted.reserveCapacity(featureFlags.count)
     for featureFlag in featureFlags {
-      converted.append(NWSFeatureFlag(featureFlag))
+      converted.append(ForecastFeatureFlag(featureFlag))
     }
     self.init(accept: accept, featureFlags: converted, link: link)
   }
@@ -86,7 +88,7 @@ public struct Endpoint<Response>: Hashable, Sendable {
   ///   - featureFlags: Explicit response representations to request.
   ///   - path: The path relative to `https://api.weather.gov`, starting with `/`.
   public init?(
-    accept: MediaType = .geoJSON, featureFlags: [NWSFeatureFlag] = [], path: String
+    accept: MediaType = .geoJSON, featureFlags: [ForecastFeatureFlag] = [], path: String
   ) {
     guard Self.isValidPath(path) else { return nil }
     self.accept = accept
@@ -102,10 +104,10 @@ public struct Endpoint<Response>: Hashable, Sendable {
   ///   - path: The path relative to `https://api.weather.gov`, starting with `/`.
   public init?<Flag>(accept: MediaType = .geoJSON, featureFlags: [Flag], path: String)
   where Flag: RawRepresentable, Flag.RawValue == String {
-    var converted: [NWSFeatureFlag] = []
+    var converted: [ForecastFeatureFlag] = []
     converted.reserveCapacity(featureFlags.count)
     for featureFlag in featureFlags {
-      converted.append(NWSFeatureFlag(featureFlag))
+      converted.append(ForecastFeatureFlag(featureFlag))
     }
     self.init(accept: accept, featureFlags: converted, path: path)
   }
@@ -192,7 +194,8 @@ extension Endpoint where Response == Feature<WeatherForecast> {
   ///   - point: The point whose forecast to retrieve.
   ///   - options: Units and representation flags.
   /// - Returns: A forecast endpoint, or nil for a disallowed link.
-  public static func forecast(for point: Point, options: ForecastOptions = .init()) -> Self? {
+  public static func forecast(for point: WeatherPoint, options: ForecastOptions = .init()) -> Self?
+  {
     forecast(link: point.forecast, options: options)
   }
 
@@ -201,7 +204,9 @@ extension Endpoint where Response == Feature<WeatherForecast> {
   ///   - point: The point whose hourly forecast to retrieve.
   ///   - options: Units and representation flags.
   /// - Returns: An hourly endpoint, or nil for a disallowed link.
-  public static func hourlyForecast(for point: Point, options: ForecastOptions = .init()) -> Self? {
+  public static func hourlyForecast(for point: WeatherPoint, options: ForecastOptions = .init())
+    -> Self?
+  {
     forecast(link: point.forecastHourly, options: options)
   }
 
@@ -241,8 +246,9 @@ extension Endpoint where Response == Feature<ForecastGrid> {
   /// ```
   ///
   /// - Parameter point: The point whose grid data to retrieve.
-  /// - Returns: The endpoint, or `nil` when the link is rejected by ``init(accept:featureFlags:link:)-(_,[NWSFeatureFlag],_)``.
-  public static func forecastGrid(for point: Point) -> Self? {
+  /// - Returns: The endpoint, or `nil` when the link is rejected by
+  ///   ``init(accept:featureFlags:link:)-(_,[ForecastFeatureFlag],_)``.
+  public static func forecastGrid(for point: WeatherPoint) -> Self? {
     Self(link: point.forecastGridData)
   }
 }
@@ -311,12 +317,12 @@ extension Endpoint where Response == FeatureCollection<WeatherObservation> {
   ///
   /// ```swift
   /// let query = try ObservationQuery(limit: 24, stationIdentifier: "KATT")
-  /// Endpoint.observations(query: query).path  // "/stations/KATT/observations?limit=24"
+  /// Endpoint.observations(matching: query).path  // "/stations/KATT/observations?limit=24"
   /// ```
   ///
   /// - Parameter query: The station, window, page size, and optional initial cursor.
   /// - Returns: One endpoint for the history page.
-  public static func observations(query: ObservationQuery) -> Self {
+  public static func observations(matching query: ObservationQuery) -> Self {
     builtIn(
       path: "/stations/" + encodedSegment(query.stationIdentifier) + "/observations" + query.query)
   }
@@ -326,20 +332,21 @@ extension Endpoint where Response == FeatureCollection<ObservationStation> {
   /// The observation stations usable for a point, followed from the point's link.
   ///
   /// - Parameter point: The point whose stations to list.
-  /// - Returns: The endpoint, or `nil` when the link is rejected by ``init(accept:featureFlags:link:)-(_,[NWSFeatureFlag],_)``.
-  public static func observationStations(near point: Point) -> Endpoint? {
+  /// - Returns: The endpoint, or `nil` when the link is rejected by
+  ///   ``init(accept:featureFlags:link:)-(_,[ForecastFeatureFlag],_)``.
+  public static func observationStations(near point: WeatherPoint) -> Endpoint? {
     Endpoint(link: point.observationStations)
   }
 
   /// The station-directory page described by a validated query.
   /// - Parameter query: Filters, page size, and optional initial cursor.
   /// - Returns: One endpoint for the directory page.
-  public static func observationStations(query: ObservationStationQuery) -> Self {
+  public static func observationStations(matching query: ObservationStationQuery) -> Self {
     builtIn(path: "/stations" + query.query)
   }
 }
 
-extension Endpoint where Response == Feature<Point> {
+extension Endpoint where Response == Feature<WeatherPoint> {
   /// The forecast grid and links for a location, `/points/{latitude},{longitude}`.
   ///
   /// Both coordinates are rounded to four decimal places, which is the precision the API accepts

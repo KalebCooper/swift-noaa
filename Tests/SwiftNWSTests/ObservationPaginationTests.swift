@@ -19,22 +19,22 @@ struct ObservationPaginationTests {
     for _ in 0..<5 { try answer(transport, page: expected) }
     let client = makeClient(transport)
     let query = try recordedQuery()
-    let request = WeatherRequest.observations(query: query)
-    let single = try await client.observations(query: query)
+    let request = WeatherRequest.observations(matching: query)
+    let single = try await client.observations(matching: query)
     let _: FeatureCollection<WeatherObservation> = single
-    let sequence: ObservationSequence = client.observations(query: query)
-    let _: ObservationPageSequence = client.observationPages(query: query)
+    let sequence: ObservationSequence = client.observations(matching: query)
+    let _: ObservationPageSequence = client.observationPages(matching: query)
     let _: ObservationPageSequence = client.observationPages(for: request)
-    let _: ObservationSequence = client.observations(for: .observations(query: query))
+    let _: ObservationSequence = client.observations(for: .observations(matching: query))
     let _: ObservationSequence = client.observations(for: try .campMabryHistory)
     #expect(single == expected)
     #expect(try await client.value(for: request) == single)
-    #expect(try await client.send(.observations(query: query)) == single)
+    #expect(try await client.send(.observations(matching: query)) == single)
     for try await feature in sequence {
       #expect(feature == expected.features.first)
       break
     }
-    for try await feature in client.observations(query: query) {
+    for try await feature in client.observations(matching: query) {
       let _: WeatherObservation = feature.properties
       break
     }
@@ -54,7 +54,7 @@ struct ObservationPaginationTests {
     let client = makeClient(transport)
     let query = try ObservationQuery(stationIdentifier: "KATT")
     let task = Task { () throws -> NWSError? in
-      var iterator = client.observationPages(query: query).makeAsyncIterator()
+      var iterator = client.observationPages(matching: query).makeAsyncIterator()
       let error = await #expect(throws: NWSError.self) { try await iterator.next() }
       #expect(try await iterator.next() == nil)
       return error
@@ -80,7 +80,7 @@ struct ObservationPaginationTests {
     let task = Task {
       defer { started.continuation.finish() }
       if items {
-        var iterator = client.observations(query: query).makeAsyncIterator()
+        var iterator = client.observations(matching: query).makeAsyncIterator()
         _ = try await iterator.next()
         started.continuation.yield()
         for await _ in resume.stream {}
@@ -88,7 +88,7 @@ struct ObservationPaginationTests {
         #expect(try await iterator.next() == nil)
         return error
       } else {
-        var iterator = client.observationPages(query: query).makeAsyncIterator()
+        var iterator = client.observationPages(matching: query).makeAsyncIterator()
         _ = try await iterator.next()
         started.continuation.yield()
         for await _ in resume.stream {}
@@ -133,9 +133,9 @@ struct ObservationPaginationTests {
     }
     let client = makeClient(transport)
     var pages: [FeatureCollection<WeatherObservation>] = []
-    for try await page in client.observationPages(query: query) { pages.append(page) }
+    for try await page in client.observationPages(matching: query) { pages.append(page) }
     var items: [Feature<WeatherObservation>] = []
-    for try await item in client.observations(query: query) { items.append(item) }
+    for try await item in client.observations(matching: query) { items.append(item) }
     #expect(pages.count == 2)
     #expect(items == pages.flatMap(\.features))
     #expect(items.count == 2)
@@ -151,7 +151,7 @@ struct ObservationPaginationTests {
   func invalidNextLinksFailBeforeExposingTheirPage(raw: String) async throws {
     let transport = MockTransport()
     try answer(transport, page: page(next: raw))
-    var iterator = makeClient(transport).observationPages(query: try recordedQuery())
+    var iterator = makeClient(transport).observationPages(matching: try recordedQuery())
       .makeAsyncIterator()
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
     guard case .pagination(.invalidNext(let actual)) = error else {
@@ -169,7 +169,7 @@ struct ObservationPaginationTests {
     try answer(transport, page: page())
     let body = problem ? try Fixture.problemDetail.data() : Data("not json".utf8)
     transport.enqueue(.success(.init(Response(body: body, status: problem ? .notFound : .ok))))
-    var iterator = makeClient(transport).observationPages(query: try recordedQuery())
+    var iterator = makeClient(transport).observationPages(matching: try recordedQuery())
       .makeAsyncIterator()
     #expect(try await iterator.next() != nil)
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
@@ -191,7 +191,7 @@ struct ObservationPaginationTests {
     let second = "https://api.weather.gov/stations/KATT/observations?cursor=2"
     try answer(transport, page: page(next: cycle ? second : first))
     try answer(transport, page: page(next: first))
-    var iterator = makeClient(transport).observationPages(query: try recordedQuery())
+    var iterator = makeClient(transport).observationPages(matching: try recordedQuery())
       .makeAsyncIterator()
     if cycle { #expect(try await iterator.next() != nil) }
     let error = await #expect(throws: NWSError.self) { try await iterator.next() }
@@ -207,7 +207,7 @@ struct ObservationPaginationTests {
   func sequencesAreLazyIndependentlyIterableAndNeverPrefetch() async throws {
     let transport = MockTransport()
     for _ in 0..<3 { try answer(transport, page: page()) }
-    let sequence = makeClient(transport).observationPages(query: try recordedQuery())
+    let sequence = makeClient(transport).observationPages(matching: try recordedQuery())
     var first = sequence.makeAsyncIterator()
     var second = sequence.makeAsyncIterator()
     #expect(transport.requests.isEmpty)
@@ -224,7 +224,7 @@ struct ObservationPaginationTests {
     let next = try #require(recorded.pagination?.next)
     try answer(transport, page: recorded)
     try answer(transport, page: page(next: nil))
-    var iterator = makeClient(transport).observationPages(query: try recordedQuery())
+    var iterator = makeClient(transport).observationPages(matching: try recordedQuery())
       .makeAsyncIterator()
     #expect(try await iterator.next() == recorded)
     #expect(transport.requests.count == 1)
@@ -269,7 +269,7 @@ struct ObservationPaginationTests {
 extension WeatherRequest where Response == FeatureCollection<WeatherObservation> {
   fileprivate static var campMabryHistory: Self {
     get throws {
-      .observations(query: try ObservationQuery(limit: 24, stationIdentifier: "KATT"))
+      .observations(matching: try ObservationQuery(limit: 24, stationIdentifier: "KATT"))
     }
   }
 }

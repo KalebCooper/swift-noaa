@@ -9,7 +9,7 @@ All notable changes are documented here, following
 ### Added
 
 - Zone directory and single-zone lookups at all three access levels: `zones(matching:types:)` for
-  `/zones`, `zones(matching:ofType:)` for `/zones/{type}`, and `zone(effective:identifier:type:)`
+  `/zones`, `zones(matching:ofType:)` for `/zones/{type}`, and `zone(identifier:type:effective:)`
   for `/zones/{type}/{zoneId}`, each also available as a `WeatherRequest` factory and an `Endpoint`.
   The zone request factories are not optional; executing one reports an unusable type or identifier
   as `NWSError.invalidZoneType` or `NWSError.invalidZoneIdentifier` before sending. Each list is one
@@ -135,7 +135,7 @@ All notable changes are documented here, following
   bulletin arrives as a JSON string inside that body.
 - An opt-in retry policy. Both configuration-based `NWSClient` initializers take a `retryPolicy`,
   defaulting to `RetryPolicy.disabled`, and the `clock` that times the waits between attempts,
-  defaulting to a continuous clock. `RetryPolicy.transientServiceFailures` makes at most three
+  defaulting to a continuous clock. `RetryPolicy.nwsTransientFailures` makes at most three
   attempts, waiting one second and then five, and retries timeouts and `429`, `500`, `502`, `503`,
   and `504` answers; a numeric `Retry-After` replaces the scheduled wait. The budget covers one HTTP
   request, so each step of a lookup, each redirect hop, and each page of a sequence has its own.
@@ -174,6 +174,24 @@ All notable changes are documented here, following
   are not supported. Every alert endpoint asks for `application/geo+json`, except the count and
   types routes, which ask for `application/ld+json`; the JSON representation carries the same CAP
   fields, and `WeatherAlert` decodes them.
+- Rename `Point` to `WeatherPoint`, beside `WeatherAlert`, `WeatherObservation`, `WeatherOffice`,
+  and `WeatherZone`. `Endpoint.point(for:)`, `PointCache`, and `NWSClient.pointCache` keep their
+  names. This is a source break with no deprecated alias.
+- Rename `NWSFeatureFlag` to `ForecastFeatureFlag`, since the specification declares the
+  Feature-Flags header on the forecast and hourly forecast routes only. This is a source break with
+  no deprecated alias.
+- Rename the `query:` label to `matching:` on `observationStations(query:)`, `observations(query:)`,
+  `observationPages(query:)`, and `observationStationPages(query:)` across `NWSClient`,
+  `WeatherRequest`, and `Endpoint`, matching every other list. This is a source break with no
+  deprecated overload.
+- Rename `zone(effective:identifier:type:)` to `zone(identifier:type:effective:)` across
+  `NWSClient`, `WeatherRequest`, `Endpoint`, and the `WeatherRequest.Resolution.zone` case, so the
+  defaulted instant comes last.
+- Rename `RetryPolicy.transientServiceFailures` to `RetryPolicy.nwsTransientFailures`, so a policy
+  another package adds to `RetryPolicy` cannot collide with it at the call site.
+- Document the forecast feature flags: the service lists two, both modeled; a quantity flag answers
+  its field in WMO SI units whatever `units` says; an unknown flag is ignored rather than rejected;
+  and a flag can stop being needed once the service adopts its shape as the default.
 
 ## [0.1.0] - 2026-09-18
 

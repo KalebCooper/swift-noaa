@@ -80,7 +80,7 @@ struct ForecastClientTests {
     #expect(transport.requests.isEmpty)
   }
 
-  private func callSites(_ client: NWSClient, location: WeatherCoordinate, point: Point)
+  private func callSites(_ client: NWSClient, location: WeatherCoordinate, point: WeatherPoint)
     async throws
   {
     let _: WeatherForecast = try await client.forecast(for: location)

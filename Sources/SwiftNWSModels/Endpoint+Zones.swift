@@ -67,6 +67,7 @@ extension Endpoint where Response == FeatureCollection<WeatherZone> {
 }
 
 extension Endpoint where Response == Feature<WeatherZone> {
+  // Parameters are not alphabetical: the defaulted instant comes last.
   /// Retrieves one zone by type and identifier, `/zones/{type}/{zoneId}`.
   ///
   /// The endpoint asks for GeoJSON with no feature flags. Recorded responses carry the zone's
@@ -78,26 +79,27 @@ extension Endpoint where Response == Feature<WeatherZone> {
   /// ```
   ///
   /// - Parameters:
-  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   ///   - identifier: The zone's identifier, such as `TXZ192`, encoded as one path segment.
   ///   - type: The route's zone type, encoded as one path segment.
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   /// - Returns: The endpoint, or nil for an empty identifier or type or an invalid encoded path.
-  public static func zone(effective: Date? = nil, identifier: String, type: ZoneType) -> Self? {
+  public static func zone(identifier: String, type: ZoneType, effective: Date? = nil) -> Self? {
     guard let segment = zoneTypeSegment(type), !identifier.isEmpty else { return nil }
     let query = URLComponents.nwsQuery(
       effective.map { [URLQueryItem(name: "effective", value: $0.formatted(.iso8601))] } ?? [])
     return Self(path: "/zones/" + segment + "/" + encodedSegment(identifier) + query)
   }
 
+  // Parameters are not alphabetical: the defaulted instant comes last.
   /// Retrieves one zone using a consumer-defined zone type enum.
   /// - Parameters:
-  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   ///   - identifier: The zone's identifier, encoded as one path segment.
   ///   - type: A String-backed zone type, encoded as one path segment.
+  ///   - effective: The instant the definition must be effective at, or nil for the current one.
   /// - Returns: The endpoint, or nil for an empty identifier or type or an invalid encoded path.
-  public static func zone<Kind>(effective: Date? = nil, identifier: String, type: Kind) -> Self?
+  public static func zone<Kind>(identifier: String, type: Kind, effective: Date? = nil) -> Self?
   where Kind: RawRepresentable, Kind.RawValue == String {
-    zone(effective: effective, identifier: identifier, type: ZoneType(type))
+    zone(identifier: identifier, type: ZoneType(type), effective: effective)
   }
 }
 

@@ -14,7 +14,7 @@ extension NWSClient {
   /// ```swift
   /// let client = NWSClient(
   ///   configuration: NWSConfiguration(userAgent: "(myweatherapp.com, contact@myweatherapp.com)"),
-  ///   retryPolicy: .transientServiceFailures
+  ///   retryPolicy: .nwsTransientFailures
   /// )
   /// ```
   ///

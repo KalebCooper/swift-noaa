@@ -10,7 +10,7 @@ import Foundation
 /// can omit or null it. Values are kept as the service sends them, including an empty fax number
 /// and an office whose zone or station lists are absent. The zone, station, and parent office
 /// fields are links to other API resources; follow them with
-/// ``Endpoint/init(accept:featureFlags:link:)-(_,[NWSFeatureFlag],_)`` rather than rebuilding
+/// ``Endpoint/init(accept:featureFlags:link:)-(_,[ForecastFeatureFlag],_)`` rather than rebuilding
 /// their paths.
 ///
 /// ```swift

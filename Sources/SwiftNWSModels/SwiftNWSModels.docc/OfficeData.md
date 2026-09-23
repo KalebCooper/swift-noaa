@@ -85,10 +85,10 @@ One recorded office sends its fax number as an empty string, and ``WeatherOffice
 | ``WeatherOffice/url`` | `URL` | The office's API identity, from `@id`. |
 
 The zone, station, and parent office fields are links to other API resources. Turn one into an
-endpoint with ``Endpoint/init(accept:featureFlags:link:)-(_,[NWSFeatureFlag],_)``, which refuses any
-origin other than the HTTPS API, rather than rebuilding its path. These models follow none of them.
-The website in ``WeatherOffice/sameAs`` is not an API link: it is text, kept exactly as sent, so an
-empty or malformed value never fails the office to decode.
+endpoint with ``Endpoint/init(accept:featureFlags:link:)-(_,[ForecastFeatureFlag],_)``, which
+refuses any origin other than the HTTPS API, rather than rebuilding its path. These models follow
+none of them. The website in ``WeatherOffice/sameAs`` is not an API link: it is text, kept exactly
+as sent, so an empty or malformed value never fails the office to decode.
 
 ## Headlines
 

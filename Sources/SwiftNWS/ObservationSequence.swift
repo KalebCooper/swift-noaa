@@ -6,7 +6,7 @@ import SwiftNWSModels
 ///
 /// ```swift
 /// let query = try ObservationQuery(limit: 24, stationIdentifier: "KATT")
-/// for try await observation in client.observations(query: query) {
+/// for try await observation in client.observations(matching: query) {
 ///   print(observation.properties.timestamp, observation.properties.temperature?.value ?? .nan)
 ///   break
 /// }

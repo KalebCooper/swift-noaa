@@ -31,25 +31,25 @@ public final class PointCache: Sendable {
     storage.removeAll()
   }
 
-  func insert(_ point: Point, for location: WeatherCoordinate, generation: UInt64) {
+  func insert(_ point: WeatherPoint, for location: WeatherCoordinate, generation: UInt64) {
     storage.insert(point, for: location, generation: generation)
   }
 
-  func lookup(_ location: WeatherCoordinate) -> (point: Point?, generation: UInt64) {
+  func lookup(_ location: WeatherCoordinate) -> (point: WeatherPoint?, generation: UInt64) {
     storage.lookup(location)
   }
 }
 
 private protocol PointStorage: Sendable {
-  func insert(_ point: Point, for location: WeatherCoordinate, generation: UInt64)
-  func lookup(_ location: WeatherCoordinate) -> (point: Point?, generation: UInt64)
+  func insert(_ point: WeatherPoint, for location: WeatherCoordinate, generation: UInt64)
+  func lookup(_ location: WeatherCoordinate) -> (point: WeatherPoint?, generation: UInt64)
   func removeAll()
 }
 
 private final class ClockPointStorage<C: Clock>: PointStorage where C.Duration == Duration {
   private struct Entry: Sendable {
     let expires: C.Instant
-    let point: Point
+    let point: WeatherPoint
   }
 
   private struct State: Sendable {
@@ -69,7 +69,7 @@ private final class ClockPointStorage<C: Clock>: PointStorage where C.Duration =
     self.lifetime = lifetime
   }
 
-  func insert(_ point: Point, for location: WeatherCoordinate, generation: UInt64) {
+  func insert(_ point: WeatherPoint, for location: WeatherCoordinate, generation: UInt64) {
     state.withLock { state in
       guard state.generation == generation else { return }
       let now = clock.now
@@ -86,7 +86,7 @@ private final class ClockPointStorage<C: Clock>: PointStorage where C.Duration =
     }
   }
 
-  func lookup(_ location: WeatherCoordinate) -> (point: Point?, generation: UInt64) {
+  func lookup(_ location: WeatherCoordinate) -> (point: WeatherPoint?, generation: UInt64) {
     state.withLock { state in
       guard let entry = state.entries[location], entry.expires > clock.now else {
         state.entries.removeValue(forKey: location)

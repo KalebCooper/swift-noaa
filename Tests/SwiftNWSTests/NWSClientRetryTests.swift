@@ -77,7 +77,7 @@ struct NWSClientRetryTests {
 
     let task = Task {
       var count = 0
-      for try await _ in client.observationStationPages(query: query) { count += 1 }
+      for try await _ in client.observationStationPages(matching: query) { count += 1 }
       return count
     }
     await clock.waitForPendingSleep()
@@ -225,7 +225,7 @@ struct NWSClientRetryTests {
         status: 200),
     ])
     let client = NWSClient(
-      clock: clock, configuration: configuration, retryPolicy: .transientServiceFailures,
+      clock: clock, configuration: configuration, retryPolicy: .nwsTransientFailures,
       session: URLSession(configuration: script.makeSessionConfiguration()))
 
     let task = Task { try await client.alertTypes() }
@@ -262,7 +262,7 @@ struct NWSClientRetryTests {
 
   private func makeClient(_ transport: MockTransport, clock: RecordingClock) -> NWSClient {
     NWSClient(
-      clock: clock, configuration: configuration, retryPolicy: .transientServiceFailures,
+      clock: clock, configuration: configuration, retryPolicy: .nwsTransientFailures,
       transport: transport)
   }
 
