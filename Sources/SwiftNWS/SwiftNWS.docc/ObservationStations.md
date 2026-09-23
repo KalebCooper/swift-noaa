@@ -52,6 +52,10 @@ empty pages, each with another link. The client therefore never follows it. Page
 sequences built from `WeatherRequest.observationStations(near:)` resolve the point on the first read,
 yield that one page, and finish.
 
+`/points/{latitude},{longitude}/stations` is deprecated by the service. Every answer is a 301 to
+the grid station list at `/gridpoints/{wfo}/{x},{y}/stations`, which `observationStations(near:)`
+already reads through the point's `observationStations` link, so the route is not built.
+
 ## List the stations of a forecast zone
 
 ```swift

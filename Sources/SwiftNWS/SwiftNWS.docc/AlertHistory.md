@@ -35,6 +35,15 @@ use ``NWSClient/alertPages(matching:)``. Both delegate to their reusable-request
 ``NWSClient/alerts(for:)`` and ``NWSClient/alertPages(for:)``. Single-page `value(for:)` and `send`
 return one collection.
 
+The CAP XML representation of one alert (`application/cap+xml` at `/alerts/{id}`) and the Atom
+representation of the alert lists (`application/atom+xml` at `/alerts`, `/alerts/active`, and the
+active zone, area, and region routes) are not supported. Every alert endpoint asks for
+`application/geo+json`, except the count and types routes, which ask for `application/ld+json`.
+The JSON representation carries the same CAP fields, and `WeatherAlert` decodes them. A consumer
+who needs the CAP or Atom document sends the endpoint's `path` with its own transport and `Accept`
+header; the Atom feed carries its own `.atom` continuation link, which this package does not
+follow.
+
 ## Demand and completion
 
 Sequence creation and iterator creation perform no I/O. Every iterator starts independently. Pages

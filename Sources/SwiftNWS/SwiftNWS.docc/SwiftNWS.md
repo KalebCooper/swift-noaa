@@ -62,6 +62,12 @@ continuation links on demand.
 The station directory is the canonical implementation. Existing single-page methods do not
 automatically paginate.
 
+`/points/{latitude},{longitude}/radio` is not supported. It answers only `application/ssml+xml`,
+a speech synthesis document, and this package decodes typed JSON with no portable XML path. The
+point's `nwr` object is not decoded, and the radio routes (`/radio`, `/radio/{callSign}`,
+`/radio/{callSign}/broadcast`, and `/zones/county/{zoneId}/radio`) are out of scope. See
+<doc:ActiveAlerts> for the CAP XML and Atom media type positions.
+
 ## Topics
 
 ### Client and errors

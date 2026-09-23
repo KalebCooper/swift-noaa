@@ -56,6 +56,21 @@ product's `issuingOffice`, such as `KEWX`, is a different vocabulary from a prod
 identifier, such as `EWX`, and nothing converts between them. Plain-text (`text/plain`) product
 retrieval is not supported.
 
+`/points/{latitude},{longitude}/stations` is deprecated by the service. Every answer is a 301 to
+the grid station list at `/gridpoints/{wfo}/{x},{y}/stations`, which `observationStations(near:)`
+already reads through the point's `observationStations` link, so the route is not built.
+`/points/{latitude},{longitude}/radio` is not supported. It answers only `application/ssml+xml`,
+a speech synthesis document, and this package decodes typed JSON with no portable XML path. The
+point's `nwr` object is not decoded, and the radio routes (`/radio`, `/radio/{callSign}`,
+`/radio/{callSign}/broadcast`, and `/zones/county/{zoneId}/radio`) are out of scope. The CAP XML
+representation of one alert (`application/cap+xml` at `/alerts/{id}`) and the Atom representation
+of the alert lists (`application/atom+xml` at `/alerts`, `/alerts/active`, and the active zone,
+area, and region routes) are not supported. Every alert endpoint asks for `application/geo+json`,
+except the count and types routes, which ask for `application/ld+json`. The JSON representation
+carries the same CAP fields, and `WeatherAlert` decodes them. A consumer who needs the CAP or Atom
+document sends the endpoint's `path` with its own transport and `Accept` header; the Atom feed
+carries its own `.atom` continuation link, which this package does not follow.
+
 Retries are not built.
 
 ## Usage

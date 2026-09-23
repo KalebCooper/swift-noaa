@@ -128,7 +128,7 @@ platform the package claims, documented and tested in CI.
   adds values without a version change.
 - The 301 answers some alert queries give on the way to a canonical URL, followed and tested.
 - A client convenience for the active alerts at a coordinate.
-- GeoJSON only; the CAP XML and Atom media types wait for 1.0.0.
+- GeoJSON only; CAP XML and Atom are not supported.
 
 ### Units
 
@@ -153,7 +153,14 @@ platform the package claims, documented and tested in CI.
 1.0.0 is the promise that the public API will not break until 2.0.0. It needs the rest of the core
 endpoint groups, the plumbing lists and history require, and a final pass on every public name.
 
-- **Points:** `/points/{latitude},{longitude}/stations` and `/points/{latitude},{longitude}/radio`.
+- **Points:** stated, not built. `/points/{latitude},{longitude}/stations` is deprecated by the
+  service. Every answer is a 301 to the grid station list at `/gridpoints/{wfo}/{x},{y}/stations`,
+  which `observationStations(near:)` already reads through the point's `observationStations` link,
+  so the route is not built. `/points/{latitude},{longitude}/radio` is not supported. It answers
+  only `application/ssml+xml`, a speech synthesis document, and this package decodes typed JSON
+  with no portable XML path. The point's `nwr` object is not decoded, and the radio routes
+  (`/radio`, `/radio/{callSign}`, `/radio/{callSign}/broadcast`, and `/zones/county/{zoneId}/radio`)
+  are out of scope.
 - **Grid data:** raw `/gridpoints/{wfo}/{x},{y}` with every layer, each value carrying its ISO 8601
   `validTime` interval (`2026-09-13T12:00:00+00:00/PT3H`) parsed into a start and a duration, plus
   `/gridpoints/{wfo}/{x},{y}/stations`. Built. The grid station list is one page: its
@@ -205,12 +212,13 @@ endpoint groups, the plumbing lists and history require, and a final pass on eve
   not a continuation contract. Zones and other lists known only to accept `limit` remain outside
   the claim as well, until their provider continuation behavior is verified.
   Grid station lists are one page, because their continuation link is verified not to continue them.
-- **Media types:** CAP XML and Atom for alerts, each either supported or listed as not supported.
-  `application/pdf`, the office briefing document type, is not supported: the briefing route is read
-  as JSON-LD metadata only, and its download link is never requested. No endpoint is left in an
-  unstated state.
+- **Media types:** CAP XML and Atom for alerts are not supported, stated in README Status and both
+  DocC catalogs. `application/pdf`, the office briefing document type, is not supported: the
+  briefing route is read as JSON-LD metadata only, and its download link is never requested. No
+  endpoint is left in an unstated state.
 - **Out of scope, stated as such:** `/radar`, `/aviation` (SIGMETs, center weather advisories,
-  TAFs), `/icons`, `/thumbnails`, and `/radio`, unless a consumer need appears before 1.0.0.
+  TAFs), `/icons`, and `/thumbnails`, unless a consumer need appears before 1.0.0. `/radio` is out
+  of scope for the reason stated in the Points bullet above, not conditionally.
 - **Feature flags:** every flag the spec lists is modeled for every endpoint that accepts it.
 - **Resilience:** a stated retry policy for the 500 and 503 answers the API gives under load, with
   backoff timed by an injected `Clock`, and a stated position on HTTP caching headers.

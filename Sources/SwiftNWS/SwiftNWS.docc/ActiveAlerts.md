@@ -93,7 +93,14 @@ Nullable dates,
 instructions, and headlines remain optional. Parameters and event codes retain their JSON values.
 Awaited queries retain service order and stop after one returned collection. Page and feature
 sequences follow links only on demand. Alert history with a time window is described in
-<doc:AlertHistory>. CAP XML and Atom are outside this release.
+<doc:AlertHistory>. The CAP XML representation of one alert (`application/cap+xml` at
+`/alerts/{id}`) and the Atom representation of the alert lists (`application/atom+xml` at
+`/alerts`, `/alerts/active`, and the active zone, area, and region routes) are not supported.
+Every alert endpoint asks for `application/geo+json`, except the count and types routes, which
+ask for `application/ld+json`. The JSON representation carries the same CAP fields, and
+`WeatherAlert` decodes them. A consumer who needs the CAP or Atom document sends the endpoint's
+`path` with its own transport and `Accept` header; the Atom feed carries its own `.atom`
+continuation link, which this package does not follow.
 
 ## Redirect policy
 

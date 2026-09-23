@@ -197,6 +197,29 @@ struct EndpointTests {
     let outside = try #require(URL(string: "https://example.com/zones/forecast/TXZ192"))
     #expect(Endpoint<Feature<WeatherZone>>(link: outside) == nil)
   }
+
+  @Test("Alert routes ask for GeoJSON or JSON-LD and never XML")
+  func alertRoutesAskForGeoJSONOrJSONLDAndNeverXML() throws {
+    #expect(
+      Endpoint.activeAlerts(for: try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431))
+        .accept.rawValue == "application/geo+json")
+    #expect(
+      try #require(Endpoint.activeAlerts(inArea: AreaCode(rawValue: "TX"))).accept.rawValue
+        == "application/geo+json")
+    #expect(
+      try #require(Endpoint.activeAlerts(inRegion: .gulfOfMexico)).accept.rawValue
+        == "application/geo+json")
+    #expect(
+      try #require(Endpoint.activeAlerts(inZone: "TXZ192")).accept.rawValue
+        == "application/geo+json")
+    #expect(Endpoint.activeAlerts(matching: .init()).accept.rawValue == "application/geo+json")
+    #expect(Endpoint.alerts(matching: try AlertQuery()).accept.rawValue == "application/geo+json")
+    #expect(
+      try #require(Endpoint.alert(identifier: "urn:oid:2.49.0.1.840.0.1")).accept.rawValue
+        == "application/geo+json")
+    #expect(Endpoint.activeAlertCount.accept.rawValue == "application/ld+json")
+    #expect(Endpoint.alertTypes.accept.rawValue == "application/ld+json")
+  }
 }
 
 private enum AppZoneType: String {

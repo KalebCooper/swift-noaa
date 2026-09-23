@@ -153,6 +153,16 @@ All notable changes are documented here, following
 - Add the `invalidProductCode` and `invalidProductLocation` cases to `NWSError`. This is a source
   break for any consumer switching over `NWSError` exhaustively, which must handle the two new
   cases.
+- State that `/points/{latitude},{longitude}/stations` is not built: the service answers every
+  request with a 301 to the grid station list, which `observationStations(near:)` already reads
+  through the point's `observationStations` link.
+- State that `/points/{latitude},{longitude}/radio` is not supported: it answers only
+  `application/ssml+xml`, a speech synthesis document, and this package decodes typed JSON with no
+  portable XML path.
+- State that the CAP XML representation of one alert and the Atom representation of the alert lists
+  are not supported. Every alert endpoint asks for `application/geo+json`, except the count and
+  types routes, which ask for `application/ld+json`; the JSON representation carries the same CAP
+  fields, and `WeatherAlert` decodes them.
 
 ## [0.1.0] - 2026-09-18
 

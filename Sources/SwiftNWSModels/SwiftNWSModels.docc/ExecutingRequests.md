@@ -22,6 +22,18 @@ Feature-Flags header.
 Decode the successful response as `Feature<Point>` for this endpoint. Your networking stack
 owns status handling, cancellation, and decoding.
 
+`/points/{latitude},{longitude}/radio` is not supported. It answers only `application/ssml+xml`,
+a speech synthesis document, and this package decodes typed JSON with no portable XML path. The
+point's `nwr` object is not decoded, and the radio routes (`/radio`, `/radio/{callSign}`,
+`/radio/{callSign}/broadcast`, and `/zones/county/{zoneId}/radio`) are out of scope. The CAP XML
+representation of one alert (`application/cap+xml` at `/alerts/{id}`) and the Atom representation
+of the alert lists (`application/atom+xml` at `/alerts`, `/alerts/active`, and the active zone,
+area, and region routes) are not supported. Every alert endpoint asks for `application/geo+json`,
+except the count and types routes, which ask for `application/ld+json`. The JSON representation
+carries the same CAP fields, and `WeatherAlert` decodes them. A consumer who needs the CAP or Atom
+document sends the endpoint's `path` with its own transport and `Accept` header; the Atom feed
+carries its own `.atom` continuation link, which this package does not follow.
+
 Use `Endpoint(accept:featureFlags:link:)` for links returned by the API. It accepts only HTTPS on
 `api.weather.gov`, with no credentials or fragment and either no explicit port or port 443.
 It retains the encoded path and query. A disallowed link returns nil and must not be followed.
