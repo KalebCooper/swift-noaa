@@ -163,6 +163,26 @@ extension TidesEndpoint where Response == HighLowTideResponse {
   }
 }
 
+extension TidesEndpoint where Response == HourlyWaterLevelResponse {
+  /// Retrieves verified hourly heights as an independent wire envelope.
+  /// - Parameter query: A validated explicit GMT query.
+  /// - Returns: One JSON endpoint, with no station preflight or date-window splitting.
+  public static func hourlyWaterLevels(matching query: HourlyWaterLevelQuery) -> Self {
+    builtIn(
+      path: "/api/prod/datagetter"
+        + Self.query([
+          URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+          URLQueryItem(name: "datum", value: query.datum.rawValue),
+          URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+          URLQueryItem(name: "format", value: "json"),
+          URLQueryItem(name: "product", value: "hourly_height"),
+          URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+          URLQueryItem(name: "time_zone", value: "gmt"),
+          URLQueryItem(name: "units", value: query.units.rawValue),
+        ]))
+  }
+}
+
 extension TidesEndpoint where Response == TidePredictionResponse {
   /// Retrieves predicted tide samples as an independent wire envelope.
   /// - Parameter query: A validated explicit GMT query.

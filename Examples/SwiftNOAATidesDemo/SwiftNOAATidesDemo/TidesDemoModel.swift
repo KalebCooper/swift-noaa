@@ -7,6 +7,7 @@ import SwiftNOAATidesModels
 @Observable
 final class TidesDemoModel {
   var day = Date.now
+  var hourlyWater: HourlyWaterLevels?
   var isLoading = false
   var message: String?
   var result: HighLowTides?
@@ -16,6 +17,32 @@ final class TidesDemoModel {
   var water: WaterLevels?
 
   private let client = TidesClient(configuration: .init(application: "SwiftNOAATidesDemo"))
+
+  func loadHourlyWaterLevels() async {
+    guard !isLoading else { return }
+    isLoading = true
+    message = nil
+    hourlyWater = nil
+    defer { isLoading = false }
+    do {
+      var calendar = Calendar(identifier: .gregorian)
+      calendar.timeZone = .gmt
+      let begin = calendar.startOfDay(for: day)
+      guard let nextDay = calendar.date(byAdding: .day, value: 1, to: begin) else {
+        message = "Choose a valid date."
+        return
+      }
+      let range = try TidesDateRange(begin: begin, end: nextDay.addingTimeInterval(-60))
+      let query = try HourlyWaterLevelQuery(
+        datum: .meanLowerLowWater, range: range,
+        stationIdentifier: CoastalStationIdentifier(selectedStationIdentifier), units: .metric)
+      hourlyWater = try await client.hourlyWaterLevels(matching: query)
+    } catch let error as TidesError {
+      show(error)
+    } catch {
+      message = "Choose a station and a valid GMT date."
+    }
+  }
 
   func loadPredictions() async {
     guard !isLoading else { return }

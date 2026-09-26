@@ -84,8 +84,20 @@ time steps remain absent. Quality is the provider's open `p`/`v` code, never inf
 
 Raw flags keep their provider order. The first preliminary flag is an outlier count; the first
 verified flag indicates an inferred value. The remaining fields describe flat, rate and level-limit
-checks. The package does not infer flood danger, subtract predictions or fill gaps. Hourly verified
-heights and current products are separate operations and are not yet implemented.
+checks. The package does not infer flood danger, subtract predictions or fill gaps. Current products are separate operations and are not yet implemented.
+
+## Verified hourly heights
+
+`HourlyWaterLevelQuery` selects the separate `hourly_height` product, with explicit datum, units,
+station and inclusive GMT bounds no longer than one Gregorian calendar year. Use
+`hourlyWaterLevels(matching:)` at the client, request or endpoint level. This is not an interval
+option on the six-minute water-level product.
+
+`HourlyWaterLevel` retains height, sigma and raw flags. Its two flag positions indicate an inferred
+value and an exceeded expected level limit. There is no echoed quality code: verification is part
+of the provider product definition. `HourlyWaterLevels` keeps provider metadata and observations
+alongside the original requested query. Unknown flags and empty numeric text remain observable;
+missing time steps stay absent. Observed high/low levels and daily/monthly means are unsupported.
 
 ## Topics
 
@@ -138,3 +150,10 @@ heights and current products are separate operations and are not yet implemented
 - ``WaterLevelQuery``
 - ``WaterLevelResponse``
 - ``WaterLevels``
+
+### Verified hourly heights
+
+- ``HourlyWaterLevel``
+- ``HourlyWaterLevelQuery``
+- ``HourlyWaterLevelResponse``
+- ``HourlyWaterLevels``

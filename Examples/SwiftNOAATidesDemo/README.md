@@ -18,3 +18,8 @@ sampled predictions; the provider message remains visible. No datum conversion i
 
 Measured six-minute water levels are a separate request and display, retaining provider quality
 codes and flags. Missing heights are shown as missing, and absent time steps are not filled.
+
+Verified hourly heights use `HourlyWaterLevelQuery` and `hourlyWaterLevels(matching:)` at the same
+three access levels. They select the separate `hourly_height` product, retain its two raw flags,
+and accept explicit GMT windows up to one calendar year. Observed high/low and daily/monthly
+statistics remain unsupported.

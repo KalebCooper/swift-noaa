@@ -6,6 +6,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case endpoint(TidesEndpoint<Response>)
     /// Attach requested context to predicted high/low events.
     case highLowTides(HighLowTideQuery)
+    /// Attach requested context to verified hourly heights.
+    case hourlyWaterLevels(HourlyWaterLevelQuery)
     /// Require exactly one matching station from its detail envelope.
     case station(CoastalStationIdentifier)
     /// Attach requested context to sampled tide predictions.
@@ -66,6 +68,15 @@ extension TidesRequest where Response == HighLowTides {
   /// - Returns: A reusable request that attaches context after direct wire decoding.
   public static func highLowTides(matching query: HighLowTideQuery) -> Self {
     Self(resolution: .highLowTides(query))
+  }
+}
+
+extension TidesRequest where Response == HourlyWaterLevels {
+  /// Describes verified hourly heights with immutable requested context.
+  /// - Parameter query: The validated explicit GMT query.
+  /// - Returns: A reusable request that attaches context after direct wire decoding.
+  public static func hourlyWaterLevels(matching query: HourlyWaterLevelQuery) -> Self {
+    Self(resolution: .hourlyWaterLevels(query))
   }
 }
 

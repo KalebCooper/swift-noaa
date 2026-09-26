@@ -54,7 +54,7 @@ High/low results attach `requestedQuery`; the direct wire response has no statio
 echo. Both bounds are inclusive GMT minutes, with a maximum of ten calendar years. Times are decoded
 independently of `JSONDecoder` date strategies. Numeric strings retain their exact spelling and a
 finite numeric value. Subordinate stations require MLLW; provider refusals remain visible without
-station substitution. Verified hourly heights and currents are not yet implemented.
+station substitution. Currents are not yet implemented.
 
 Sampled predictions use `TidePredictionQuery` and `tidePredictions(matching:)`, with supported
 cadences from one minute to hourly and a one-calendar-year window. Their `requestedQuery` is kept
@@ -466,3 +466,8 @@ Until 1.0.0, a minor release can change the public API, so pin to the minor vers
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+Verified hourly heights use `HourlyWaterLevelQuery` and `hourlyWaterLevels(matching:)` at the same
+three access levels. They select the separate `hourly_height` product, retain its two raw flags,
+and accept explicit GMT windows up to one calendar year. Observed high/low and daily/monthly
+statistics remain unsupported.

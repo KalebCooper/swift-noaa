@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- Verified hourly water levels as a separate product, with its own query, flag semantics,
+  requested context, fixtures, and demo display.
+
 - Six-minute measured water levels with explicit GMT ranges, requested context, provider station
   metadata, preliminary/verified quality, raw flags, and lossless missing-value handling.
 

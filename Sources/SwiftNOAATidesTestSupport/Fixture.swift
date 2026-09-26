@@ -1,6 +1,14 @@
 import Foundation
 
 package enum Fixture: String, CaseIterable, Sendable {
+  /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=hourly_height&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case hourlyInvalidDatum = "hourly-invalid-datum"
+  /// /api/prod/datagetter?begin_date=18000101&end_date=18000101&station=9414290&product=hourly_height&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case hourlyNoData = "hourly-no-data"
+  /// /api/prod/datagetter?begin_date=20240229+00%3A00&end_date=20250302+00%3A00&station=9414290&product=hourly_height&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case hourlyOverYear = "hourly-over-year"
+  /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=hourly_height&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case hourlyWater = "hourly-water"
   /// Data API invalid-station refusal; exact request is recorded in Fixtures/manifest.json.
   case invalidStation = "invalid-station"
   /// /mdapi/prod/webapi/stations/9414290.json

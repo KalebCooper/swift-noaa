@@ -62,6 +62,16 @@ public struct TidesClient: Sendable {
     try await value(for: .highLowTides(matching: query))
   }
 
+  /// Retrieves verified hourly heights for explicit inclusive GMT bounds.
+  /// - Parameter query: A validated hourly-height query.
+  /// - Returns: Hourly observations and raw flags without filling gaps.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func hourlyWaterLevels(matching query: HourlyWaterLevelQuery) async throws(TidesError)
+    -> HourlyWaterLevels
+  {
+    try await value(for: .hourlyWaterLevels(matching: query))
+  }
+
   /// Sends a JSON endpoint, following at most five validated same-origin redirects.
   /// - Parameter endpoint: A built-in or consumer-defined endpoint.
   /// - Returns: The wire response, without request context.
@@ -148,7 +158,7 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .highLowTides, .tidePredictions, .waterLevels:
+    case .highLowTides, .hourlyWaterLevels, .tidePredictions, .waterLevels:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
       )
@@ -178,6 +188,22 @@ public struct TidesClient: Sendable {
     }
     let response = try await send(.highLowTides(matching: query))
     return HighLowTides(predictions: response.predictions, requestedQuery: query)
+  }
+
+  /// Executes verified hourly heights and attaches the original requested context.
+  /// - Parameter request: A hourly-height request created by its constrained factory.
+  /// - Returns: Observations and provider metadata with separate requested context.
+  /// - Throws: Any `TidesError` from the shared send path, including cancellation.
+  public func value(for request: TidesRequest<HourlyWaterLevels>) async throws(TidesError)
+    -> HourlyWaterLevels
+  {
+    guard case .hourlyWaterLevels(let query) = request.resolution else {
+      preconditionFailure(
+        "Only the hourly-height factory can construct a request for HourlyWaterLevels.")
+    }
+    let response = try await send(.hourlyWaterLevels(matching: query))
+    return HourlyWaterLevels(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
   }
 
   /// Executes sampled tide predictions and attaches the original validated request context.
