@@ -38,6 +38,21 @@ package enum Fixture: String, CaseIterable, Sendable {
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=8557863&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=6
   case tideSubordinateSampled = "tide-subordinate-sampled"
 
+  /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=water_level&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case waterInvalidDatum = "water-invalid-datum"
+  /// /api/prod/datagetter?begin_date=20240926%2000:00&end_date=20240926%2001:00&station=9414290&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case waterLevel = "water-level"
+  /// /api/prod/datagetter?begin_date=20260909+17%3A30&end_date=20260909+17%3A42&station=9414290&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case waterMissingSigma = "water-missing-sigma"
+  /// /api/prod/datagetter?begin_date=20220928+00%3A00&end_date=20220929+00%3A00&station=8725110&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case waterNaplesGap = "water-naples-gap"
+  /// /api/prod/datagetter?begin_date=18000101&end_date=18000101&station=9414290&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case waterNoData = "water-no-data"
+  /// /api/prod/datagetter?begin_date=20240131+00%3A00&end_date=20240303+00%3A00&station=9414290&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case waterOverMonth = "water-over-month"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&station=9414290&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
+  case waterPreliminary = "water-preliminary"
+
   package func data() throws -> Data {
     guard
       let url = Bundle.module.url(

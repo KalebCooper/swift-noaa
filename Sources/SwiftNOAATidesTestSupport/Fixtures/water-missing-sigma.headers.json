@@ -1,0 +1,17 @@
+{
+  "Date": "Sat, 26 Sep 2026 22:56:29 GMT",
+  "Content-Type": "application/json;charset=UTF-8",
+  "Content-Length": "317",
+  "Connection": "close",
+  "x-amzn-RequestId": "bbdfbd2e-97f0-4aeb-933d-77dacd3fd923",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "X-Requested-With",
+  "x-amzn-Remapped-Content-Length": "317",
+  "x-amzn-Remapped-Connection": "keep-alive",
+  "x-amz-apigw-id": "EVEQtECzoAMElsw=",
+  "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+  "x-amzn-Remapped-Server": "nginx",
+  "Expires": "Thu, 01 Jan 1970 00:00:00 GMT",
+  "Pragma": "no-cache",
+  "x-amzn-Remapped-Date": "Sat, 26 Sep 2026 22:56:29 GMT"
+}

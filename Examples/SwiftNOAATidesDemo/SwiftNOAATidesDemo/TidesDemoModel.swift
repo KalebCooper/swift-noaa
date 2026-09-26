@@ -13,6 +13,7 @@ final class TidesDemoModel {
   var samples: TidePredictions?
   var selectedStationIdentifier = ""
   var stations: [CoastalStation] = []
+  var water: WaterLevels?
 
   private let client = TidesClient(configuration: .init(application: "SwiftNOAATidesDemo"))
 
@@ -80,6 +81,32 @@ final class TidesDemoModel {
       show(error)
     } catch {
       message = "Could not prepare the station directory."
+    }
+  }
+
+  func loadWaterLevels() async {
+    guard !isLoading else { return }
+    isLoading = true
+    message = nil
+    water = nil
+    defer { isLoading = false }
+    do {
+      var calendar = Calendar(identifier: .gregorian)
+      calendar.timeZone = .gmt
+      let begin = calendar.startOfDay(for: day)
+      guard let nextDay = calendar.date(byAdding: .day, value: 1, to: begin) else {
+        message = "Choose a valid date."
+        return
+      }
+      let range = try TidesDateRange(begin: begin, end: nextDay.addingTimeInterval(-60))
+      let query = try WaterLevelQuery(
+        datum: .meanLowerLowWater, range: range,
+        stationIdentifier: CoastalStationIdentifier(selectedStationIdentifier), units: .metric)
+      water = try await client.waterLevels(matching: query)
+    } catch let error as TidesError {
+      show(error)
+    } catch {
+      message = "Choose a station and a valid GMT date."
     }
   }
 

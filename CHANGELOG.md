@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- Six-minute measured water levels with explicit GMT ranges, requested context, provider station
+  metadata, preliminary/verified quality, raw flags, and lossless missing-value handling.
+
 - Sampled tide predictions with supported cadences and requested context, plus station datum
   tables retaining epoch, reported units, descriptions and disclaimers. The Tides demo plots
   reported hourly points without interpolation.

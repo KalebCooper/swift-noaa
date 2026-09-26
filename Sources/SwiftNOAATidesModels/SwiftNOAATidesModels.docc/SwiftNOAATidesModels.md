@@ -70,6 +70,23 @@ periods and disclaimers. A datum table is not permission to convert arbitrary he
 entry descriptions can qualify units, such as hours for time intervals. Metadata dates and times
 remain provider text, without assuming GMT from the separate Data API query contract.
 
+## Six-minute measured water levels
+
+Use `WaterLevelQuery` with `waterLevels(matching:)`, `TidesRequest.waterLevels(matching:)`, or
+`TidesEndpoint.waterLevels(matching:)`. These request `product=water_level` with explicit datum,
+units and inclusive GMT minute bounds, limited to one Gregorian calendar month. There is no latest
+selector, station substitution or automatic date-window splitting.
+
+`WaterLevelResponse` retains provider station metadata and observations; `WaterLevels` adds the
+original `requestedQuery` separately. Heights and sigma preserve numeric text. An empty numeric
+string has no value, while malformed nonempty text and null required fields fail decoding. Missing
+time steps remain absent. Quality is the provider's open `p`/`v` code, never inferred from age.
+
+Raw flags keep their provider order. The first preliminary flag is an outlier count; the first
+verified flag indicates an inferred value. The remaining fields describe flat, rate and level-limit
+checks. The package does not infer flood danger, subtract predictions or fill gaps. Hourly verified
+heights and current products are separate operations and are not yet implemented.
+
 ## Topics
 
 ### Stations
@@ -111,3 +128,13 @@ remain provider text, without assuming GMT from the separate Data API query cont
 - ``TidePredictionQuery``
 - ``TidePredictionResponse``
 - ``TidePredictions``
+
+### Measured water levels
+
+- ``CoastalDataMetadata``
+- ``TidesMeasurementValue``
+- ``WaterLevel``
+- ``WaterLevelQuality``
+- ``WaterLevelQuery``
+- ``WaterLevelResponse``
+- ``WaterLevels``

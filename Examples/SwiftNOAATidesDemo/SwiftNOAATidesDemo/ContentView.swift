@@ -26,6 +26,23 @@ struct ContentView: View {
           .disabled(model.selectedStationIdentifier.isEmpty || model.isLoading)
           Button("Load hourly samples") { Task { await model.loadSamples() } }
             .disabled(model.selectedStationIdentifier.isEmpty || model.isLoading)
+          Button("Load measured water levels") { Task { await model.loadWaterLevels() } }
+            .disabled(model.selectedStationIdentifier.isEmpty || model.isLoading)
+        }
+        if let water = model.water {
+          Section("Measured six-minute water levels") {
+            ForEach(Array(water.observations.enumerated()), id: \.offset) { _, observation in
+              VStack(alignment: .leading) {
+                Text(observation.time.rawValue + " GMT")
+                Text(
+                  observation.height.value == nil
+                    ? "Missing height" : observation.height.rawValue + " m above MLLW")
+                Text("Quality: " + observation.quality.rawValue + "; flags: " + observation.flags)
+                  .font(.caption).foregroundStyle(.secondary)
+              }
+            }
+            if water.observations.isEmpty { Text("No measurements in this response.") }
+          }
         }
         if let samples = model.samples {
           Section("Reported hourly samples") {
@@ -71,10 +88,10 @@ struct ContentView: View {
       .navigationTitle("Tides & Currents")
       .task { if model.stations.isEmpty { await model.loadStations() } }
       .onChange(of: model.day) {
-        model.result = nil; model.samples = nil
+        model.result = nil; model.samples = nil; model.water = nil
       }
       .onChange(of: model.selectedStationIdentifier) {
-        model.result = nil; model.samples = nil
+        model.result = nil; model.samples = nil; model.water = nil
       }
       .sheet(isPresented: $showingStations) {
         NavigationStack {

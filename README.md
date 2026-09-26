@@ -22,7 +22,7 @@ The full reference, with an article per feature, is the
 | Tides & Currents (CO-OPS) | `SwiftNOAATidesModels` | `SwiftNOAATides` |
 
 The unreleased Tides & Currents products support station directories, station details, and predicted
-high/low tides, sampled tide predictions, and datum metadata.
+high/low tides, sampled tide predictions, datum metadata, and six-minute measured water levels.
 Each operation has client, reusable `TidesRequest`, and direct `TidesEndpoint` access.
 Station selection is explicit. Direct detail endpoints retain the provider envelope; the useful
 lookup requires exactly one matching station. Resource links remain metadata without extra fetches.
@@ -54,7 +54,7 @@ High/low results attach `requestedQuery`; the direct wire response has no statio
 echo. Both bounds are inclusive GMT minutes, with a maximum of ten calendar years. Times are decoded
 independently of `JSONDecoder` date strategies. Numeric strings retain their exact spelling and a
 finite numeric value. Subordinate stations require MLLW; provider refusals remain visible without
-station substitution. Measured water levels and currents are not yet implemented.
+station substitution. Verified hourly heights and currents are not yet implemented.
 
 Sampled predictions use `TidePredictionQuery` and `tidePredictions(matching:)`, with supported
 cadences from one minute to hourly and a one-calendar-year window. Their `requestedQuery` is kept
@@ -75,8 +75,24 @@ let datums = try await tides.datums(
 )
 ```
 
+Measured water levels use a separate `WaterLevelQuery` and `waterLevels(matching:)`, with a
+one-calendar-month maximum. `WaterLevels` keeps provider station metadata and observations beside
+the requested context. Empty numeric strings remain missing values; absent time steps are not
+inserted. Preliminary/verified quality codes and raw flags come from NOAA, with no age-based inference.
+
+```swift
+let measured = try WaterLevelQuery(
+  datum: .meanLowerLowWater, range: window,
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+let observations = try await tides.waterLevels(matching: measured)
+let observationRequest = TidesRequest.waterLevels(matching: measured)
+let sameObservations = try await tides.value(for: observationRequest)
+let rawObservations = try await tides.send(.waterLevels(matching: measured))
+```
+
 `Examples/SwiftNOAATidesDemo` demonstrates explicit station selection, high/low predictions and
-reported hourly sample points without interpolation.
+reported hourly sample points without interpolation, and measured six-minute water levels.
 
 ## Status
 

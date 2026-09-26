@@ -15,3 +15,6 @@ heights, convert datums, or provide navigation advice.
 
 Load hourly samples to plot reported points without interpolation. Subordinate stations may refuse
 sampled predictions; the provider message remains visible. No datum conversion is performed.
+
+Measured six-minute water levels are a separate request and display, retaining provider quality
+codes and flags. Missing heights are shown as missing, and absent time steps are not filled.

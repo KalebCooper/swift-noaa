@@ -148,9 +148,9 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .highLowTides, .tidePredictions:
+    case .highLowTides, .tidePredictions, .waterLevels:
       preconditionFailure(
-        "Prediction factories return non-Decodable contextual results and use their specialized executor."
+        "Contextual factories return non-Decodable results and use their specialized executor."
       )
     case .station(let identifier):
       let envelope = try await send(
@@ -193,6 +193,28 @@ public struct TidesClient: Sendable {
     }
     let response = try await send(.tidePredictions(matching: query))
     return TidePredictions(predictions: response.predictions, requestedQuery: query)
+  }
+
+  /// Executes measured water levels and attaches the original requested context.
+  /// - Parameter request: A water-level request created by its constrained factory.
+  /// - Returns: Observations and provider metadata with separate requested context.
+  /// - Throws: Any `TidesError` from the shared send path, including cancellation.
+  public func value(for request: TidesRequest<WaterLevels>) async throws(TidesError) -> WaterLevels
+  {
+    guard case .waterLevels(let query) = request.resolution else {
+      preconditionFailure("Only the water-level factory can construct a request for WaterLevels.")
+    }
+    let response = try await send(.waterLevels(matching: query))
+    return WaterLevels(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+
+  /// Retrieves measured six-minute water levels for explicit inclusive GMT bounds.
+  /// - Parameter query: A validated water-level observation query.
+  /// - Returns: Measurements and quality fields without filling gaps or inferring verification.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func waterLevels(matching query: WaterLevelQuery) async throws(TidesError) -> WaterLevels {
+    try await value(for: .waterLevels(matching: query))
   }
 
   private func redirect<Value>(
