@@ -12,3 +12,6 @@ No API key is required. Launching the app fetches the directory; predictions loa
 
 These are predictions, not measured water levels. The app does not calculate extrema, interpolate
 heights, convert datums, or provide navigation advice.
+
+Load hourly samples to plot reported points without interpolation. Subordinate stations may refuse
+sampled predictions; the provider message remains visible. No datum conversion is performed.

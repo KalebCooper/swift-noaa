@@ -36,6 +36,22 @@ public struct TidesClient: Sendable {
       retryPolicy: retryPolicy, transport: transport)
   }
 
+  /// Retrieves a station's datum table in explicitly requested units.
+  /// - Parameters:
+  ///   - stationIdentifier: The validated station identifier.
+  ///   - units: The requested provider unit-system code.
+  /// - Returns: The datum table and reported metadata, without height conversion.
+  /// - Throws: `TidesError.invalidQuery` for invalid units, or any shared execution failure.
+  public func datums(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    async throws(TidesError) -> CoastalDatums
+  {
+    let request: TidesRequest<CoastalDatums>
+    do { request = try .datums(stationIdentifier: stationIdentifier, units: units) } catch {
+      throw .invalidQuery(error)
+    }
+    return try await value(for: request)
+  }
+
   /// Retrieves predicted high/low events with their requested station, datum, units, and GMT range.
   /// - Parameter query: A validated high/low prediction query.
   /// - Returns: Events in provider order with requested context.
@@ -111,6 +127,16 @@ public struct TidesClient: Sendable {
     try await value(for: .stations(matching: query))
   }
 
+  /// Retrieves reported tide samples with their requested context.
+  /// - Parameter query: A validated explicit GMT sample query.
+  /// - Returns: Samples in provider order, with no interpolation or inferred events.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func tidePredictions(matching query: TidePredictionQuery) async throws(TidesError)
+    -> TidePredictions
+  {
+    try await value(for: .tidePredictions(matching: query))
+  }
+
   /// Executes a portable request using the same send path as direct endpoints.
   /// - Parameter request: The inspectable description.
   /// - Returns: The concrete response selected by its factory.
@@ -122,9 +148,9 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .highLowTides:
+    case .highLowTides, .tidePredictions:
       preconditionFailure(
-        "High/low factories return non-Decodable contextual results and use their specialized executor."
+        "Prediction factories return non-Decodable contextual results and use their specialized executor."
       )
     case .station(let identifier):
       let envelope = try await send(
@@ -152,6 +178,21 @@ public struct TidesClient: Sendable {
     }
     let response = try await send(.highLowTides(matching: query))
     return HighLowTides(predictions: response.predictions, requestedQuery: query)
+  }
+
+  /// Executes sampled tide predictions and attaches the original validated request context.
+  /// - Parameter request: A sampled tide request created by its constrained factory.
+  /// - Returns: Decoded samples and requested context, without conversion or station substitution.
+  /// - Throws: Any `TidesError` from the shared send path, including cancellation.
+  public func value(for request: TidesRequest<TidePredictions>) async throws(TidesError)
+    -> TidePredictions
+  {
+    guard case .tidePredictions(let query) = request.resolution else {
+      preconditionFailure(
+        "Only the sampled tide factory can construct a request for TidePredictions.")
+    }
+    let response = try await send(.tidePredictions(matching: query))
+    return TidePredictions(predictions: response.predictions, requestedQuery: query)
   }
 
   private func redirect<Value>(

@@ -10,6 +10,7 @@ final class TidesDemoModel {
   var isLoading = false
   var message: String?
   var result: HighLowTides?
+  var samples: TidePredictions?
   var selectedStationIdentifier = ""
   var stations: [CoastalStation] = []
 
@@ -34,6 +35,32 @@ final class TidesDemoModel {
         datum: .meanLowerLowWater, range: range,
         stationIdentifier: CoastalStationIdentifier(selectedStationIdentifier), units: .metric)
       result = try await client.highLowTides(matching: query)
+    } catch let error as TidesError {
+      show(error)
+    } catch {
+      message = "Choose a station and a valid GMT date."
+    }
+  }
+
+  func loadSamples() async {
+    guard !isLoading else { return }
+    isLoading = true
+    message = nil
+    samples = nil
+    defer { isLoading = false }
+    do {
+      var calendar = Calendar(identifier: .gregorian)
+      calendar.timeZone = .gmt
+      let begin = calendar.startOfDay(for: day)
+      guard let nextDay = calendar.date(byAdding: .day, value: 1, to: begin) else {
+        message = "Choose a valid date."
+        return
+      }
+      let range = try TidesDateRange(begin: begin, end: nextDay.addingTimeInterval(-60))
+      let query = try TidePredictionQuery(
+        datum: .meanLowerLowWater, interval: .hourly, range: range,
+        stationIdentifier: CoastalStationIdentifier(selectedStationIdentifier), units: .metric)
+      samples = try await client.tidePredictions(matching: query)
     } catch let error as TidesError {
       show(error)
     } catch {

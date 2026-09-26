@@ -1,3 +1,4 @@
+import Charts
 import SwiftNOAATidesModels
 import SwiftUI
 
@@ -23,6 +24,21 @@ struct ContentView: View {
             Task { await model.loadPredictions() }
           }
           .disabled(model.selectedStationIdentifier.isEmpty || model.isLoading)
+          Button("Load hourly samples") { Task { await model.loadSamples() } }
+            .disabled(model.selectedStationIdentifier.isEmpty || model.isLoading)
+        }
+        if let samples = model.samples {
+          Section("Reported hourly samples") {
+            Chart(Array(samples.predictions.enumerated()), id: \.offset) { _, sample in
+              PointMark(
+                x: .value("GMT time", sample.time.date),
+                y: .value("Meters above MLLW", sample.height.value))
+            }
+            .environment(\.timeZone, .gmt)
+            .frame(height: 220)
+            Text("GMT, meters above MLLW. Points are reported predictions without interpolation.")
+              .font(.footnote).foregroundStyle(.secondary)
+          }
         }
         if model.isLoading { ProgressView("Loading NOAA data") }
         if let message = model.message {
@@ -54,8 +70,12 @@ struct ContentView: View {
       }
       .navigationTitle("Tides & Currents")
       .task { if model.stations.isEmpty { await model.loadStations() } }
-      .onChange(of: model.day) { model.result = nil }
-      .onChange(of: model.selectedStationIdentifier) { model.result = nil }
+      .onChange(of: model.day) {
+        model.result = nil; model.samples = nil
+      }
+      .onChange(of: model.selectedStationIdentifier) {
+        model.result = nil; model.samples = nil
+      }
       .sheet(isPresented: $showingStations) {
         NavigationStack {
           List(filteredStations, id: \.identifier) { station in

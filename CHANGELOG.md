@@ -8,6 +8,10 @@ All notable changes are documented here, following
 
 ### Added
 
+- Sampled tide predictions with supported cadences and requested context, plus station datum
+  tables retaining epoch, reported units, descriptions and disclaimers. The Tides demo plots
+  reported hourly points without interpolation.
+
 - High/low tide predictions at client, typed request, and endpoint levels, with explicit GMT
   ranges, requested station/datum/units context, strict lossless numeric text, and open event kinds.
 - A separate Tides & Currents demo for station selection and predicted high/low events.

@@ -15,6 +15,8 @@ public enum TidesError: Error {
   case httpStatus(body: Data, code: Int)
   /// A redirect had a disallowed origin, credentials, fragment, or encoded path.
   case invalidLink(String)
+  /// A locally invalid query argument was rejected before sending.
+  case invalidQuery(TidesQueryError)
   /// A detail envelope was empty, plural, or did not match the requested identifier.
   case invalidStationResponse(expected: String, identifiers: [String], reportedCount: Int)
   /// The provider explicitly refused the query, even if it returned HTTP 200.

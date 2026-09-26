@@ -1,10 +1,116 @@
 [
   {
+    "bytes": 90,
+    "name": "invalid-station",
+    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=invalid&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
+    "recordedAt": "2026-09-26T20:35:36.651788+00:00",
+    "sha256": "a4858868af1f8bc976e38ae5b4ac1f9dd22cd8f31561e97df37c1b1c9b8d2d02",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": " The station is not a valid station or there is system error."
+    }
+  },
+  {
     "bytes": 2641,
     "name": "station",
     "path": "/mdapi/prod/webapi/stations/9414290.json",
     "recordedAt": "2026-09-26T20:35:32.216729+00:00",
     "sha256": "23d1c617cdb91ed6b8f8082406cf1bb0d5e64d32f717bc6efcbf02d9d67c16a4",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 2224,
+    "name": "station-datums",
+    "path": "/mdapi/prod/webapi/stations/9414290/datums.json?units=metric",
+    "recordedAt": "2026-09-26T20:35:34.043904+00:00",
+    "sha256": "7b5d1b79efb7656499fd91508fec05bce539f1eec177f42456ac6aa4b1b4c79f",
+    "status": 200,
+    "topLevelKeys": [
+      "accepted",
+      "superseded",
+      "epoch",
+      "units",
+      "OrthometricDatum",
+      "datums",
+      "LAT",
+      "LATdate",
+      "LATtime",
+      "HAT",
+      "HATdate",
+      "HATtime",
+      "min",
+      "mindate",
+      "mintime",
+      "max",
+      "maxdate",
+      "maxtime",
+      "disclaimers",
+      "DatumAnalysisPeriod",
+      "NGSLink",
+      "ctrlStation",
+      "self"
+    ]
+  },
+  {
+    "bytes": 2202,
+    "name": "station-datums-english",
+    "path": "/mdapi/prod/webapi/stations/9414290/datums.json?units=english",
+    "recordedAt": "2026-09-26T22:39:53.262288+00:00",
+    "sha256": "1064f5424d6ad9addca3387b105d3d20667ac5a83ebd3a990d82b947baa2ff8c",
+    "status": 200,
+    "topLevelKeys": [
+      "accepted",
+      "superseded",
+      "epoch",
+      "units",
+      "OrthometricDatum",
+      "datums",
+      "LAT",
+      "LATdate",
+      "LATtime",
+      "HAT",
+      "HATdate",
+      "HATtime",
+      "min",
+      "mindate",
+      "mintime",
+      "max",
+      "maxdate",
+      "maxtime",
+      "disclaimers",
+      "DatumAnalysisPeriod",
+      "NGSLink",
+      "ctrlStation",
+      "self"
+    ]
+  },
+  {
+    "bytes": 66,
+    "name": "station-invalid-mdapi",
+    "path": "/mdapi/prod/webapi/stations/invalid.json",
+    "recordedAt": "2026-09-26T20:58:28.786885+00:00",
+    "sha256": "c4aa5f39f5b42b7166bd38b8433eda4ab219725c41d9884bcec80748eae057a2",
+    "status": 404,
+    "topLevelKeys": [
+      "errorMsg",
+      "errorCode"
+    ]
+  },
+  {
+    "bytes": 2623,
+    "name": "station-subordinate",
+    "path": "/mdapi/prod/webapi/stations/8557863.json",
+    "recordedAt": "2026-09-26T20:35:33.597384+00:00",
+    "sha256": "185661d7bdaa813b8ade23ed6359890e3b06fe23e50e71dddd79e92953458da3",
     "status": 200,
     "topLevelKeys": [
       "count",
@@ -28,46 +134,6 @@
     ]
   },
   {
-    "bytes": 2623,
-    "name": "station-subordinate",
-    "path": "/mdapi/prod/webapi/stations/8557863.json",
-    "recordedAt": "2026-09-26T20:35:33.597384+00:00",
-    "sha256": "185661d7bdaa813b8ade23ed6359890e3b06fe23e50e71dddd79e92953458da3",
-    "status": 200,
-    "topLevelKeys": [
-      "count",
-      "units",
-      "stations",
-      "self"
-    ]
-  },
-  {
-    "bytes": 90,
-    "name": "invalid-station",
-    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=invalid&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
-    "recordedAt": "2026-09-26T20:35:36.651788+00:00",
-    "sha256": "a4858868af1f8bc976e38ae5b4ac1f9dd22cd8f31561e97df37c1b1c9b8d2d02",
-    "status": 400,
-    "topLevelKeys": [
-      "error"
-    ],
-    "providerError": {
-      "message": " The station is not a valid station or there is system error."
-    }
-  },
-  {
-    "bytes": 66,
-    "name": "station-invalid-mdapi",
-    "path": "/mdapi/prod/webapi/stations/invalid.json",
-    "recordedAt": "2026-09-26T20:58:28.786885+00:00",
-    "sha256": "c4aa5f39f5b42b7166bd38b8433eda4ab219725c41d9884bcec80748eae057a2",
-    "status": 404,
-    "topLevelKeys": [
-      "errorMsg",
-      "errorCode"
-    ]
-  },
-  {
     "bytes": 777357,
     "name": "stations-waterlevels",
     "path": "/mdapi/prod/webapi/stations.json?type=waterlevels",
@@ -82,6 +148,31 @@
     ]
   },
   {
+    "bytes": 99,
+    "name": "tide-empty-window",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A18&end_date=20260926+00%3A19&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=hilo",
+    "recordedAt": "2026-09-26T22:16:49.341818+00:00",
+    "sha256": "a9f732861c561b453fc4ee5ee1566dd47a0cfa1204fe229d5602d472790d61f7",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": "No Predictions data was found. Please make sure the Datum input is valid."
+    }
+  },
+  {
+    "bytes": 223,
+    "name": "tide-english",
+    "path": "/api/prod/datagetter?begin_date=20240926&end_date=20240926&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=english&application=swift-noaa&format=json&interval=hilo",
+    "recordedAt": "2026-09-26T20:58:30.880681+00:00",
+    "sha256": "9bb1f267d48e07e8b89b60c9dfd25880e352c6c876ddfbc6f4158cdf7d671408",
+    "status": 200,
+    "topLevelKeys": [
+      "predictions"
+    ]
+  },
+  {
     "bytes": 423,
     "name": "tide-high-low",
     "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
@@ -93,22 +184,22 @@
     ]
   },
   {
-    "bytes": 373,
-    "name": "tide-subordinate",
-    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=8557863&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
-    "recordedAt": "2026-09-26T20:35:35.350416+00:00",
-    "sha256": "12e6dbe4014c08dfb6928e77047677566444bfa8dac7aaeada60aa0779eaed96",
+    "bytes": 930,
+    "name": "tide-hourly",
+    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260926&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&interval=h&units=metric&application=swift-noaa&format=json",
+    "recordedAt": "2026-09-26T20:35:35.783842+00:00",
+    "sha256": "000e05d22b5e448091550a6c05f925403e3f6179989e9108cdf409408f6394a8",
     "status": 200,
     "topLevelKeys": [
       "predictions"
     ]
   },
   {
-    "bytes": 223,
-    "name": "tide-english",
-    "path": "/api/prod/datagetter?begin_date=20240926&end_date=20240926&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=english&application=swift-noaa&format=json&interval=hilo",
-    "recordedAt": "2026-09-26T20:58:30.880681+00:00",
-    "sha256": "9bb1f267d48e07e8b89b60c9dfd25880e352c6c876ddfbc6f4158cdf7d671408",
+    "bytes": 439,
+    "name": "tide-inclusive",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=6",
+    "recordedAt": "2026-09-26T20:58:30.038193+00:00",
+    "sha256": "a49817cc18967941c7cbe7f4fb3328cbb6eb1f3ce0e99e238e2e49567452bc4b",
     "status": 200,
     "topLevelKeys": [
       "predictions"
@@ -157,10 +248,21 @@
     }
   },
   {
+    "bytes": 373,
+    "name": "tide-subordinate",
+    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=8557863&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
+    "recordedAt": "2026-09-26T20:35:35.350416+00:00",
+    "sha256": "12e6dbe4014c08dfb6928e77047677566444bfa8dac7aaeada60aa0779eaed96",
+    "status": 200,
+    "topLevelKeys": [
+      "predictions"
+    ]
+  },
+  {
     "bytes": 99,
-    "name": "tide-empty-window",
-    "path": "/api/prod/datagetter?begin_date=20260926+00%3A18&end_date=20260926+00%3A19&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=hilo",
-    "recordedAt": "2026-09-26T22:16:49.341818+00:00",
+    "name": "tide-subordinate-sampled",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=8557863&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=6",
+    "recordedAt": "2026-09-26T20:58:33.032562+00:00",
     "sha256": "a9f732861c561b453fc4ee5ee1566dd47a0cfa1204fe229d5602d472790d61f7",
     "status": 200,
     "topLevelKeys": [

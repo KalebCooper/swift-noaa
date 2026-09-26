@@ -66,6 +66,32 @@ including at HTTP 200, and differs from a successfully decoded empty event array
 Execute `await tides.highLowTides(matching: query)`, `await tides.value(for: request)`, or
 `await tides.send(.highLowTides(matching: query))` with `try` for the same send/error behavior.
 
+## Sampled tides and datum metadata
+
+```swift
+let samples = try TidePredictionQuery(
+  datum: .meanLowerLowWater, interval: .hourly, range: range,
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+let sampleRequest = TidesRequest.tidePredictions(matching: samples)
+let datumRequest = try TidesRequest.datums(
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+```
+
+Execute `tides.tidePredictions(matching:)` or `tides.datums(stationIdentifier:units:)` for everyday
+access, `value(for:)` for stored requests, or `send(_:)` for independent wire responses.
+
+Sampled predictions have their own query, wire response and contextual result. Supported cadences
+are 1, 5, 6, 10, 15, 30 and 60 minutes, with a maximum of one Gregorian calendar year. Values remain
+reported points; the package does not interpolate a curve or infer high/low events. Subordinate
+stations reject sampled requests through the provider error path, without a reference-station fallback.
+
+The datum table retains named entries, descriptions, numeric values, epoch, reported units, analysis
+periods and disclaimers. A datum table is not permission to convert arbitrary heights. Individual
+entry descriptions can qualify units, such as hours for time intervals. Metadata dates and times
+remain provider text, without assuming GMT from the separate Data API query contract.
+
 ## Topics
 
 ### Essentials

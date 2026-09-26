@@ -103,6 +103,25 @@ public struct TidesEndpoint<Response>: Hashable, Sendable {
   }
 }
 
+extension TidesEndpoint where Response == CoastalDatums {
+  /// Retrieves a station's datum table with explicitly requested units.
+  /// - Parameters:
+  ///   - stationIdentifier: The validated station identifier.
+  ///   - units: A nonempty provider unit-system code without controls.
+  /// - Returns: One metadata endpoint, without conversion or linked-resource expansion.
+  /// - Throws: `TidesQueryError.invalidUnits` for an empty code or control characters.
+  public static func datums(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    throws(TidesQueryError) -> Self
+  {
+    guard !units.rawValue.isEmpty,
+      !units.rawValue.unicodeScalars.contains(where: { $0.properties.generalCategory == .control })
+    else { throw .invalidUnits(units.rawValue) }
+    return builtIn(
+      path: "/mdapi/prod/webapi/stations/\(stationIdentifier.rawValue)/datums.json"
+        + Self.query([URLQueryItem(name: "units", value: units.rawValue)]))
+  }
+}
+
 extension TidesEndpoint where Response == CoastalStations {
   /// Retrieves one station's complete detail envelope without unwrapping.
   /// - Parameter identifier: A validated identifier whose case is retained.
@@ -136,6 +155,27 @@ extension TidesEndpoint where Response == HighLowTideResponse {
           URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
           URLQueryItem(name: "format", value: "json"),
           URLQueryItem(name: "interval", value: "hilo"),
+          URLQueryItem(name: "product", value: "predictions"),
+          URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+          URLQueryItem(name: "time_zone", value: "gmt"),
+          URLQueryItem(name: "units", value: query.units.rawValue),
+        ]))
+  }
+}
+
+extension TidesEndpoint where Response == TidePredictionResponse {
+  /// Retrieves predicted tide samples as an independent wire envelope.
+  /// - Parameter query: A validated explicit GMT query.
+  /// - Returns: One JSON endpoint, with no station preflight or date-window splitting.
+  public static func tidePredictions(matching query: TidePredictionQuery) -> Self {
+    builtIn(
+      path: "/api/prod/datagetter"
+        + Self.query([
+          URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+          URLQueryItem(name: "datum", value: query.datum.rawValue),
+          URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+          URLQueryItem(name: "format", value: "json"),
+          URLQueryItem(name: "interval", value: String(query.interval.rawValue)),
           URLQueryItem(name: "product", value: "predictions"),
           URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
           URLQueryItem(name: "time_zone", value: "gmt"),

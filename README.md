@@ -22,7 +22,7 @@ The full reference, with an article per feature, is the
 | Tides & Currents (CO-OPS) | `SwiftNOAATidesModels` | `SwiftNOAATides` |
 
 The unreleased Tides & Currents products support station directories, station details, and predicted
-high/low tides.
+high/low tides, sampled tide predictions, and datum metadata.
 Each operation has client, reusable `TidesRequest`, and direct `TidesEndpoint` access.
 Station selection is explicit. Direct detail endpoints retain the provider envelope; the useful
 lookup requires exactly one matching station. Resource links remain metadata without extra fetches.
@@ -54,9 +54,29 @@ High/low results attach `requestedQuery`; the direct wire response has no statio
 echo. Both bounds are inclusive GMT minutes, with a maximum of ten calendar years. Times are decoded
 independently of `JSONDecoder` date strategies. Numeric strings retain their exact spelling and a
 finite numeric value. Subordinate stations require MLLW; provider refusals remain visible without
-station substitution. Sampled tides, measured water levels, and currents are not yet implemented.
+station substitution. Measured water levels and currents are not yet implemented.
 
-`Examples/SwiftNOAATidesDemo` demonstrates explicit station selection and high/low predictions.
+Sampled predictions use `TidePredictionQuery` and `tidePredictions(matching:)`, with supported
+cadences from one minute to hourly and a one-calendar-year window. Their `requestedQuery` is kept
+separate from provider data. Datum tables use `datums(stationIdentifier:units:)` and retain epoch,
+reported units, entry descriptions and disclaimers; the package performs no datum conversion.
+
+```swift
+let samples = try TidePredictionQuery(
+  datum: .meanLowerLowWater, interval: .hourly, range: window,
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+let points = try await tides.tidePredictions(matching: samples)
+let sampleRequest = TidesRequest.tidePredictions(matching: samples)
+let samePoints = try await tides.value(for: sampleRequest)
+let rawSamples = try await tides.send(.tidePredictions(matching: samples))
+let datums = try await tides.datums(
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+```
+
+`Examples/SwiftNOAATidesDemo` demonstrates explicit station selection, high/low predictions and
+reported hourly sample points without interpolation.
 
 ## Status
 

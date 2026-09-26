@@ -8,6 +8,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case highLowTides(HighLowTideQuery)
     /// Require exactly one matching station from its detail envelope.
     case station(CoastalStationIdentifier)
+    /// Attach requested context to sampled tide predictions.
+    case tidePredictions(TidePredictionQuery)
   }
 
   /// The work an executor interprets.
@@ -21,6 +23,20 @@ extension TidesRequest where Response: Decodable {
   /// - Parameter endpoint: The endpoint whose body decodes as Response.
   public init(endpoint: TidesEndpoint<Response>) {
     self.resolution = .endpoint(endpoint)
+  }
+}
+
+extension TidesRequest where Response == CoastalDatums {
+  /// Describes a station datum-table request without conversion.
+  /// - Parameters:
+  ///   - stationIdentifier: The validated station identifier.
+  ///   - units: The requested metadata unit-system code.
+  /// - Returns: A reusable single-endpoint request.
+  /// - Throws: `TidesQueryError.invalidUnits` for an empty code or control characters.
+  public static func datums(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    throws(TidesQueryError) -> Self
+  {
+    Self(endpoint: try .datums(stationIdentifier: stationIdentifier, units: units))
   }
 }
 
@@ -48,5 +64,14 @@ extension TidesRequest where Response == HighLowTides {
   /// - Returns: A reusable request that attaches context after direct wire decoding.
   public static func highLowTides(matching query: HighLowTideQuery) -> Self {
     Self(resolution: .highLowTides(query))
+  }
+}
+
+extension TidesRequest where Response == TidePredictions {
+  /// Describes sampled tide predictions with immutable requested context.
+  /// - Parameter query: The validated explicit GMT query.
+  /// - Returns: A reusable request that attaches context after direct wire decoding.
+  public static func tidePredictions(matching query: TidePredictionQuery) -> Self {
+    Self(resolution: .tidePredictions(query))
   }
 }
