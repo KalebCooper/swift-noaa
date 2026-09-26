@@ -253,7 +253,7 @@ public struct TidesClient: Sendable {
       metadata: response.metadata, observations: response.observations, requestedQuery: query)
   }
 
-  /// Executes predicted current predictions and attaches the original requested context.
+  /// Executes sampled current predictions and attaches the original requested context.
   /// - Parameter request: A request from the constrained prediction factory.
   /// - Returns: Provider records and reported units alongside the query.
   /// - Throws: Any `TidesError` from the shared send path.

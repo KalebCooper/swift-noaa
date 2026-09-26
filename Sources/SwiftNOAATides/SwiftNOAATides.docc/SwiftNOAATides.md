@@ -1,6 +1,6 @@
 # ``SwiftNOAATides``
 
-Discover NOAA CO-OPS stations and retrieve predicted high and low tides through a typed client.
+Discover NOAA CO-OPS stations and retrieve tide predictions, measured water levels, and currents.
 
 ## Overview
 
@@ -106,7 +106,7 @@ time steps remain absent. Quality is the provider's open `p`/`v` code, never inf
 
 Raw flags keep their provider order. The first preliminary flag is an outlier count; the first
 verified flag indicates an inferred value. The remaining fields describe flat, rate and level-limit
-checks. The package does not infer flood danger, subtract predictions or fill gaps. Current products are separate operations and are not yet implemented.
+checks. The package does not infer flood danger, subtract predictions or fill gaps.
 
 ## Verified hourly heights
 
@@ -120,14 +120,6 @@ value and an exceeded expected level limit. There is no echoed quality code: ver
 of the provider product definition. `HourlyWaterLevels` keeps provider metadata and observations
 alongside the original requested query. Unknown flags and empty numeric text remain observable;
 missing time steps stay absent. Observed high/low levels and daily/monthly means are unsupported.
-
-## Topics
-
-### Essentials
-
-- ``TidesClient``
-- ``TidesConfiguration``
-- ``TidesError``
 
 ## Current observations
 
@@ -180,3 +172,35 @@ Depth retains numeric strings or explicit null. Nothing converts velocity repres
 NOAA documents max/slack-only support for subordinate stations. If a sampled request receives events,
 it fails decoding instead of relabeling events as samples. Provider refusals remain provider errors;
 there is no automatic preflight, station substitution, alternate request, or interpolation.
+
+
+## CO-OPS coverage
+
+| Operation | Query / selection | Maximum explicit GMT window |
+|---|---|---|
+| Station directories and detail | `CoastalStationQuery`, `CoastalStationIdentifier` | Not a time series |
+| High/low tide predictions | `HighLowTideQuery` | 10 calendar years |
+| Sampled tide predictions | `TidePredictionQuery` | 1 calendar year |
+| Datum and current-bin metadata | Explicit station and units | Not a time series |
+| Six-minute water levels | `WaterLevelQuery` | 1 calendar month |
+| Verified hourly heights | `HourlyWaterLevelQuery` | 1 calendar year |
+| Current observations | `CurrentObservationQuery` | 1 calendar month |
+| Max/slack current predictions | `CurrentEventQuery` | 1 calendar year |
+| Sampled current predictions | `CurrentPredictionQuery` | 1 calendar month |
+
+Every operation has client, reusable request and direct endpoint access. Date bounds are inclusive
+GMT minutes. Units, datum and bin choices are explicit where applicable. Returned values and
+requested context remain separate; no rounding, splitting, interpolation or conversion occurs.
+
+Unsupported CO-OPS scope includes all-bin queries, historical deployment interpretation, local civil
+time, relative/latest selectors, observed high/low water levels, daily/monthly statistics, one-minute
+measurements, meteorological products, OFS guidance, and DPAPI. Metadata links are retained without
+resource expansion. These values do not provide navigation advice or flood-danger classification.
+
+## Topics
+
+### Essentials
+
+- ``TidesClient``
+- ``TidesConfiguration``
+- ``TidesError``

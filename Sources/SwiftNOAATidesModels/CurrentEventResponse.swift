@@ -1,4 +1,4 @@
-/// An independently decodable NOAA current-prediction envelope.
+/// An independently decodable max/slack current-event envelope.
 ///
 /// Retains provider-reported units separately from any requested unit system.
 public struct CurrentEventResponse: Codable, Hashable, Sendable {

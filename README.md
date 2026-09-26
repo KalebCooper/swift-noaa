@@ -22,7 +22,8 @@ The full reference, with an article per feature, is the
 | Tides & Currents (CO-OPS) | `SwiftNOAATidesModels` | `SwiftNOAATides` |
 
 The unreleased Tides & Currents products support station directories, station details, and predicted
-high/low tides, sampled tide predictions, datum metadata, and six-minute measured water levels.
+high/low and sampled tide predictions, datum metadata, six-minute and verified hourly water levels,
+current-bin metadata, current observations, and max/slack and sampled current predictions.
 Each operation has client, reusable `TidesRequest`, and direct `TidesEndpoint` access.
 Station selection is explicit. Direct detail endpoints retain the provider envelope; the useful
 lookup requires exactly one matching station. Resource links remain metadata without extra fetches.
@@ -54,7 +55,7 @@ High/low results attach `requestedQuery`; the direct wire response has no statio
 echo. Both bounds are inclusive GMT minutes, with a maximum of ten calendar years. Times are decoded
 independently of `JSONDecoder` date strategies. Numeric strings retain their exact spelling and a
 finite numeric value. Subordinate stations require MLLW; provider refusals remain visible without
-station substitution. Currents are not yet implemented.
+station substitution. Current observations and predictions are separate operations below.
 
 Sampled predictions use `TidePredictionQuery` and `tidePredictions(matching:)`, with supported
 cadences from one minute to hourly and a one-calendar-year window. Their `requestedQuery` is kept
@@ -93,6 +94,90 @@ let rawObservations = try await tides.send(.waterLevels(matching: measured))
 
 `Examples/SwiftNOAATidesDemo` demonstrates explicit station selection, high/low predictions and
 reported hourly sample points without interpolation, and measured six-minute water levels.
+
+
+### Verified hourly heights
+
+Verified hourly heights use `HourlyWaterLevelQuery` and `hourlyWaterLevels(matching:)` at the same
+three access levels. They select the separate `hourly_height` product, retain its two raw flags,
+and accept explicit GMT windows up to one calendar year. Observed high/low and daily/monthly
+statistics remain unsupported.
+
+## Current observations
+
+Discover `.currents`, `.historicCurrents`, or `.surveyCurrents` stations, then load
+`currentBins(stationIdentifier:units:)` to inspect available bins. Metadata does not establish
+historical depth: deployments can change the relationship between bin and depth.
+
+```swift
+let query = try CurrentObservationQuery(
+  bin: .explicit(4), range: window,
+  stationIdentifier: CoastalStationIdentifier("cb0102"), units: .metric)
+let measured = try await tides.currentObservations(matching: query)
+let request = TidesRequest.currentObservations(matching: query)
+let reusable = try await tides.value(for: request)
+let wire = try await tides.send(.currentObservations(matching: query))
+```
+
+A query requires either a positive explicit bin or `.providerDefault`, and accepts up to one
+calendar month of inclusive GMT minutes. Observations preserve the reported bin, direction in
+degrees, and speed: metric means **centimeters per second**, English means knots. No metadata
+preflight, depth inference, gap filling, or all-bin access occurs. Bin tables retain reported units,
+quality flags, nullable depth/distance, and a null table when NOAA returns one. Station deployment
+and retrieval times remain provider text without an assumed UTC offset. Detailed beam diagnostics
+and deployment-history retrieval are not supported.
+
+## Current predictions
+
+`currentEvents(matching:)` returns max/slack events from `CurrentEventQuery`. Events always request
+major-axis velocity, retain signs and mean flood/ebb directions, and allow one calendar year.
+A slack event can have nonzero velocity. `currentPredictions(matching:)` uses `CurrentPredictionQuery`
+with a supported cadence (1, 6, 10, 30, or 60 minutes), a requested velocity mode, and at most one
+calendar month. Both require an explicit positive bin or `.providerDefault`; predictions default
+to the bin nearest the surface when NOAA supports that choice.
+
+```swift
+let query = try CurrentPredictionQuery(
+  bin: .explicit(14), interval: .hourly, mode: .speedAndDirection, range: window,
+  stationIdentifier: CoastalStationIdentifier("EPT0003"), units: .metric)
+let samples = try await tides.currentPredictions(matching: query)
+let request = TidesRequest.currentPredictions(matching: query)
+let reusable = try await tides.value(for: request)
+let wire = try await tides.send(.currentPredictions(matching: query))
+```
+
+Each sample's `CurrentVelocity` describes the **actual** major-axis or speed/direction fields.
+NOAA can return major-axis data for a speed/direction request; the requested mode remains in
+`requestedQuery` and never overrides those fields. Provider-reported units remain separate text.
+Depth retains numeric strings or explicit null. Nothing converts velocity representations or units.
+
+NOAA documents max/slack-only support for subordinate stations. If a sampled request receives events,
+it fails decoding instead of relabeling events as samples. Provider refusals remain provider errors;
+there is no automatic preflight, station substitution, alternate request, or interpolation.
+
+
+## CO-OPS coverage
+
+| Operation | Query / selection | Maximum explicit GMT window |
+|---|---|---|
+| Station directories and detail | `CoastalStationQuery`, `CoastalStationIdentifier` | Not a time series |
+| High/low tide predictions | `HighLowTideQuery` | 10 calendar years |
+| Sampled tide predictions | `TidePredictionQuery` | 1 calendar year |
+| Datum and current-bin metadata | Explicit station and units | Not a time series |
+| Six-minute water levels | `WaterLevelQuery` | 1 calendar month |
+| Verified hourly heights | `HourlyWaterLevelQuery` | 1 calendar year |
+| Current observations | `CurrentObservationQuery` | 1 calendar month |
+| Max/slack current predictions | `CurrentEventQuery` | 1 calendar year |
+| Sampled current predictions | `CurrentPredictionQuery` | 1 calendar month |
+
+Every operation has client, reusable request and direct endpoint access. Date bounds are inclusive
+GMT minutes. Units, datum and bin choices are explicit where applicable. Returned values and
+requested context remain separate; no rounding, splitting, interpolation or conversion occurs.
+
+Unsupported CO-OPS scope includes all-bin queries, historical deployment interpretation, local civil
+time, relative/latest selectors, observed high/low water levels, daily/monthly statistics, one-minute
+measurements, meteorological products, OFS guidance, and DPAPI. Metadata links are retained without
+resource expansion. These values do not provide navigation advice or flood-danger classification.
 
 ## Status
 
@@ -429,6 +514,8 @@ closed in Xcode, since Xcode opens a local package in only one window.
 
 | Product | What it is | Depends on |
 |---|---|---|
+| `SwiftNOAATidesModels` | Portable CO-OPS models, validated queries, endpoints and request descriptions. | Nothing. |
+| `SwiftNOAATides` | TidesClient, configuration, typed errors, and shared transport execution. | SwiftNOAATidesModels, swifty-networking, swift-http-types. |
 | `SwiftNWSModels` | `Codable` models for every supported response, typed `Endpoint` and `WeatherRequest` values, validated queries and coordinates, and open code values. Usable with any networking stack. | Nothing. |
 | `SwiftNWS` | `NWSClient`, `NWSConfiguration`, `NWSError`, `PointCache`, the page and item sequences, the retry policy, and WMO unit conversion. Re-exports swifty-networking's `HTTPCore`, so `Transport` and `TransportError` need no import of their own. | `SwiftNWSModels`, swifty-networking, swift-http-types. |
 
@@ -460,66 +547,10 @@ On Linux or Android, enable the trait on the dependency:
 ```
 
 Until 1.0.0, a minor release can change the public API, so pin to the minor version. Then add
-`SwiftNWS`, or only `SwiftNWSModels`, to your target's dependencies. See
+the service SDK and models, or only its models product, to your target's dependencies. The CO-OPS
+products are unreleased; use a local package reference to this checkout until publication. See
 [CONTRIBUTING.md](CONTRIBUTING.md) to build and test the package locally.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-Verified hourly heights use `HourlyWaterLevelQuery` and `hourlyWaterLevels(matching:)` at the same
-three access levels. They select the separate `hourly_height` product, retain its two raw flags,
-and accept explicit GMT windows up to one calendar year. Observed high/low and daily/monthly
-statistics remain unsupported.
-
-## Current observations
-
-Discover `.currents`, `.historicCurrents`, or `.surveyCurrents` stations, then load
-`currentBins(stationIdentifier:units:)` to inspect available bins. Metadata does not establish
-historical depth: deployments can change the relationship between bin and depth.
-
-```swift
-let query = try CurrentObservationQuery(
-  bin: .explicit(4), range: window,
-  stationIdentifier: CoastalStationIdentifier("cb0102"), units: .metric)
-let measured = try await tides.currentObservations(matching: query)
-let request = TidesRequest.currentObservations(matching: query)
-let reusable = try await tides.value(for: request)
-let wire = try await tides.send(.currentObservations(matching: query))
-```
-
-A query requires either a positive explicit bin or `.providerDefault`, and accepts up to one
-calendar month of inclusive GMT minutes. Observations preserve the reported bin, direction in
-degrees, and speed: metric means **centimeters per second**, English means knots. No metadata
-preflight, depth inference, gap filling, or all-bin access occurs. Bin tables retain reported units,
-quality flags, nullable depth/distance, and a null table when NOAA returns one. Station deployment
-and retrieval times remain provider text without an assumed UTC offset. Detailed beam diagnostics
-and deployment-history retrieval are not supported.
-
-## Current predictions
-
-`currentEvents(matching:)` returns max/slack events from `CurrentEventQuery`. Events always request
-major-axis velocity, retain signs and mean flood/ebb directions, and allow one calendar year.
-A slack event can have nonzero velocity. `currentPredictions(matching:)` uses `CurrentPredictionQuery`
-with a supported cadence (1, 6, 10, 30, or 60 minutes), a requested velocity mode, and at most one
-calendar month. Both require an explicit positive bin or `.providerDefault`; predictions default
-to the bin nearest the surface when NOAA supports that choice.
-
-```swift
-let query = try CurrentPredictionQuery(
-  bin: .explicit(14), interval: .hourly, mode: .speedAndDirection, range: window,
-  stationIdentifier: CoastalStationIdentifier("EPT0003"), units: .metric)
-let samples = try await tides.currentPredictions(matching: query)
-let request = TidesRequest.currentPredictions(matching: query)
-let reusable = try await tides.value(for: request)
-let wire = try await tides.send(.currentPredictions(matching: query))
-```
-
-Each sample's `CurrentVelocity` describes the **actual** major-axis or speed/direction fields.
-NOAA can return major-axis data for a speed/direction request; the requested mode remains in
-`requestedQuery` and never overrides those fields. Provider-reported units remain separate text.
-Depth retains numeric strings or explicit null. Nothing converts velocity representations or units.
-
-NOAA documents max/slack-only support for subordinate stations. If a sampled request receives events,
-it fails decoding instead of relabeling events as samples. Provider refusals remain provider errors;
-there is no automatic preflight, station substitution, alternate request, or interpolation.

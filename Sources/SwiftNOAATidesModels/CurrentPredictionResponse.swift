@@ -1,4 +1,4 @@
-/// An independently decodable NOAA current-prediction envelope.
+/// An independently decodable sampled-current prediction envelope.
 ///
 /// Retains provider-reported units separately from any requested unit system.
 public struct CurrentPredictionResponse: Codable, Hashable, Sendable {

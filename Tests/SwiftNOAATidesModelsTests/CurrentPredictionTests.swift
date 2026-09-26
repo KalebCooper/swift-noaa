@@ -5,6 +5,19 @@ import Testing
 
 @Suite("Current prediction models", .timeLimit(.minutes(suiteTimeLimitMinutes)))
 struct CurrentPredictionTests {
+  @Test("Current event kinds remain open and null depths round trip")
+  func currentEventKindsRemainOpenAndNullDepthsRoundTrip() throws {
+    enum Kind: String { case future = "future" }
+    #expect(CurrentEventKind(Kind.future).rawValue == "future")
+    let body =
+      #"{"Bin":"1","Depth":null,"Type":"future","meanEbbDir":242,"meanFloodDir":61,"Time":"2026-09-26 02:40","Velocity_Major":-0.3}"#
+    let event = try JSONDecoder().decode(CurrentEvent.self, from: Data(body.utf8))
+    #expect(event.kind.rawValue == "future")
+    #expect(event.depth == nil)
+    #expect(event.velocityMajor == -0.3)
+    #expect(try JSONDecoder().decode(CurrentEvent.self, from: JSONEncoder().encode(event)) == event)
+  }
+
   @Test("Current event queries fix max slack and validate calendar years")
   func currentEventQueriesFixMaxSlackAndValidateCalendarYears() throws {
     let begin = try TidesTimestamp("2024-02-29 00:00").date
@@ -29,19 +42,6 @@ struct CurrentPredictionTests {
       try CurrentEventQuery(
         bin: .explicit(0), range: query.range, stationIdentifier: station, units: .metric)
     }
-  }
-
-  @Test("Current event kinds remain open and null depths round trip")
-  func currentEventKindsRemainOpenAndNullDepthsRoundTrip() throws {
-    enum Kind: String { case future = "future" }
-    #expect(CurrentEventKind(Kind.future).rawValue == "future")
-    let body =
-      #"{"Bin":"1","Depth":null,"Type":"future","meanEbbDir":242,"meanFloodDir":61,"Time":"2026-09-26 02:40","Velocity_Major":-0.3}"#
-    let event = try JSONDecoder().decode(CurrentEvent.self, from: Data(body.utf8))
-    #expect(event.kind.rawValue == "future")
-    #expect(event.depth == nil)
-    #expect(event.velocityMajor == -0.3)
-    #expect(try JSONDecoder().decode(CurrentEvent.self, from: JSONEncoder().encode(event)) == event)
   }
 
   @Test("Current prediction queries permit only sampled cadences and calendar months")

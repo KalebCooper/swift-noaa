@@ -1,4 +1,4 @@
-/// Predicted current predictions with requested context separate from provider-reported units.
+/// Sampled current predictions with requested context separate from provider-reported units.
 ///
 /// Returned by `currentPredictions(matching:)`; values are not observations or navigation advice.
 public struct CurrentPredictions: Hashable, Sendable {

@@ -10,7 +10,7 @@ high and low tides. The app requests meters above MLLW and displays the provider
 Subordinate stations remain selectable; provider refusals are shown without substituting stations.
 No API key is required. Launching the app fetches the directory; predictions load only on request.
 
-These are predictions, not measured water levels. The app does not calculate extrema, interpolate
+Prediction sections are separate from measured water levels and currents. The app does not calculate extrema, interpolate
 heights, convert datums, or provide navigation advice.
 
 Load hourly samples to plot reported points without interpolation. Subordinate stations may refuse

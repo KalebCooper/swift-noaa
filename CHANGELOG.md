@@ -11,12 +11,8 @@ All notable changes are documented here, following
 - Max/slack current events and sampled current predictions, preserving actual velocity
   representations, signed values, nullable depths, reported units, and requested context.
 
-### Added
-
 - Current station and bin metadata, explicit-bin or provider-default measured currents, and a
   current-observation demo with separate requested velocity units and GMT context.
-
-### Added
 
 - Verified hourly water levels as a separate product, with its own query, flag semantics,
   requested context, fixtures, and demo display.
