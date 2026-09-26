@@ -1,6 +1,6 @@
 # ``SwiftNOAATides``
 
-Discover NOAA CO-OPS stations and retrieve their metadata through a typed client.
+Discover NOAA CO-OPS stations and retrieve predicted high and low tides through a typed client.
 
 ## Overview
 
@@ -36,6 +36,35 @@ attempt budget applies independently to each redirect hop. No retry policy is in
 provider prose. Both Data API and Metadata API refusals become ``TidesError/provider(_:)``, even
 when carried by HTTP 200. Malformed bodies, HTTP failures without a refusal, and transport
 cancellation remain distinguishable.
+
+## Predicted high and low tides
+
+```swift
+let range = try TidesDateRange(
+  begin: TidesTimestamp("2026-09-26 00:00").date,
+  end: TidesTimestamp("2026-09-27 23:59").date
+)
+let query = try HighLowTideQuery(
+  datum: .meanLowerLowWater, range: range,
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+let request = TidesRequest.highLowTides(matching: query)
+```
+
+The useful result keeps events with `requestedQuery`. This context is requested, not echoed by
+NOAA. Direct endpoint responses decode independently with an ordinary JSONDecoder and no userInfo.
+Timestamps are strict GMT minutes; custom date-decoding strategies do not change their interpretation.
+Both range bounds are inclusive. The high/low window is limited to ten Gregorian calendar years,
+including leap-day handling; no date rounding, splitting, interpolation, or extrema calculation occurs.
+Metric heights are meters and English heights are feet, relative to the explicitly requested datum.
+Numeric strings retain their exact spelling; missing or malformed required values fail decoding.
+
+Subordinate tide stations require MLLW and support high/low predictions only. The client performs no
+capability preflight or station substitution. A provider refusal for no data remains an error,
+including at HTTP 200, and differs from a successfully decoded empty event array.
+
+Execute `await tides.highLowTides(matching: query)`, `await tides.value(for: request)`, or
+`await tides.send(.highLowTides(matching: query))` with `try` for the same send/error behavior.
 
 ## Topics
 

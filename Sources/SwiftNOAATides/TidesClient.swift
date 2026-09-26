@@ -36,6 +36,16 @@ public struct TidesClient: Sendable {
       retryPolicy: retryPolicy, transport: transport)
   }
 
+  /// Retrieves predicted high/low events with their requested station, datum, units, and GMT range.
+  /// - Parameter query: A validated high/low prediction query.
+  /// - Returns: Events in provider order with requested context.
+  /// - Throws: Any `TidesError` from endpoint execution; provider refusals remain observable.
+  public func highLowTides(matching query: HighLowTideQuery) async throws(TidesError)
+    -> HighLowTides
+  {
+    try await value(for: .highLowTides(matching: query))
+  }
+
   /// Sends a JSON endpoint, following at most five validated same-origin redirects.
   /// - Parameter endpoint: A built-in or consumer-defined endpoint.
   /// - Returns: The wire response, without request context.
@@ -112,6 +122,10 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
+    case .highLowTides:
+      preconditionFailure(
+        "High/low factories return non-Decodable contextual results and use their specialized executor."
+      )
     case .station(let identifier):
       let envelope = try await send(
         TidesEndpoint.station(identifier: identifier).decoding(StationEnvelope<Value>.self))
@@ -124,6 +138,20 @@ public struct TidesClient: Sendable {
       }
       return station.value
     }
+  }
+
+  /// Executes high/low predictions and attaches the original validated request context.
+  /// - Parameter request: A high/low request created by its constrained factory.
+  /// - Returns: Decoded events and requested context, without conversion or station substitution.
+  /// - Throws: Any `TidesError` from the shared send path, including cancellation.
+  public func value(for request: TidesRequest<HighLowTides>) async throws(TidesError)
+    -> HighLowTides
+  {
+    guard case .highLowTides(let query) = request.resolution else {
+      preconditionFailure("Only the high/low factory can construct a request for HighLowTides.")
+    }
+    let response = try await send(.highLowTides(matching: query))
+    return HighLowTides(predictions: response.predictions, requestedQuery: query)
   }
 
   private func redirect<Value>(

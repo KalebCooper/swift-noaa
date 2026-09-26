@@ -21,7 +21,8 @@ The full reference, with an article per feature, is the
 | National Weather Service | `SwiftNWSModels` | `SwiftNWS` |
 | Tides & Currents (CO-OPS) | `SwiftNOAATidesModels` | `SwiftNOAATides` |
 
-The unreleased Tides & Currents products support station directories and station details.
+The unreleased Tides & Currents products support station directories, station details, and predicted
+high/low tides.
 Each operation has client, reusable `TidesRequest`, and direct `TidesEndpoint` access.
 Station selection is explicit. Direct detail endpoints retain the provider envelope; the useful
 lookup requires exactly one matching station. Resource links remain metadata without extra fetches.
@@ -34,7 +35,28 @@ let tides = TidesClient()
 let query = try CoastalStationQuery(type: .tidePredictions)
 let directory = try await tides.stations(matching: query)
 let station = try await tides.station(identifier: CoastalStationIdentifier("9414290"))
+
+let window = try TidesDateRange(
+  begin: TidesTimestamp("2026-09-26 00:00").date,
+  end: TidesTimestamp("2026-09-27 23:59").date
+)
+let predictions = try HighLowTideQuery(
+  datum: .meanLowerLowWater, range: window,
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+let events = try await tides.highLowTides(matching: predictions)
+let reusable = TidesRequest.highLowTides(matching: predictions)
+let sameEvents = try await tides.value(for: reusable)
+let wire = try await tides.send(.highLowTides(matching: predictions))
 ```
+
+High/low results attach `requestedQuery`; the direct wire response has no station, datum, or unit
+echo. Both bounds are inclusive GMT minutes, with a maximum of ten calendar years. Times are decoded
+independently of `JSONDecoder` date strategies. Numeric strings retain their exact spelling and a
+finite numeric value. Subordinate stations require MLLW; provider refusals remain visible without
+station substitution. Sampled tides, measured water levels, and currents are not yet implemented.
+
+`Examples/SwiftNOAATidesDemo` demonstrates explicit station selection and high/low predictions.
 
 ## Status
 

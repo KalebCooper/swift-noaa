@@ -4,6 +4,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
   public enum Resolution: Hashable, Sendable {
     /// Decode a single endpoint directly as Response.
     case endpoint(TidesEndpoint<Response>)
+    /// Attach requested context to predicted high/low events.
+    case highLowTides(HighLowTideQuery)
     /// Require exactly one matching station from its detail envelope.
     case station(CoastalStationIdentifier)
   }
@@ -37,5 +39,14 @@ extension TidesRequest where Response == CoastalStations {
   /// - Returns: A request that keeps the directory envelope.
   public static func stations(matching query: CoastalStationQuery) -> Self {
     Self(endpoint: .stations(matching: query))
+  }
+}
+
+extension TidesRequest where Response == HighLowTides {
+  /// Describes high/low predictions with immutable requested context.
+  /// - Parameter query: The validated explicit GMT query.
+  /// - Returns: A reusable request that attaches context after direct wire decoding.
+  public static func highLowTides(matching query: HighLowTideQuery) -> Self {
+    Self(resolution: .highLowTides(query))
   }
 }

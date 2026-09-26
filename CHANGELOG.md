@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- High/low tide predictions at client, typed request, and endpoint levels, with explicit GMT
+  ranges, requested station/datum/units context, strict lossless numeric text, and open event kinds.
+- A separate Tides & Currents demo for station selection and predicted high/low events.
 - Independent `SwiftNOAATidesModels` and `SwiftNOAATides` products for CO-OPS station discovery
   and detail at client, typed request, and endpoint levels. Directory order, detail metadata,
   unknown station kinds, null resource links, and provider error messages are retained.

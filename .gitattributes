@@ -1,0 +1,2 @@
+# Recorded provider bodies retain trailing blank lines for byte-exact provenance.
+Sources/SwiftNOAATidesTestSupport/Fixtures/*.json whitespace=-blank-at-eof

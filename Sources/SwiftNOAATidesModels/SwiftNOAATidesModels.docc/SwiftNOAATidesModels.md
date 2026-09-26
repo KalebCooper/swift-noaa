@@ -1,6 +1,6 @@
 # ``SwiftNOAATidesModels``
 
-Portable CO-OPS station models and request descriptions, without networking dependencies.
+Portable CO-OPS station and tide models with request descriptions, without networking dependencies.
 
 ## Overview
 
@@ -21,6 +21,32 @@ malformed responses are errors. Names, provider order, empty strings, unknown ki
 indicators, and optional resource links retain the provider representation. No resource is fetched
 automatically. Time zone labels and offsets are metadata, not IANA zones.
 
+## Predicted high and low tides
+
+```swift
+let range = try TidesDateRange(
+  begin: TidesTimestamp("2026-09-26 00:00").date,
+  end: TidesTimestamp("2026-09-27 23:59").date
+)
+let query = try HighLowTideQuery(
+  datum: .meanLowerLowWater, range: range,
+  stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
+)
+let request = TidesRequest.highLowTides(matching: query)
+```
+
+The useful result keeps events with `requestedQuery`. This context is requested, not echoed by
+NOAA. Direct endpoint responses decode independently with an ordinary JSONDecoder and no userInfo.
+Timestamps are strict GMT minutes; custom date-decoding strategies do not change their interpretation.
+Both range bounds are inclusive. The high/low window is limited to ten Gregorian calendar years,
+including leap-day handling; no date rounding, splitting, interpolation, or extrema calculation occurs.
+Metric heights are meters and English heights are feet, relative to the explicitly requested datum.
+Numeric strings retain their exact spelling; missing or malformed required values fail decoding.
+
+Subordinate tide stations require MLLW and support high/low predictions only. The client performs no
+capability preflight or station substitution. A provider refusal for no data remains an error,
+including at HTTP 200, and differs from a successfully decoded empty event array.
+
 ## Topics
 
 ### Stations
@@ -39,3 +65,16 @@ automatically. Time zone labels and offsets are metadata, not IANA zones.
 - ``TidesProviderError``
 - ``TidesQueryError``
 - ``TidesRequest``
+
+### High and low tides
+
+- ``HighLowTide``
+- ``HighLowTideQuery``
+- ``HighLowTideResponse``
+- ``HighLowTides``
+- ``TideDatum``
+- ``TideEventKind``
+- ``TidesDateRange``
+- ``TidesNumericValue``
+- ``TidesTimestamp``
+- ``TidesUnits``

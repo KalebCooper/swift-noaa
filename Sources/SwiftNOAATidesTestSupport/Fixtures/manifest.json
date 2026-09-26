@@ -80,5 +80,94 @@
       "stations",
       "self"
     ]
+  },
+  {
+    "bytes": 423,
+    "name": "tide-high-low",
+    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
+    "recordedAt": "2026-09-26T20:35:34.924672+00:00",
+    "sha256": "5a1519d1ad4f0b67b5a30aaa3ca1d5ea71f567010db899ec96ebcde34eea2b4e",
+    "status": 200,
+    "topLevelKeys": [
+      "predictions"
+    ]
+  },
+  {
+    "bytes": 373,
+    "name": "tide-subordinate",
+    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=8557863&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
+    "recordedAt": "2026-09-26T20:35:35.350416+00:00",
+    "sha256": "12e6dbe4014c08dfb6928e77047677566444bfa8dac7aaeada60aa0779eaed96",
+    "status": 200,
+    "topLevelKeys": [
+      "predictions"
+    ]
+  },
+  {
+    "bytes": 223,
+    "name": "tide-english",
+    "path": "/api/prod/datagetter?begin_date=20240926&end_date=20240926&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=english&application=swift-noaa&format=json&interval=hilo",
+    "recordedAt": "2026-09-26T20:58:30.880681+00:00",
+    "sha256": "9bb1f267d48e07e8b89b60c9dfd25880e352c6c876ddfbc6f4158cdf7d671408",
+    "status": 200,
+    "topLevelKeys": [
+      "predictions"
+    ]
+  },
+  {
+    "bytes": 99,
+    "name": "tide-invalid-datum",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=predictions&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=hilo",
+    "recordedAt": "2026-09-26T20:58:31.311926+00:00",
+    "sha256": "a9f732861c561b453fc4ee5ee1566dd47a0cfa1204fe229d5602d472790d61f7",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": "No Predictions data was found. Please make sure the Datum input is valid."
+    }
+  },
+  {
+    "bytes": 79,
+    "name": "tide-no-data",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9063020&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=hilo",
+    "recordedAt": "2026-09-26T20:58:31.769815+00:00",
+    "sha256": "1080639479766e0aeedcf0ddaa9db06a17e18a99cea7cdbb196165213fba8751",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": " Great Lakes stations don't have Predictions data."
+    }
+  },
+  {
+    "bytes": 159,
+    "name": "tide-reversed",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240925&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=hilo",
+    "recordedAt": "2026-09-26T20:58:32.194885+00:00",
+    "sha256": "04aa454199e4dfa0c83f08e854546d605397c82d98d5c3fe41494a301082032a",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": " Wrong Date: The requested begin/end date or range are not valid.  Wrong Date: The end date should be greater than the begin date "
+    }
+  },
+  {
+    "bytes": 99,
+    "name": "tide-empty-window",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A18&end_date=20260926+00%3A19&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=hilo",
+    "recordedAt": "2026-09-26T22:16:49.341818+00:00",
+    "sha256": "a9f732861c561b453fc4ee5ee1566dd47a0cfa1204fe229d5602d472790d61f7",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": "No Predictions data was found. Please make sure the Datum input is valid."
+    }
   }
 ]

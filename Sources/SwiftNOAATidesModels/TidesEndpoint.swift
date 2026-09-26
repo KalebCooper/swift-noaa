@@ -122,3 +122,24 @@ extension TidesEndpoint where Response == CoastalStations {
         ]))
   }
 }
+
+extension TidesEndpoint where Response == HighLowTideResponse {
+  /// Retrieves predicted high/low events as an independent wire envelope.
+  /// - Parameter query: A validated explicit GMT query.
+  /// - Returns: One JSON endpoint, with no station preflight or date-window splitting.
+  public static func highLowTides(matching query: HighLowTideQuery) -> Self {
+    builtIn(
+      path: "/api/prod/datagetter"
+        + Self.query([
+          URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+          URLQueryItem(name: "datum", value: query.datum.rawValue),
+          URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+          URLQueryItem(name: "format", value: "json"),
+          URLQueryItem(name: "interval", value: "hilo"),
+          URLQueryItem(name: "product", value: "predictions"),
+          URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+          URLQueryItem(name: "time_zone", value: "gmt"),
+          URLQueryItem(name: "units", value: query.units.rawValue),
+        ]))
+  }
+}
