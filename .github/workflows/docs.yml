@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     name: Build DocC site
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -35,7 +35,7 @@ jobs:
           set -o pipefail
           xcodebuild build \
             -scheme SwiftNWS \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2' \
+            -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' \
             -derivedDataPath .derivedData \
             -skipPackagePluginValidation \
             | xcbeautify --renderer github-actions
