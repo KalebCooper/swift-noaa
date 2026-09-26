@@ -1,0 +1,41 @@
+{
+  "count": 1,
+  "units": null,
+  "stations": [
+    {
+      "project": "Cape Fear 2016 Current Survey",
+      "deployed": "2016-03-17 15:05:00",
+      "retrieved": "2016-05-11 18:24:00",
+      "timezone_offset": "-5",
+      "observedst": true,
+      "project_type": "Survey",
+      "noaachart": null,
+      "deployments": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/CFR1624/deployments.json"
+      },
+      "bins": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/CFR1624/bins.json"
+      },
+      "harmonicConstituents": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/CFR1624/harcon.json"
+      },
+      "height_from_bottom": 0.5,
+      "center_bin_1_dist": 2.11,
+      "id": "CFR1624",
+      "name": "Southport",
+      "lat": 33.91537857055664,
+      "lng": -78.01215362548828,
+      "affiliations": "",
+      "portscode": "",
+      "products": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/CFR1624/products.json"
+      },
+      "disclaimers": null,
+      "notices": null,
+      "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/CFR1624.json",
+      "expand": "deployments,bins,harcon",
+      "tideType": ""
+    }
+  ],
+  "self": null
+}

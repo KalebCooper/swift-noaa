@@ -1,0 +1,10 @@
+{
+  "nbr_of_bins": 0,
+  "max_pics_bin": null,
+  "units": null,
+  "bin_size": null,
+  "center_bin_1_dist": null,
+  "real_time_bin": null,
+  "bins": null,
+  "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/invalid/bins.json"
+}

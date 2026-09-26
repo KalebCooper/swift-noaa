@@ -8,6 +8,11 @@ All notable changes are documented here, following
 
 ### Added
 
+- Current station and bin metadata, explicit-bin or provider-default measured currents, and a
+  current-observation demo with separate requested velocity units and GMT context.
+
+### Added
+
 - Verified hourly water levels as a separate product, with its own query, flag semantics,
   requested context, fixtures, and demo display.
 

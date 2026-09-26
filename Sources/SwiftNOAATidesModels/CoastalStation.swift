@@ -14,8 +14,20 @@ public struct CoastalStation: Codable, Equatable, Sendable {
   /// The provider's `benchmarks` field, without normalization.
   public let benchmarks: CoastalResource?
 
+  /// Bin-table resource, not automatically expanded.
+  public let bins: CoastalResource?
+
+  /// Reported first-bin center distance; units belong to the station envelope.
+  public let centerOfFirstBinDistance: Double?
+
   /// The provider's `datums` field, without normalization.
   public let datums: CoastalResource?
+
+  /// Deployment time as provider text, with no assumed UTC offset.
+  public let deployed: String?
+
+  /// Deployment-history resource, not automatically expanded.
+  public let deployments: CoastalResource?
 
   /// The provider's `details` field, without normalization.
   public let details: CoastalResource?
@@ -37,6 +49,9 @@ public struct CoastalStation: Codable, Equatable, Sendable {
 
   /// The provider's `harmonicConstituents` field, without normalization.
   public let harmonicConstituents: CoastalResource?
+
+  /// Reported instrument height from bottom in station-envelope units.
+  public let heightFromBottom: Double?
 
   /// The provider's `HTFhistorical` field, without normalization.
   public let highTideFloodingHistorical: Bool?
@@ -65,6 +80,9 @@ public struct CoastalStation: Codable, Equatable, Sendable {
   /// The provider's `nearby` field, without normalization.
   public let nearby: CoastalResource?
 
+  /// The provider's NOAA chart number.
+  public let noaaChart: Int?
+
   /// The provider's `nonNavigational` field, without normalization.
   public let nonNavigational: Bool?
 
@@ -86,8 +104,17 @@ public struct CoastalStation: Codable, Equatable, Sendable {
   /// The provider's `products` field, without normalization.
   public let products: CoastalResource?
 
+  /// Current survey or PORTS project name.
+  public let project: String?
+
+  /// Provider project-type text, retaining unknown values.
+  public let projectType: String?
+
   /// The provider's `reference_id` field, without normalization.
   public let referenceIdentifier: String?
+
+  /// Retrieval time as provider text, retaining empty strings.
+  public let retrieved: String?
 
   /// The provider's `sensors` field, without normalization.
   public let sensors: CoastalResource?
@@ -125,13 +152,20 @@ public struct CoastalStation: Codable, Equatable, Sendable {
   /// The provider's `timezonecorr` field, without normalization.
   public let timeZoneCorrection: Double?
 
+  /// Provider offset text, without inferring an IANA time zone.
+  public let timeZoneOffset: String?
+
   /// The provider's `self` field, without normalization.
   public let url: String?
 
   private enum CodingKeys: String, CodingKey {
     case affiliations
     case benchmarks
+    case bins
+    case centerOfFirstBinDistance = "center_bin_1_dist"
     case datums
+    case deployed
+    case deployments
     case details
     case disclaimers
     case expansion = "expand"
@@ -139,6 +173,7 @@ public struct CoastalStation: Codable, Equatable, Sendable {
     case forecast
     case greatLakes = "greatlakes"
     case harmonicConstituents
+    case heightFromBottom = "height_from_bottom"
     case highTideFloodingHistorical = "HTFhistorical"
     case highTideFloodingMonthly = "HTFmonthly"
     case identifier = "id"
@@ -148,6 +183,7 @@ public struct CoastalStation: Codable, Equatable, Sendable {
     case longitude = "lng"
     case name
     case nearby
+    case noaaChart = "noaachart"
     case nonNavigational
     case notices
     case observesDaylightSavingTime = "observedst"
@@ -155,7 +191,10 @@ public struct CoastalStation: Codable, Equatable, Sendable {
     case outlook
     case portsCode = "portscode"
     case products
+    case project
+    case projectType = "project_type"
     case referenceIdentifier = "reference_id"
+    case retrieved
     case sensors
     case shefCode = "shefcode"
     case state
@@ -168,6 +207,7 @@ public struct CoastalStation: Codable, Equatable, Sendable {
     case timeMeridian = "timemeridian"
     case timeZone = "timezone"
     case timeZoneCorrection = "timezonecorr"
+    case timeZoneOffset = "timezone_offset"
     case url = "self"
   }
 }

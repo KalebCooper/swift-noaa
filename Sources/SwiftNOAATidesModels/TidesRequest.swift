@@ -2,6 +2,8 @@
 public struct TidesRequest<Response>: Hashable, Sendable {
   /// The portable work needed to obtain the response.
   public enum Resolution: Hashable, Sendable {
+    /// Attach requested bin, units and range to measured currents.
+    case currentObservations(CurrentObservationQuery)
     /// Decode a single endpoint directly as Response.
     case endpoint(TidesEndpoint<Response>)
     /// Attach requested context to predicted high/low events.
@@ -59,6 +61,29 @@ extension TidesRequest where Response == CoastalStations {
   /// - Returns: A request that keeps the directory envelope.
   public static func stations(matching query: CoastalStationQuery) -> Self {
     Self(endpoint: .stations(matching: query))
+  }
+}
+
+extension TidesRequest where Response == CurrentBins {
+  /// Describes a station bin-table request without conversion.
+  /// - Parameters:
+  ///   - stationIdentifier: The validated station identifier.
+  ///   - units: The requested metadata unit-system code.
+  /// - Returns: A reusable single-endpoint request.
+  /// - Throws: `TidesQueryError.invalidUnits` for an empty code or control characters.
+  public static func currentBins(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    throws(TidesQueryError) -> Self
+  {
+    Self(endpoint: try .currentBins(stationIdentifier: stationIdentifier, units: units))
+  }
+}
+
+extension TidesRequest where Response == CurrentObservations {
+  /// Describes measured currents with separate requested context.
+  /// - Parameter query: The validated bin, GMT range and units selection.
+  /// - Returns: An inspectable request with no I/O.
+  public static func currentObservations(matching query: CurrentObservationQuery) -> Self {
+    Self(resolution: .currentObservations(query))
   }
 }
 

@@ -1,5 +1,7 @@
 /// A local CO-OPS query or value validation failure, raised before I/O.
 public enum TidesQueryError: Error, Hashable, Sendable {
+  /// An explicit current bin is zero or negative; all-bin queries are unsupported.
+  case invalidBin(Int)
   /// The range is reversed, equal, non-finite, or outside years 1 through 9999.
   case invalidDateRange
   /// The datum code is empty or contains a control character.

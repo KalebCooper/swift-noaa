@@ -1,5 +1,137 @@
 [
   {
+    "bytes": 2364,
+    "name": "bins-english",
+    "path": "/mdapi/prod/webapi/stations/cb0102/bins.json?units=english",
+    "recordedAt": "2026-09-26T23:20:17.757540+00:00",
+    "sha256": "8676bf6d8aca237597ee51c88f0c6c0721ad93f92725f8c712cabf1d8c715f62",
+    "status": 200,
+    "topLevelKeys": [
+      "nbr_of_bins",
+      "max_pics_bin",
+      "units",
+      "bin_size",
+      "center_bin_1_dist",
+      "real_time_bin",
+      "bins",
+      "self"
+    ]
+  },
+  {
+    "bytes": 249,
+    "name": "bins-invalid",
+    "path": "/mdapi/prod/webapi/stations/invalid/bins.json?units=metric",
+    "recordedAt": "2026-09-26T23:20:18.181640+00:00",
+    "sha256": "62cf372a69bb6d6e0e526815bb02be7b870d10377d72e87da6c9494bd8c45017",
+    "status": 200,
+    "topLevelKeys": [
+      "nbr_of_bins",
+      "max_pics_bin",
+      "units",
+      "bin_size",
+      "center_bin_1_dist",
+      "real_time_bin",
+      "bins",
+      "self"
+    ]
+  },
+  {
+    "bytes": 1795,
+    "name": "bins-survey",
+    "path": "/mdapi/prod/webapi/stations/CFR1624/bins.json?units=metric",
+    "recordedAt": "2026-09-26T23:20:17.164618+00:00",
+    "sha256": "0b03777441621b8896d516b83850e5597601a910046df03d848a8ac460fc9104",
+    "status": 200,
+    "topLevelKeys": [
+      "nbr_of_bins",
+      "max_pics_bin",
+      "units",
+      "bin_size",
+      "center_bin_1_dist",
+      "real_time_bin",
+      "bins",
+      "self"
+    ]
+  },
+  {
+    "bytes": 688,
+    "name": "currents-english",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=cb0102&product=currents&time_zone=gmt&units=english&application=swift-noaa&format=json&bin=4",
+    "recordedAt": "2026-09-26T23:20:18.648763+00:00",
+    "sha256": "f1160d7b8db1d58708bdb9d99ce3896f84fde7d8be0799adcbbc2527d7dd755d",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 59,
+    "name": "currents-invalid-bin",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=cb0102&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=-1",
+    "recordedAt": "2026-09-26T20:58:38.921071+00:00",
+    "sha256": "249688b18a03390ed29242544d5642e092626d64e3a1c594456cc21b4f76ad46",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": " Wrong Bin Number was supplied"
+    }
+  },
+  {
+    "bytes": 115,
+    "name": "currents-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&station=cb0102&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=4",
+    "recordedAt": "2026-09-26T23:20:20.678834+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": "No data was found. This product may not be offered at this station at the requested time."
+    }
+  },
+  {
+    "bytes": 180,
+    "name": "currents-over-month",
+    "path": "/api/prod/datagetter?begin_date=20240101+00%3A00&end_date=20240202+00%3A00&station=cb0102&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=4",
+    "recordedAt": "2026-09-26T23:20:20.249863+00:00",
+    "sha256": "e8581f8c34c554f4b46ad8b9d3015ae924fbd24c28cbf18471ff18c67cdf6733",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": " Wrong Date: The requested begin/end date or range are not valid.  Range Limit Exceeded: The size limit for data retrieval for this product is 31 days "
+    }
+  },
+  {
+    "bytes": 677,
+    "name": "currents-ports",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=cb0102&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json",
+    "recordedAt": "2026-09-26T20:58:37.967701+00:00",
+    "sha256": "91aff739bf4322def7d4194deb24add74d4d60d3dc3ec124a41296f8747079fd",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 729,
+    "name": "currents-survey",
+    "path": "/api/prod/datagetter?begin_date=20160401+00%3A00&end_date=20160401+01%3A00&station=CFR1624&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=9",
+    "recordedAt": "2026-09-26T20:58:38.422053+00:00",
+    "sha256": "e9d713d97db83366f755649d75b73a133d40b7d96b1d6fd7be771ffc19199f6b",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
     "bytes": 108,
     "name": "hourly-invalid-datum",
     "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=hourly_height&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json",
@@ -73,6 +205,38 @@
     "path": "/mdapi/prod/webapi/stations/9414290.json",
     "recordedAt": "2026-09-26T20:35:32.216729+00:00",
     "sha256": "23d1c617cdb91ed6b8f8082406cf1bb0d5e64d32f717bc6efcbf02d9d67c16a4",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 2371,
+    "name": "station-bins",
+    "path": "/mdapi/prod/webapi/stations/cb0102/bins.json?units=metric",
+    "recordedAt": "2026-09-26T20:35:34.473429+00:00",
+    "sha256": "8092b1cfa6a34af31329d6bcf3526aa625ada4929c91bed8b479e961cb63e023",
+    "status": 200,
+    "topLevelKeys": [
+      "nbr_of_bins",
+      "max_pics_bin",
+      "units",
+      "bin_size",
+      "center_bin_1_dist",
+      "real_time_bin",
+      "bins",
+      "self"
+    ]
+  },
+  {
+    "bytes": 1293,
+    "name": "station-current",
+    "path": "/mdapi/prod/webapi/stations/cb0102.json",
+    "recordedAt": "2026-09-26T20:58:37.075708+00:00",
+    "sha256": "86f73e3d230f2916c4f063f2b77e96d110a75cb7620c63529d1fec36e31e86bf",
     "status": 200,
     "topLevelKeys": [
       "count",
@@ -165,6 +329,34 @@
     "path": "/mdapi/prod/webapi/stations/8557863.json",
     "recordedAt": "2026-09-26T20:35:33.597384+00:00",
     "sha256": "185661d7bdaa813b8ade23ed6359890e3b06fe23e50e71dddd79e92953458da3",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 1312,
+    "name": "station-survey",
+    "path": "/mdapi/prod/webapi/stations/CFR1624.json",
+    "recordedAt": "2026-09-26T20:58:37.521104+00:00",
+    "sha256": "740860b19bcfdd81eab21cd8da094bd2f8a6eaf1ab6f05510c46a6dd0ced7d20",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 104717,
+    "name": "stations-currents",
+    "path": "/mdapi/prod/webapi/stations.json?type=currents",
+    "recordedAt": "2026-09-26T20:58:35.642946+00:00",
+    "sha256": "f0b46a457967d8a3e8cdc3988240c6817541fca871627d123f0d4297f9788171",
     "status": 200,
     "topLevelKeys": [
       "count",

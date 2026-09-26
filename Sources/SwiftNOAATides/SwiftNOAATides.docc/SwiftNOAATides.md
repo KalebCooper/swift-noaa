@@ -128,3 +128,27 @@ missing time steps stay absent. Observed high/low levels and daily/monthly means
 - ``TidesClient``
 - ``TidesConfiguration``
 - ``TidesError``
+
+## Current observations
+
+Discover `.currents`, `.historicCurrents`, or `.surveyCurrents` stations, then load
+`currentBins(stationIdentifier:units:)` to inspect available bins. Metadata does not establish
+historical depth: deployments can change the relationship between bin and depth.
+
+```swift
+let query = try CurrentObservationQuery(
+  bin: .explicit(4), range: window,
+  stationIdentifier: CoastalStationIdentifier("cb0102"), units: .metric)
+let measured = try await tides.currentObservations(matching: query)
+let request = TidesRequest.currentObservations(matching: query)
+let reusable = try await tides.value(for: request)
+let wire = try await tides.send(.currentObservations(matching: query))
+```
+
+A query requires either a positive explicit bin or `.providerDefault`, and accepts up to one
+calendar month of inclusive GMT minutes. Observations preserve the reported bin, direction in
+degrees, and speed: metric means **centimeters per second**, English means knots. No metadata
+preflight, depth inference, gap filling, or all-bin access occurs. Bin tables retain reported units,
+quality flags, nullable depth/distance, and a null table when NOAA returns one. Station deployment
+and retrieval times remain provider text without an assumed UTC offset. Detailed beam diagnostics
+and deployment-history retrieval are not supported.

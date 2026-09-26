@@ -36,6 +36,32 @@ public struct TidesClient: Sendable {
       retryPolicy: retryPolicy, transport: transport)
   }
 
+  /// Retrieves a station's bin table in explicitly requested units.
+  /// - Parameters:
+  ///   - stationIdentifier: The validated station identifier.
+  ///   - units: The requested provider unit-system code.
+  /// - Returns: The bin table and reported metadata, without depth inference.
+  /// - Throws: `TidesError.invalidQuery` for invalid units, or any shared execution failure.
+  public func currentBins(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    async throws(TidesError) -> CurrentBins
+  {
+    let request: TidesRequest<CurrentBins>
+    do { request = try .currentBins(stationIdentifier: stationIdentifier, units: units) } catch {
+      throw .invalidQuery(error)
+    }
+    return try await value(for: request)
+  }
+
+  /// Retrieves measured currents at one selected or provider-default bin.
+  /// - Parameter query: The validated bin, GMT range and requested velocity units.
+  /// - Returns: Provider observations with separate requested context, without a metadata preflight.
+  /// - Throws: Any `TidesError` from the shared send path.
+  public func currentObservations(matching query: CurrentObservationQuery) async throws(TidesError)
+    -> CurrentObservations
+  {
+    try await value(for: .currentObservations(matching: query))
+  }
+
   /// Retrieves a station's datum table in explicitly requested units.
   /// - Parameters:
   ///   - stationIdentifier: The validated station identifier.
@@ -158,7 +184,7 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .highLowTides, .hourlyWaterLevels, .tidePredictions, .waterLevels:
+    case .currentObservations, .highLowTides, .hourlyWaterLevels, .tidePredictions, .waterLevels:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
       )
@@ -176,6 +202,22 @@ public struct TidesClient: Sendable {
     }
   }
 
+  /// Executes measured currents and attaches their original requested context.
+  /// - Parameter request: A request from the constrained current-observation factory.
+  /// - Returns: Observations and provider metadata without inventing depth or units.
+  /// - Throws: Any `TidesError` from the shared send path.
+  public func value(for request: TidesRequest<CurrentObservations>) async throws(TidesError)
+    -> CurrentObservations
+  {
+    guard case .currentObservations(let query) = request.resolution else {
+      preconditionFailure(
+        "Only the current-observation factory constructs CurrentObservations requests.")
+    }
+    let response = try await send(.currentObservations(matching: query))
+    return CurrentObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+
   /// Executes high/low predictions and attaches the original validated request context.
   /// - Parameter request: A high/low request created by its constrained factory.
   /// - Returns: Decoded events and requested context, without conversion or station substitution.
@@ -191,7 +233,7 @@ public struct TidesClient: Sendable {
   }
 
   /// Executes verified hourly heights and attaches the original requested context.
-  /// - Parameter request: A hourly-height request created by its constrained factory.
+  /// - Parameter request: An hourly-height request created by its constrained factory.
   /// - Returns: Observations and provider metadata with separate requested context.
   /// - Throws: Any `TidesError` from the shared send path, including cancellation.
   public func value(for request: TidesRequest<HourlyWaterLevels>) async throws(TidesError)

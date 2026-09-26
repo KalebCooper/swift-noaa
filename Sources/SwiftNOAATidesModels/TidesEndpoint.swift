@@ -142,6 +142,44 @@ extension TidesEndpoint where Response == CoastalStations {
   }
 }
 
+extension TidesEndpoint where Response == CurrentBins {
+  /// Retrieves a station's bin table with explicitly requested units.
+  /// - Parameters:
+  ///   - stationIdentifier: The validated station identifier.
+  ///   - units: A nonempty provider unit-system code without controls.
+  /// - Returns: One metadata endpoint, without conversion or linked-resource expansion.
+  /// - Throws: `TidesQueryError.invalidUnits` for an empty code or control characters.
+  public static func currentBins(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    throws(TidesQueryError) -> Self
+  {
+    guard !units.rawValue.isEmpty,
+      !units.rawValue.unicodeScalars.contains(where: { $0.properties.generalCategory == .control })
+    else { throw .invalidUnits(units.rawValue) }
+    return builtIn(
+      path: "/mdapi/prod/webapi/stations/\(stationIdentifier.rawValue)/bins.json"
+        + Self.query([URLQueryItem(name: "units", value: units.rawValue)]))
+  }
+}
+
+extension TidesEndpoint where Response == CurrentObservationResponse {
+  /// Retrieves measured currents without metadata preflight or time-window splitting.
+  /// - Parameter query: The validated GMT, bin and units selection.
+  /// - Returns: One independently decodable Data API endpoint.
+  public static func currentObservations(matching query: CurrentObservationQuery) -> Self {
+    var items = [URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin))]
+    if let bin = query.bin.queryValue { items.append(URLQueryItem(name: "bin", value: bin)) }
+    items += [
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+      URLQueryItem(name: "product", value: "currents"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
+  }
+}
+
 extension TidesEndpoint where Response == HighLowTideResponse {
   /// Retrieves predicted high/low events as an independent wire envelope.
   /// - Parameter query: A validated explicit GMT query.

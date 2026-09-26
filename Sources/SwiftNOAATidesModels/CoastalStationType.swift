@@ -10,6 +10,18 @@ public struct CoastalStationType: Codable, Hashable, RawRepresentable, Sendable 
   /// The provider's unchanged code.
   public let rawValue: String
 
+  /// The provider's `currentpredictions` directory category.
+  public static let currentPredictions = Self(rawValue: "currentpredictions")
+
+  /// The provider's `currents` directory category.
+  public static let currents = Self(rawValue: "currents")
+
+  /// The provider's `historiccurrents` directory category.
+  public static let historicCurrents = Self(rawValue: "historiccurrents")
+
+  /// The provider's `surveycurrents` directory category.
+  public static let surveyCurrents = Self(rawValue: "surveycurrents")
+
   /// The provider's `tidepredictions` code.
   public static let tidePredictions = Self(rawValue: "tidepredictions")
 
