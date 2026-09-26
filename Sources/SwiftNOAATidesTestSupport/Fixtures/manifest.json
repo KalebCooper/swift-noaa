@@ -54,6 +54,89 @@
     ]
   },
   {
+    "bytes": 1039,
+    "name": "current-events-harmonic",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=max_slack&vel_type=default",
+    "recordedAt": "2026-09-26T23:29:02.876478+00:00",
+    "sha256": "5e54a1c2e05b01ee271d3ee9500a6ad217601c498498a2c7e8d959f04def4513",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
+    ]
+  },
+  {
+    "bytes": 181,
+    "name": "current-events-over-year",
+    "path": "/api/prod/datagetter?begin_date=20240229+00%3A00&end_date=20250302+00%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=max_slack",
+    "recordedAt": "2026-09-26T23:29:05.501448+00:00",
+    "sha256": "86c633788c65edf6164e1f3e12f98b8be1697ee251ac0bd006cc1fc9cf1b4331",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": " Wrong Date: The requested begin/end date or range are not valid.  Range Limit Exceeded: The size limit for data retrieval for this product is 366 days "
+    }
+  },
+  {
+    "bytes": 76,
+    "name": "current-prediction-invalid-bin",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=-1&interval=10",
+    "recordedAt": "2026-09-26T23:29:07.540279+00:00",
+    "sha256": "d75690a70fc1c0fbd66b57a70a16ee54d35c8d5293533324cd07f658bc0ddaca",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": "Available bin number of EPT0003: 14, 11, 8, 4, "
+    }
+  },
+  {
+    "bytes": 915,
+    "name": "current-predictions",
+    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260926&station=PCT1291&product=currents_predictions&time_zone=gmt&interval=max_slack&units=metric&application=swift-noaa&format=json&bin=1",
+    "recordedAt": "2026-09-26T20:35:37.105443+00:00",
+    "sha256": "8af07afc9358de9f36f49ddb5ce6fe8862210395c47a2d3266176dd53b961124",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
+    ]
+  },
+  {
+    "bytes": 650,
+    "name": "current-speed-metric",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=10&vel_type=speed_dir",
+    "recordedAt": "2026-09-26T23:29:07.095625+00:00",
+    "sha256": "c467f992d9056087477d4a7ce76807c342388ce97f111b0acf842f700f782f58",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
+    ]
+  },
+  {
+    "bytes": 1027,
+    "name": "current-subordinate-events",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=ACT0091&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=1&interval=max_slack",
+    "recordedAt": "2026-09-26T23:34:11.762252+00:00",
+    "sha256": "2ccb3cefab851ae518b112e0684a63b4e879ea7157e282e88875d85903e11a2f",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
+    ]
+  },
+  {
+    "bytes": 1027,
+    "name": "current-subordinate-samples",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=ACT0091&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=1&interval=10",
+    "recordedAt": "2026-09-26T23:34:12.223332+00:00",
+    "sha256": "2ccb3cefab851ae518b112e0684a63b4e879ea7157e282e88875d85903e11a2f",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
+    ]
+  },
+  {
     "bytes": 688,
     "name": "currents-english",
     "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=cb0102&product=currents&time_zone=gmt&units=english&application=swift-noaa&format=json&bin=4",
@@ -63,6 +146,17 @@
     "topLevelKeys": [
       "metadata",
       "data"
+    ]
+  },
+  {
+    "bytes": 912,
+    "name": "currents-events-default-bin",
+    "path": "/api/prod/datagetter?begin_date=20240926&end_date=20240926&station=PCT1291&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=max_slack",
+    "recordedAt": "2026-09-26T20:58:40.262927+00:00",
+    "sha256": "e87eedf8247bef5125752b5a20620c16fbdaf517dc77af295a8236fa13645325",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
     ]
   },
   {
@@ -78,6 +172,31 @@
     "providerError": {
       "message": " Wrong Bin Number was supplied"
     }
+  },
+  {
+    "bytes": 162,
+    "name": "currents-invalid-mode",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=max_slack&vel_type=speed_dir",
+    "recordedAt": "2026-09-26T20:58:40.682241+00:00",
+    "sha256": "3c3d2e805bea879a16f017f5d6b08a92219740b44e544c9f7d4ba15311a86987",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": "vel_type= speed_dir only supports current prediction intervals of 1, 6, 10, 30, 60.   Set vel_type = default for interval = max_slack"
+    }
+  },
+  {
+    "bytes": 818,
+    "name": "currents-major",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=10&vel_type=default",
+    "recordedAt": "2026-09-26T20:58:39.337564+00:00",
+    "sha256": "b6f9013dec3f50aeadfa18ced59a8ba9c64e91b8bed8190b6b78cd278149c101",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
+    ]
   },
   {
     "bytes": 115,
@@ -117,6 +236,28 @@
     "topLevelKeys": [
       "metadata",
       "data"
+    ]
+  },
+  {
+    "bytes": 818,
+    "name": "currents-speed-direction",
+    "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=10&vel_type=speed_dir",
+    "recordedAt": "2026-09-26T20:58:39.859215+00:00",
+    "sha256": "b6f9013dec3f50aeadfa18ced59a8ba9c64e91b8bed8190b6b78cd278149c101",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
+    ]
+  },
+  {
+    "bytes": 642,
+    "name": "currents-speed-direction-current",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=english&application=swift-noaa&format=json&bin=14&interval=10&vel_type=speed_dir",
+    "recordedAt": "2026-09-26T22:43:22.538194+00:00",
+    "sha256": "19a73780d92cdaf63a41ae75de49a9ac2890b2c657005bac9d377bb029d70838",
+    "status": 200,
+    "topLevelKeys": [
+      "current_predictions"
     ]
   },
   {
@@ -237,6 +378,34 @@
     "path": "/mdapi/prod/webapi/stations/cb0102.json",
     "recordedAt": "2026-09-26T20:58:37.075708+00:00",
     "sha256": "86f73e3d230f2916c4f063f2b77e96d110a75cb7620c63529d1fec36e31e86bf",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 1302,
+    "name": "station-current-harmonic",
+    "path": "/mdapi/prod/webapi/stations/EPT0003.json",
+    "recordedAt": "2026-09-26T23:33:53.661665+00:00",
+    "sha256": "516e426c16b359cc980d26615eb9d09935aed1d814438b86928e628206bb16e4",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 902,
+    "name": "station-current-subordinate-actual",
+    "path": "/mdapi/prod/webapi/stations/ACT0091.json",
+    "recordedAt": "2026-09-26T23:34:11.298045+00:00",
+    "sha256": "490355db6d362fff1f452fb88166c5e7c3213f518c35ac339e8df1c9a9fc6db6",
     "status": 200,
     "topLevelKeys": [
       "count",

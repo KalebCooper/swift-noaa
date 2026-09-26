@@ -47,3 +47,31 @@ preflight, depth inference, gap filling, or all-bin access occurs. Bin tables re
 quality flags, nullable depth/distance, and a null table when NOAA returns one. Station deployment
 and retrieval times remain provider text without an assumed UTC offset. Detailed beam diagnostics
 and deployment-history retrieval are not supported.
+
+## Current predictions
+
+`currentEvents(matching:)` returns max/slack events from `CurrentEventQuery`. Events always request
+major-axis velocity, retain signs and mean flood/ebb directions, and allow one calendar year.
+A slack event can have nonzero velocity. `currentPredictions(matching:)` uses `CurrentPredictionQuery`
+with a supported cadence (1, 6, 10, 30, or 60 minutes), a requested velocity mode, and at most one
+calendar month. Both require an explicit positive bin or `.providerDefault`; predictions default
+to the bin nearest the surface when NOAA supports that choice.
+
+```swift
+let query = try CurrentPredictionQuery(
+  bin: .explicit(14), interval: .hourly, mode: .speedAndDirection, range: window,
+  stationIdentifier: CoastalStationIdentifier("EPT0003"), units: .metric)
+let samples = try await tides.currentPredictions(matching: query)
+let request = TidesRequest.currentPredictions(matching: query)
+let reusable = try await tides.value(for: request)
+let wire = try await tides.send(.currentPredictions(matching: query))
+```
+
+Each sample's `CurrentVelocity` describes the **actual** major-axis or speed/direction fields.
+NOAA can return major-axis data for a speed/direction request; the requested mode remains in
+`requestedQuery` and never overrides those fields. Provider-reported units remain separate text.
+Depth retains numeric strings or explicit null. Nothing converts velocity representations or units.
+
+NOAA documents max/slack-only support for subordinate stations. If a sampled request receives events,
+it fails decoding instead of relabeling events as samples. Provider refusals remain provider errors;
+there is no automatic preflight, station substitution, alternate request, or interpolation.

@@ -1,0 +1,4 @@
+
+{"error": {"message":"vel_type= speed_dir only supports current prediction intervals of 1, 6, 10, 30, 60.   Set vel_type = default for interval = max_slack"}}
+
+

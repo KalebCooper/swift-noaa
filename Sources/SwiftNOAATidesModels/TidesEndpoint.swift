@@ -161,6 +161,27 @@ extension TidesEndpoint where Response == CurrentBins {
   }
 }
 
+extension TidesEndpoint where Response == CurrentEventResponse {
+  /// Retrieves predicted current events in GMT without station preflight.
+  /// - Parameter query: The validated prediction query.
+  /// - Returns: One endpoint whose wire response decodes without request context.
+  public static func currentEvents(matching query: CurrentEventQuery) -> Self {
+    var items = [URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin))]
+    if let bin = query.bin.queryValue { items.append(URLQueryItem(name: "bin", value: bin)) }
+    items += [
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+      URLQueryItem(name: "interval", value: "max_slack"),
+      URLQueryItem(name: "product", value: "currents_predictions"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+      URLQueryItem(name: "vel_type", value: "default"),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
+  }
+}
+
 extension TidesEndpoint where Response == CurrentObservationResponse {
   /// Retrieves measured currents without metadata preflight or time-window splitting.
   /// - Parameter query: The validated GMT, bin and units selection.
@@ -175,6 +196,27 @@ extension TidesEndpoint where Response == CurrentObservationResponse {
       URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
       URLQueryItem(name: "time_zone", value: "gmt"),
       URLQueryItem(name: "units", value: query.units.rawValue),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
+  }
+}
+
+extension TidesEndpoint where Response == CurrentPredictionResponse {
+  /// Retrieves predicted current samples in GMT without station preflight.
+  /// - Parameter query: The validated prediction query.
+  /// - Returns: One endpoint whose wire response decodes without request context.
+  public static func currentPredictions(matching query: CurrentPredictionQuery) -> Self {
+    var items = [URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin))]
+    if let bin = query.bin.queryValue { items.append(URLQueryItem(name: "bin", value: bin)) }
+    items += [
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+      URLQueryItem(name: "interval", value: String(query.interval.rawValue)),
+      URLQueryItem(name: "product", value: "currents_predictions"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+      URLQueryItem(name: "vel_type", value: query.mode.rawValue),
     ]
     return builtIn(path: "/api/prod/datagetter" + Self.query(items))
   }

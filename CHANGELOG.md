@@ -8,6 +8,11 @@ All notable changes are documented here, following
 
 ### Added
 
+- Max/slack current events and sampled current predictions, preserving actual velocity
+  representations, signed values, nullable depths, reported units, and requested context.
+
+### Added
+
 - Current station and bin metadata, explicit-bin or provider-default measured currents, and a
   current-observation demo with separate requested velocity units and GMT context.
 

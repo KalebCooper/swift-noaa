@@ -20,6 +20,12 @@ public struct CoastalStation: Codable, Equatable, Sendable {
   /// Reported first-bin center distance; units belong to the station envelope.
   public let centerOfFirstBinDistance: Double?
 
+  /// Current-prediction bin number for this directory entry.
+  public let currentBin: Int?
+
+  /// Current-prediction offsets resource, never fetched automatically.
+  public let currentPredictionOffsets: CoastalResource?
+
   /// The provider's `datums` field, without normalization.
   public let datums: CoastalResource?
 
@@ -28,6 +34,12 @@ public struct CoastalStation: Codable, Equatable, Sendable {
 
   /// Deployment-history resource, not automatically expanded.
   public let deployments: CoastalResource?
+
+  /// Reported current-prediction depth in envelope units, when provided.
+  public let depth: Double?
+
+  /// Provider depth-reference code, preserving unknown values.
+  public let depthType: String?
 
   /// The provider's `details` field, without normalization.
   public let details: CoastalResource?
@@ -163,9 +175,13 @@ public struct CoastalStation: Codable, Equatable, Sendable {
     case benchmarks
     case bins
     case centerOfFirstBinDistance = "center_bin_1_dist"
+    case currentBin = "currbin"
+    case currentPredictionOffsets = "currentpredictionoffsets"
     case datums
     case deployed
     case deployments
+    case depth
+    case depthType
     case details
     case disclaimers
     case expansion = "expand"

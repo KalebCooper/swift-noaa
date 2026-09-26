@@ -2,8 +2,12 @@
 public struct TidesRequest<Response>: Hashable, Sendable {
   /// The portable work needed to obtain the response.
   public enum Resolution: Hashable, Sendable {
+    /// Attach requested context to predicted current events.
+    case currentEvents(CurrentEventQuery)
     /// Attach requested bin, units and range to measured currents.
     case currentObservations(CurrentObservationQuery)
+    /// Attach requested context to predicted current samples.
+    case currentPredictions(CurrentPredictionQuery)
     /// Decode a single endpoint directly as Response.
     case endpoint(TidesEndpoint<Response>)
     /// Attach requested context to predicted high/low events.
@@ -78,12 +82,30 @@ extension TidesRequest where Response == CurrentBins {
   }
 }
 
+extension TidesRequest where Response == CurrentEvents {
+  /// Describes predicted current events with separate requested context.
+  /// - Parameter query: The validated prediction query.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func currentEvents(matching query: CurrentEventQuery) -> Self {
+    Self(resolution: .currentEvents(query))
+  }
+}
+
 extension TidesRequest where Response == CurrentObservations {
   /// Describes measured currents with separate requested context.
   /// - Parameter query: The validated bin, GMT range and units selection.
   /// - Returns: An inspectable request with no I/O.
   public static func currentObservations(matching query: CurrentObservationQuery) -> Self {
     Self(resolution: .currentObservations(query))
+  }
+}
+
+extension TidesRequest where Response == CurrentPredictions {
+  /// Describes predicted current samples with separate requested context.
+  /// - Parameter query: The validated prediction query.
+  /// - Returns: A reusable request that performs no I/O at construction.
+  public static func currentPredictions(matching query: CurrentPredictionQuery) -> Self {
+    Self(resolution: .currentPredictions(query))
   }
 }
 

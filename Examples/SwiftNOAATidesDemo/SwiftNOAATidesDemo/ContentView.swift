@@ -11,6 +11,7 @@ struct ContentView: View {
     NavigationStack {
       List {
         NavigationLink("Current observations") { CurrentDemoView() }
+        NavigationLink("Current predictions") { CurrentPredictionDemoView() }
         Section("Request") {
           Button {
             showingStations = true

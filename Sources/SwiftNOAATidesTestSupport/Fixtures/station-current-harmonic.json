@@ -1,0 +1,41 @@
+{
+  "count": 1,
+  "units": null,
+  "stations": [
+    {
+      "project": "Eastport, Maine 2000 Current Survey",
+      "deployed": "2000-06-28 20:51:00",
+      "retrieved": "2000-09-06 22:15:00",
+      "timezone_offset": "-5",
+      "observedst": true,
+      "project_type": "Survey",
+      "noaachart": 13396,
+      "deployments": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/EPT0003/deployments.json"
+      },
+      "bins": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/EPT0003/bins.json"
+      },
+      "harmonicConstituents": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/EPT0003/harcon.json"
+      },
+      "height_from_bottom": 0.5,
+      "center_bin_1_dist": 2.37,
+      "id": "EPT0003",
+      "name": "Estes Head",
+      "lat": 44.88793,
+      "lng": -66.99565,
+      "affiliations": "",
+      "portscode": "",
+      "products": {
+        "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/EPT0003/products.json"
+      },
+      "disclaimers": null,
+      "notices": null,
+      "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/EPT0003.json",
+      "expand": "deployments,bins,harcon",
+      "tideType": ""
+    }
+  ],
+  "self": null
+}

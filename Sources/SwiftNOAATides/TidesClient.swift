@@ -52,6 +52,16 @@ public struct TidesClient: Sendable {
     return try await value(for: request)
   }
 
+  /// Retrieves predicted current events with requested context and reported units.
+  /// - Parameter query: The validated prediction query.
+  /// - Returns: Provider predictions without conversion, synthesis, or station substitution.
+  /// - Throws: Any `TidesError` from the shared send path.
+  public func currentEvents(matching query: CurrentEventQuery) async throws(TidesError)
+    -> CurrentEvents
+  {
+    try await value(for: .currentEvents(matching: query))
+  }
+
   /// Retrieves measured currents at one selected or provider-default bin.
   /// - Parameter query: The validated bin, GMT range and requested velocity units.
   /// - Returns: Provider observations with separate requested context, without a metadata preflight.
@@ -60,6 +70,16 @@ public struct TidesClient: Sendable {
     -> CurrentObservations
   {
     try await value(for: .currentObservations(matching: query))
+  }
+
+  /// Retrieves predicted current samples with requested context and reported units.
+  /// - Parameter query: The validated prediction query.
+  /// - Returns: Provider predictions without conversion, synthesis, or station substitution.
+  /// - Throws: Any `TidesError` from the shared send path.
+  public func currentPredictions(matching query: CurrentPredictionQuery) async throws(TidesError)
+    -> CurrentPredictions
+  {
+    try await value(for: .currentPredictions(matching: query))
   }
 
   /// Retrieves a station's datum table in explicitly requested units.
@@ -184,7 +204,8 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .currentObservations, .highLowTides, .hourlyWaterLevels, .tidePredictions, .waterLevels:
+    case .currentEvents, .currentObservations, .currentPredictions, .highLowTides,
+      .hourlyWaterLevels, .tidePredictions, .waterLevels:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
       )
@@ -202,6 +223,20 @@ public struct TidesClient: Sendable {
     }
   }
 
+  /// Executes predicted current events and attaches the original requested context.
+  /// - Parameter request: A request from the constrained prediction factory.
+  /// - Returns: Provider records and reported units alongside the query.
+  /// - Throws: Any `TidesError` from the shared send path.
+  public func value(for request: TidesRequest<CurrentEvents>) async throws(TidesError)
+    -> CurrentEvents
+  {
+    guard case .currentEvents(let query) = request.resolution else {
+      preconditionFailure("Only the currentEvents factory constructs CurrentEvents requests.")
+    }
+    let response = try await send(.currentEvents(matching: query))
+    return CurrentEvents(events: response.events, requestedQuery: query, units: response.units)
+  }
+
   /// Executes measured currents and attaches their original requested context.
   /// - Parameter request: A request from the constrained current-observation factory.
   /// - Returns: Observations and provider metadata without inventing depth or units.
@@ -216,6 +251,22 @@ public struct TidesClient: Sendable {
     let response = try await send(.currentObservations(matching: query))
     return CurrentObservations(
       metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+
+  /// Executes predicted current predictions and attaches the original requested context.
+  /// - Parameter request: A request from the constrained prediction factory.
+  /// - Returns: Provider records and reported units alongside the query.
+  /// - Throws: Any `TidesError` from the shared send path.
+  public func value(for request: TidesRequest<CurrentPredictions>) async throws(TidesError)
+    -> CurrentPredictions
+  {
+    guard case .currentPredictions(let query) = request.resolution else {
+      preconditionFailure(
+        "Only the currentPredictions factory constructs CurrentPredictions requests.")
+    }
+    let response = try await send(.currentPredictions(matching: query))
+    return CurrentPredictions(
+      predictions: response.predictions, requestedQuery: query, units: response.units)
   }
 
   /// Executes high/low predictions and attaches the original validated request context.
