@@ -72,7 +72,32 @@ check_models_import_boundary() {
   local files hits
   files=$(swift_files Sources/SwiftNWSModels)
   if [ -z "$files" ]; then fail "$name (Sources/SwiftNWSModels holds no Swift file; the check has lost its subject)"; return; fi
-  hits=$(code_lines $files | grep -E ':[0-9]+:[[:space:]]*(@[A-Za-z_]+(\([^)]*\))?[[:space:]]+)*((public|package|internal|fileprivate|private)[[:space:]]+)?import[[:space:]]+((typealias|struct|class|enum|protocol|let|var|func)[[:space:]]+)?(AsyncHTTPClient|FoundationNetworking|HTTPCore|HTTPPortable|HTTPTesting|HTTPTypes|HTTPTypesFoundation|HTTPURLSession|_?NIO[A-Za-z0-9_]*|SwiftNWS)\b|\bURLSession' || true)
+  hits=$(code_lines $files | grep -E ':[0-9]+:[[:space:]]*(@[A-Za-z_]+(\([^)]*\))?[[:space:]]+)*((public|package|internal|fileprivate|private)[[:space:]]+)?import[[:space:]]+((typealias|struct|class|enum|protocol|let|var|func)[[:space:]]+)?(AsyncHTTPClient|FoundationNetworking|HTTPCore|HTTPPortable|HTTPTesting|HTTPTypes|HTTPTypesFoundation|HTTPURLSession|_?NIO[A-Za-z0-9_]*|SwiftNWS|SwiftNOAATides|SwiftNOAATidesModels)\b|\bURLSession' || true)
+  if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
+}
+
+check_tides_models_foundation_import() {
+  local name="every import Foundation in Sources/SwiftNOAATidesModels sits under #else"
+  local files hits
+  files=$(swift_files Sources/SwiftNOAATidesModels)
+  if [ -z "$files" ]; then fail "$name (Sources/SwiftNOAATidesModels holds no Swift file; the check has lost its subject)"; return; fi
+  # awk rather than grep -B1: a file whose first line is the import has no preceding line for -B1 to
+  # show, and the filter would drop the hit.
+  hits=$(awk 'FNR == 1 { prev = "" } /^import Foundation$/ && prev != "#else" { print FILENAME ":" FNR ": " $0 } { prev = $0 }' $files 2>/dev/null || true)
+  if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
+}
+
+# Prohibition. SwiftNOAATidesModels is usable on any data layer, so it reaches for no networking stack: not
+# swifty-networking or the HTTP types beneath it, not the SwiftNIO stack, not URLSession, and not the
+# SDK built on top of it. Every spelling of an import counts (an attribute, an access level, a
+# declaration kind), so an import cannot hide behind one; `\b` keeps `SwiftNOAATidesModels` itself out of
+# the `SwiftNWS` match.
+check_tides_models_import_boundary() {
+  local name="no swifty-networking, transport, or SDK import in Sources/SwiftNOAATidesModels"
+  local files hits
+  files=$(swift_files Sources/SwiftNOAATidesModels)
+  if [ -z "$files" ]; then fail "$name (Sources/SwiftNOAATidesModels holds no Swift file; the check has lost its subject)"; return; fi
+  hits=$(code_lines $files | grep -E ':[0-9]+:[[:space:]]*(@[A-Za-z_]+(\([^)]*\))?[[:space:]]+)*((public|package|internal|fileprivate|private)[[:space:]]+)?import[[:space:]]+((typealias|struct|class|enum|protocol|let|var|func)[[:space:]]+)?(AsyncHTTPClient|FoundationNetworking|HTTPCore|HTTPPortable|HTTPTesting|HTTPTypes|HTTPTypesFoundation|HTTPURLSession|_?NIO[A-Za-z0-9_]*|SwiftNWS|SwiftNWSModels|SwiftNOAATides)\b|\bURLSession' || true)
   if [ -z "$hits" ]; then pass "$name"; else fail "$name"; printf '%s\n' "$hits"; fi
 }
 
@@ -293,6 +318,8 @@ SELF_TESTABLE=(
   check_force_ops
   check_models_foundation_import
   check_models_import_boundary
+  check_tides_models_foundation_import
+  check_tides_models_import_boundary
   check_banned_imports
   check_wall_clock_and_locks
   check_unsafe
@@ -417,6 +444,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 EOF
+  mkdir -p "$d/Sources/SwiftNOAATidesModels"
+  sed 's/SwiftNWSModelsVersion/SwiftNOAATidesModelsVersion/' "$d/Sources/SwiftNWSModels/MediaType.swift" > "$d/Sources/SwiftNOAATidesModels/Code.swift"
   printf '# Readme\n' > "$d/README.md"
   printf '# Changelog\n' > "$d/CHANGELOG.md"
   printf '# Contributing\n' > "$d/CONTRIBUTING.md"
@@ -440,6 +469,10 @@ plant_violation() {
   # $1: directory, $2: check function
   local d="$1"
   case "$2" in
+    check_tides_models_foundation_import)
+      printf 'import Foundation\n' > "$d/Sources/SwiftNOAATidesModels/Leak.swift" ;;
+    check_tides_models_import_boundary)
+      printf 'import SwiftNWSModels\n' > "$d/Sources/SwiftNOAATidesModels/Leak.swift" ;;
     check_force_ops)
       printf 'let x = y as! Int\n' >> "$d/Sources/SwiftNWS/Client.swift" ;;
     check_models_foundation_import)
@@ -475,6 +508,8 @@ plant_second_violation() {
   # $1: directory, $2: check function; returns 1 when the check has one shape only
   local d="$1"
   case "$2" in
+    check_tides_models_import_boundary)
+      printf '@_exported public import HTTPURLSession\n' > "$d/Sources/SwiftNOAATidesModels/Leak.swift" ;;
     # An attribute and an access level in front of the import do not make it another import.
     check_models_import_boundary)
       printf '@_exported public import HTTPURLSession\n' > "$d/Sources/SwiftNWSModels/Leak.swift" ;;
@@ -504,6 +539,8 @@ plant_third_violation() {
   # $1: directory, $2: check function; returns 1 when the check has fewer than three shapes
   local d="$1"
   case "$2" in
+    check_tides_models_import_boundary)
+      printf 'import struct HTTPCore.Request\n' > "$d/Sources/SwiftNOAATidesModels/Leak.swift" ;;
     # Importing one declaration is still importing the module.
     check_models_import_boundary)
       printf 'import struct HTTPCore.Request\n' > "$d/Sources/SwiftNWSModels/Leak.swift" ;;
@@ -523,6 +560,8 @@ plant_fourth_violation() {
   # $1: directory, $2: check function; returns 1 when the check has fewer than four shapes
   local d="$1"
   case "$2" in
+    check_tides_models_import_boundary)
+      printf 'let session = URLSession.shared\n' > "$d/Sources/SwiftNOAATidesModels/Leak.swift" ;;
     # URLSession is Foundation's, so no import names it; the use itself is the violation.
     check_models_import_boundary)
       printf 'let session = URLSession.shared\n' >> "$d/Sources/SwiftNWSModels/MediaType.swift" ;;
@@ -538,6 +577,8 @@ plant_fifth_violation() {
   # $1: directory, $2: check function; returns 1 when the check has fewer than five shapes
   local d="$1"
   case "$2" in
+    check_tides_models_import_boundary)
+      printf 'import SwiftNOAATides\n' > "$d/Sources/SwiftNOAATidesModels/Leak.swift" ;;
     # The SDK depends on the models, so the models importing the SDK closes a cycle.
     check_models_import_boundary)
       printf 'import SwiftNWS\n' > "$d/Sources/SwiftNWSModels/Leak.swift" ;;
@@ -553,6 +594,8 @@ remove_subject() {
   # $1: directory, $2: check function; returns 1 when the check has no subject to remove
   local d="$1"
   case "$2" in
+    check_tides_models_foundation_import | check_tides_models_import_boundary)
+      rm -rf "$d/Sources/SwiftNOAATidesModels" ;;
     check_models_foundation_import | check_models_import_boundary)
       rm -rf "$d/Sources/SwiftNWSModels" ;;
     check_darwin_guard)

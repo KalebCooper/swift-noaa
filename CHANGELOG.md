@@ -6,6 +6,15 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+### Added
+
+- Independent `SwiftNOAATidesModels` and `SwiftNOAATides` products for CO-OPS station discovery
+  and detail at client, typed request, and endpoint levels. Directory order, detail metadata,
+  unknown station kinds, null resource links, and provider error messages are retained.
+- Optional CO-OPS application identification, custom transports, Apple URLSession integration,
+  cancellation, bounded same-origin redirects, and default-disabled swifty-networking retries.
+- Four-product DocC publication and explicit model-boundary checks for both NOAA services.
+
 ## [0.2.0] - 2026-09-22
 
 ### Added

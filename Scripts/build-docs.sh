@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Convert only this package's two products from already-built iOS simulator modules.
+# Convert this package's four products from already-built iOS simulator modules.
 # Dependencies must compile, but their documentation is not part of this site.
 set -euo pipefail
 
@@ -33,7 +33,24 @@ xcrun docc convert Sources/SwiftNWS/SwiftNWS.docc \
   --enable-experimental-external-link-support \
   --dependency "$output/SwiftNWSModels.doccarchive" --warnings-as-errors
 
+for product in SwiftNOAATidesModels SwiftNOAATides; do
+  mkdir -p "$output/$product-symbols"
+  xcrun swift-symbolgraph-extract -module-name "$product" \
+    -target "$target" -sdk "$sdk" -I "$modules" \
+    -module-cache-path "$output/module-cache" \
+    -output-dir "$output/$product-symbols" -minimum-access-level public
+  dependencies=()
+  if [[ "$product" == SwiftNOAATides ]]; then
+    dependencies=(--dependency "$output/SwiftNOAATidesModels.doccarchive")
+  fi
+  xcrun docc convert "Sources/$product/$product.docc" \
+    --additional-symbol-graph-dir "$output/$product-symbols" \
+    --output-dir "$output/$product.doccarchive" \
+    --enable-experimental-external-link-support ${dependencies[@]+"${dependencies[@]}"} --warnings-as-errors
+done
+
 xcrun docc merge "$output/SwiftNWSModels.doccarchive" "$output/SwiftNWS.doccarchive" \
+  "$output/SwiftNOAATidesModels.doccarchive" "$output/SwiftNOAATides.doccarchive" \
   --synthesized-landing-page-name swift-noaa --synthesized-landing-page-kind Package \
   --output-path "$output/merged.doccarchive"
 xcrun docc process-archive transform-for-static-hosting "$output/merged.doccarchive" \

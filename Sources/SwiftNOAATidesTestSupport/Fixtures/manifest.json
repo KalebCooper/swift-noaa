@@ -1,0 +1,84 @@
+[
+  {
+    "bytes": 2641,
+    "name": "station",
+    "path": "/mdapi/prod/webapi/stations/9414290.json",
+    "recordedAt": "2026-09-26T20:35:32.216729+00:00",
+    "sha256": "23d1c617cdb91ed6b8f8082406cf1bb0d5e64d32f717bc6efcbf02d9d67c16a4",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 2040953,
+    "name": "stations-tidepredictions",
+    "path": "/mdapi/prod/webapi/stations.json?type=tidepredictions",
+    "recordedAt": "2026-09-26T20:35:32.799308+00:00",
+    "sha256": "673473373bf3b6469631cad288fe794d12df8de7c358b5d36314eab87b9a69d2",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 2623,
+    "name": "station-subordinate",
+    "path": "/mdapi/prod/webapi/stations/8557863.json",
+    "recordedAt": "2026-09-26T20:35:33.597384+00:00",
+    "sha256": "185661d7bdaa813b8ade23ed6359890e3b06fe23e50e71dddd79e92953458da3",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  },
+  {
+    "bytes": 90,
+    "name": "invalid-station",
+    "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=invalid&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
+    "recordedAt": "2026-09-26T20:35:36.651788+00:00",
+    "sha256": "a4858868af1f8bc976e38ae5b4ac1f9dd22cd8f31561e97df37c1b1c9b8d2d02",
+    "status": 400,
+    "topLevelKeys": [
+      "error"
+    ],
+    "providerError": {
+      "message": " The station is not a valid station or there is system error."
+    }
+  },
+  {
+    "bytes": 66,
+    "name": "station-invalid-mdapi",
+    "path": "/mdapi/prod/webapi/stations/invalid.json",
+    "recordedAt": "2026-09-26T20:58:28.786885+00:00",
+    "sha256": "c4aa5f39f5b42b7166bd38b8433eda4ab219725c41d9884bcec80748eae057a2",
+    "status": 404,
+    "topLevelKeys": [
+      "errorMsg",
+      "errorCode"
+    ]
+  },
+  {
+    "bytes": 777357,
+    "name": "stations-waterlevels",
+    "path": "/mdapi/prod/webapi/stations.json?type=waterlevels",
+    "recordedAt": "2026-09-26T20:58:29.383353+00:00",
+    "sha256": "efa6999f2c931557d42c2ece241865897943126a67b8985e43624b3cb21311a7",
+    "status": 200,
+    "topLevelKeys": [
+      "count",
+      "units",
+      "stations",
+      "self"
+    ]
+  }
+]

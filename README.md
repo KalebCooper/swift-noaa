@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Swift integrations for NOAA services, starting with the National Weather Service.
+Swift integrations for the National Weather Service and NOAA Tides & Currents.
 
 `SwiftNWSModels` describes every supported
 [National Weather Service API](https://www.weather.gov/documentation/services-web-API) request as a
@@ -13,6 +13,28 @@ Both run on Apple platforms, Linux, and Android.
 
 The full reference, with an article per feature, is the
 [documentation site](https://kalebcooper.github.io/swift-noaa/documentation/).
+
+## Choose a service
+
+| Service | Portable models | Client SDK |
+|---|---|---|
+| National Weather Service | `SwiftNWSModels` | `SwiftNWS` |
+| Tides & Currents (CO-OPS) | `SwiftNOAATidesModels` | `SwiftNOAATides` |
+
+The unreleased Tides & Currents products support station directories and station details.
+Each operation has client, reusable `TidesRequest`, and direct `TidesEndpoint` access.
+Station selection is explicit. Direct detail endpoints retain the provider envelope; the useful
+lookup requires exactly one matching station. Resource links remain metadata without extra fetches.
+
+```swift
+import SwiftNOAATides
+import SwiftNOAATidesModels
+
+let tides = TidesClient()
+let query = try CoastalStationQuery(type: .tidePredictions)
+let directory = try await tides.stations(matching: query)
+let station = try await tides.station(identifier: CoastalStationIdentifier("9414290"))
+```
 
 ## Status
 

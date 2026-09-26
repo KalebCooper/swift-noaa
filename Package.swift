@@ -2,15 +2,15 @@
 
 import PackageDescription
 
-// Two products, one dependency direction: SwiftNWSModels describes the National Weather Service API
-// and depends on nothing, so a consumer with a networking stack of its own can take it alone, and
-// SwiftNWS sends those descriptions through swifty-networking.
+// Each service has independent models and SDK products; models have no transport dependencies.
 let package = Package(
   name: "swift-noaa",
   platforms: [
     .iOS(.v26), .macOS(.v26), .tvOS(.v26), .visionOS(.v26), .watchOS(.v26),
   ],
   products: [
+    .library(name: "SwiftNOAATides", targets: ["SwiftNOAATides"]),
+    .library(name: "SwiftNOAATidesModels", targets: ["SwiftNOAATidesModels"]),
     .library(name: "SwiftNWS", targets: ["SwiftNWS"]),
     .library(name: "SwiftNWSModels", targets: ["SwiftNWSModels"]),
   ],
@@ -20,7 +20,8 @@ let package = Package(
     .default(enabledTraits: []),
     .trait(
       name: "HTTPPortable",
-      description: "Send through swifty-networking's AsyncHTTPClient transport on Linux and Android."
+      description:
+        "Send through swifty-networking's AsyncHTTPClient transport on Linux and Android."
     ),
   ],
   dependencies: [
@@ -37,6 +38,27 @@ let package = Package(
     ),
   ],
   targets: [
+    .target(
+      name: "SwiftNOAATides",
+      dependencies: [
+        .product(name: "HTTPCore", package: "swifty-networking"),
+        .product(
+          name: "HTTPPortable", package: "swifty-networking",
+          condition: .when(traits: ["HTTPPortable"])),
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        .product(
+          name: "HTTPURLSession", package: "swifty-networking",
+          condition: .when(platforms: [.iOS, .macCatalyst, .macOS, .tvOS, .visionOS, .watchOS])),
+        "SwiftNOAATidesModels",
+      ],
+      swiftSettings: swiftSettings
+    ),
+    .target(name: "SwiftNOAATidesModels", swiftSettings: swiftSettings),
+    .target(
+      name: "SwiftNOAATidesTestSupport",
+      resources: [.copy("Fixtures")],
+      swiftSettings: swiftSettings
+    ),
     // `HTTPURLSession` compiles only on Apple platforms, and `HTTPPortable` is an empty module unless
     // its trait is enabled, so each edge is conditioned on the case where the module has content.
     .target(
@@ -60,6 +82,25 @@ let package = Package(
     .target(
       name: "SwiftNWSTestSupport",
       resources: [.copy("Fixtures")],
+      swiftSettings: swiftSettings
+    ),
+    .testTarget(
+      name: "SwiftNOAATidesModelsTests",
+      dependencies: ["SwiftNOAATidesModels", "SwiftNOAATidesTestSupport"],
+      swiftSettings: swiftSettings
+    ),
+    .testTarget(
+      name: "SwiftNOAATidesTests",
+      dependencies: [
+        .product(name: "HTTPCore", package: "swifty-networking"),
+        .product(name: "HTTPTesting", package: "swifty-networking"),
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        "SwiftNOAATides",
+        "SwiftNOAATidesModels",
+        "SwiftNOAATidesTestSupport",
+        "SwiftNWS",
+        "SwiftNWSModels",
+      ],
       swiftSettings: swiftSettings
     ),
     .testTarget(

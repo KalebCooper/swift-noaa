@@ -1,0 +1,14 @@
+{
+  "Date": "Sat, 26 Sep 2026 20:58:29 GMT",
+  "Content-Type": "application/json",
+  "Content-Length": "777357",
+  "Connection": "close",
+  "x-amzn-RequestId": "96a00399-3bef-45b1-b5f6-69514261b59c",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "X-Requested-With",
+  "x-amzn-Remapped-Connection": "keep-alive",
+  "x-amz-apigw-id": "EUy-cFGRoAMECxA=",
+  "x-amzn-Remapped-Server": "nginx",
+  "Access-Control-Allow-Methods": "GET",
+  "x-amzn-Remapped-Date": "Sat, 26 Sep 2026 20:57:27 GMT"
+}

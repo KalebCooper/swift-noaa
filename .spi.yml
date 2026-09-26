@@ -1,5 +1,5 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [SwiftNWSModels, SwiftNWS]
+    - documentation_targets: [SwiftNWSModels, SwiftNWS, SwiftNOAATidesModels, SwiftNOAATides]
       platform: ios

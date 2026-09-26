@@ -39,14 +39,26 @@ jobs:
       # swifty-networking, builds the AsyncHTTPClient transport and the SwiftNIO stack beneath it, and
       # runs the suite against that graph.
       - name: Run tests
-        run: swift test --traits HTTPPortable
+        shell: bash
+        run: |
+          set -o pipefail
+          swift test --traits HTTPPortable 2>&1 | tee /tmp/swift-noaa-tests.log
+          grep -q 'Coastal stations' /tmp/swift-noaa-tests.log
+          grep -q 'Tides station client' /tmp/swift-noaa-tests.log
+          grep -q 'Suite "NWSClient" passed' /tmp/swift-noaa-tests.log
       # The same suite again under the package's default trait set, which enables nothing, so what a
       # consumer who asks for no trait actually gets is compiled and run on every push: swifty-networking
       # resolved without its `HTTPPortable` trait and the SwiftNIO stack never fetched. It uses a
       # scratch path of its own so the cached `.build` above stays the graph its key names, and it runs
       # second so the cache restore serves the run that reuses it.
       - name: Run tests with the default trait set
-        run: swift test --scratch-path .build-default
+        shell: bash
+        run: |
+          set -o pipefail
+          swift test --scratch-path .build-default 2>&1 | tee /tmp/swift-noaa-default-tests.log
+          grep -q 'Coastal stations' /tmp/swift-noaa-default-tests.log
+          grep -q 'Tides station client' /tmp/swift-noaa-default-tests.log
+          grep -q 'Suite "NWSClient" passed' /tmp/swift-noaa-default-tests.log
 
   android:
     name: swift test (Android)
