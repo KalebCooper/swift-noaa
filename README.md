@@ -20,6 +20,9 @@ six-minute or hourly selection. See the Tides documentation for query examples a
 air temperature observations are available in both unit systems, with explicit
 six-minute or hourly selection. See the Tides documentation for query examples and units.
 
+wind observations are available in both unit systems, with explicit
+six-minute or hourly selection. See the Tides documentation for query examples and units.
+
 ## What's included
 
 Choose the service you need. Each has a client and a separate models library for use with your own

@@ -306,6 +306,32 @@ let reused = try await tides.value(for: request)
 let wire = try await tides.send(.airTemperatureObservations(matching: query))
 ```
 
+
+## wind observations
+
+Use `windObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
+direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
+sample on the hour, without averaging. GMT bounds are inclusive and limited to one Gregorian
+calendar month for native samples or twelve calendar months for hourly samples. No datum is sent.
+
+`WindObservation.speed` and `gust` use meters per second in metric requests and knots in English requests.
+`numericDirection` is the direction in degrees true from which the wind blows; `textDirection`
+retains the reported compass text independently, including unknown or empty text. Neither is
+calculated from the other. Missing direction never implies calm; a reported zero speed remains zero. Numeric text remains unchanged;
+empty text means a missing measurement, while null, omitted required fields, malformed numbers,
+and malformed timestamps fail decoding. Raw flags preserve maximum-speed and rate-of-change fields in that order. Missing samples remain gaps, and no-data refusals remain provider errors.
+`WindResponse` decodes independently; `WindObservations` adds `requestedQuery`
+without replacing provider metadata. There is no station preflight, substitution, polling, or conversion.
+
+```swift
+let query = try CoastalObservationQuery(
+  interval: .sixMinutes, range: window, stationIdentifier: identifier, units: .metric)
+let result = try await tides.windObservations(matching: query)
+let request = TidesRequest.windObservations(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.windObservations(matching: query))
+```
+
 ## Topics
 
 ### Essentials

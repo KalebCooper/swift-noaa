@@ -8,6 +8,7 @@ struct CoastalObservationView: View {
     case airPressureObservations = "air pressure"
     case airTemperatureObservations = "air temperature"
     case waterTemperatureObservations = "water temperature"
+    case windObservations = "wind"
   }
 
   @State private var day = Date.now
@@ -61,6 +62,10 @@ struct CoastalObservationView: View {
 
   private func clear() { rows = nil; message = nil }
 
+  private func format(_ value: TidesMeasurementValue, _ unit: String) -> String {
+    value.value == nil ? "Missing" : value.rawValue + " " + unit
+  }
+
   private func load() async {
     isLoading = true; clear()
     defer { isLoading = false }
@@ -96,6 +101,14 @@ struct CoastalObservationView: View {
             + ($0.temperature.value == nil
               ? "Missing temperature"
               : $0.temperature.rawValue + " " + (units == .metric ? "°C" : "°F"))
+        }
+      case .windObservations:
+        let response = try await client.windObservations(matching: query)
+        rows = response.observations.map {
+          $0.time.rawValue + " GMT: speed " + format($0.speed, units == .metric ? "m/s" : "kn")
+            + ", gust " + format($0.gust, units == .metric ? "m/s" : "kn")
+            + ", from " + format($0.numericDirection, "° true") + " "
+            + ($0.textDirection.isEmpty ? "(missing direction text)" : $0.textDirection)
         }
       }
     } catch let error as TidesError {

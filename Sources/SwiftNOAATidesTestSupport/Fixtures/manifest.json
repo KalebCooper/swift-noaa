@@ -1064,5 +1064,88 @@
       "metadata",
       "data"
     ]
+  },
+  {
+    "bytes": 1022,
+    "name": "wind-english",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:21:14.031785+00:00",
+    "sha256": "dad02984c6808dc1a308887e60835b5d6b70b8d51bc9fd5c40a67499b029dd8f",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 265,
+    "name": "wind-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:21:14.076483+00:00",
+    "sha256": "f93dd4dd29de52f65e0fcbaea8ded77a99a91413c67dfd4efe42274ba6e1956b",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 1003,
+    "name": "wind-metric",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:13.847485+00:00",
+    "sha256": "efd8fec138943ffe3d1aa0f04e2779f9586f3bbe2d5d4e7b2ebdf9e58c9571a4",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 262,
+    "name": "wind-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:21:14.006797+00:00",
+    "sha256": "18a9f485a20c7a15899aea36b44c66c400f268f9f9d76102fc0c40e350c27b2c",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 790,
+    "name": "wind-missing",
+    "path": "/api/prod/datagetter?begin_date=20260805%2005:42&end_date=20260805%2006:30&format=json&product=wind&station=1611400&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:48:11.665034+00:00",
+    "sha256": "bc1db85323fc6aea61efdc81774089a3d4e7ccffe4c23a7291a20c15432a424a",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "wind-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:16.570650+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
+    "bytes": 340,
+    "name": "wind-zero",
+    "path": "/api/prod/datagetter?begin_date=20260811%2017:12&end_date=20260811%2017:24&format=json&product=wind&station=1611400&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:48:17.390858+00:00",
+    "sha256": "0b433022f1dcd998dce8c895e727141ffc62cf586739fecb3270a2ec3ad03bb5",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
   }
 ]

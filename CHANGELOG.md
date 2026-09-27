@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- wind observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
 - air temperature observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 

@@ -161,6 +161,20 @@ package enum Fixture: String, CaseIterable, Sendable {
   case waterTemperatureMissing = "water_temperature-missing"
   /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric
   case waterTemperatureNoData = "water_temperature-no-data"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=english
+  case windEnglish = "wind-english"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=english&interval=h
+  case windEnglishHourly = "wind-english-hourly"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=metric
+  case windMetric = "wind-metric"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=metric&interval=h
+  case windMetricHourly = "wind-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20260805%2005:42&end_date=20260805%2006:30&format=json&product=wind&station=1611400&time_zone=gmt&units=metric
+  case windMissing = "wind-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=wind&station=9414290&time_zone=gmt&units=metric
+  case windNoData = "wind-no-data"
+  /// /api/prod/datagetter?begin_date=20260811%2017:12&end_date=20260811%2017:24&format=json&product=wind&station=1611400&time_zone=gmt&units=metric
+  case windZero = "wind-zero"
 
   package func data() throws -> Data {
     guard

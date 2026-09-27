@@ -232,7 +232,7 @@ public struct TidesClient: Sendable {
     case .airPressureObservations, .airTemperatureObservations, .waterTemperatureObservations,
       .currentEvents, .currentObservations, .currentPredictions,
       .highLowTides,
-      .hourlyWaterLevels, .tidePredictions, .waterLevels:
+      .hourlyWaterLevels, .tidePredictions, .waterLevels, .windObservations:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
       )
@@ -489,4 +489,32 @@ extension TidesClient {
     return AirTemperatureObservations(
       metadata: response.metadata, observations: response.observations, requestedQuery: query)
   }
+}
+
+extension TidesClient {
+  /// Executes a reusable wind query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<WindObservations>) async throws(TidesError)
+    -> WindObservations
+  {
+    guard case .windObservations(let query) = request.resolution else {
+      preconditionFailure("Only the windObservations factory constructs this request.")
+    }
+    let response = try await send(.windObservations(matching: query))
+    return WindObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+
+  /// Retrieves reported wind and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func windObservations(matching query: CoastalObservationQuery) async throws(TidesError)
+    -> WindObservations
+  {
+    try await value(for: .windObservations(matching: query))
+  }
+
 }

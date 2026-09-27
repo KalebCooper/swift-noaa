@@ -26,6 +26,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case waterLevels(WaterLevelQuery)
     /// Attaches requested context to water temperature observations.
     case waterTemperatureObservations(CoastalObservationQuery)
+    /// Attaches requested context to wind observations.
+    case windObservations(CoastalObservationQuery)
   }
 
   /// The work an executor interprets.
@@ -197,5 +199,14 @@ extension TidesRequest where Response == WaterTemperatureObservations {
   /// - Returns: An immutable request that performs no I/O.
   public static func waterTemperatureObservations(matching query: CoastalObservationQuery) -> Self {
     Self(resolution: .waterTemperatureObservations(query))
+  }
+}
+
+extension TidesRequest where Response == WindObservations {
+  /// Describes wind with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func windObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .windObservations(query))
   }
 }
