@@ -198,6 +198,30 @@ Directories also offer conductivity, meteorological, one-minute water levels, ph
 visibility, water temperature, and combined water-level/meteorological categories. They identify
 installed capabilities rather than guaranteeing data for a requested time.
 
+
+## water temperature observations
+
+Use `waterTemperatureObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
+direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
+sample on the hour, without averaging. GMT bounds are inclusive and limited to one Gregorian
+calendar month for native samples or twelve calendar months for hourly samples. No datum is sent.
+
+`WaterTemperatureObservation.temperature` uses degrees Celsius in metric requests and degrees Fahrenheit in English requests. Numeric text remains unchanged;
+empty text means a missing measurement, while null, omitted required fields, malformed numbers,
+and malformed timestamps fail decoding. Raw flags preserve maximum, minimum, and rate-limit fields
+in that order. Missing samples remain gaps, and no-data refusals remain provider errors.
+`WaterTemperatureResponse` decodes independently; `WaterTemperatureObservations` adds `requestedQuery`
+without replacing provider metadata. There is no station preflight, substitution, polling, or conversion.
+
+```swift
+let query = try CoastalObservationQuery(
+  interval: .sixMinutes, range: window, stationIdentifier: identifier, units: .metric)
+let result = try await tides.waterTemperatureObservations(matching: query)
+let request = TidesRequest.waterTemperatureObservations(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.waterTemperatureObservations(matching: query))
+```
+
 ## Topics
 
 ### Stations
@@ -283,3 +307,14 @@ installed capabilities rather than guaranteeing data for a requested time.
 - ``CurrentPredictionResponse``
 - ``CurrentPredictions``
 - ``CurrentVelocity``
+
+### Coastal observation queries
+
+- ``CoastalObservationInterval``
+- ``CoastalObservationQuery``
+
+### WaterTemperature observations
+
+- ``WaterTemperatureObservation``
+- ``WaterTemperatureObservations``
+- ``WaterTemperatureResponse``

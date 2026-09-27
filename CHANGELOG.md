@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- water temperature observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
 - Station notices, sensor status and elevation metadata, plus additional coastal station categories.
 
 - Max/slack current events and sampled current predictions, preserving actual velocity

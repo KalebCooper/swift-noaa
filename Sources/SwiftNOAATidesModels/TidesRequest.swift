@@ -20,6 +20,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case tidePredictions(TidePredictionQuery)
     /// Attach requested context to measured six-minute water levels.
     case waterLevels(WaterLevelQuery)
+    /// Attaches requested context to water temperature observations.
+    case waterTemperatureObservations(CoastalObservationQuery)
   }
 
   /// The work an executor interprets.
@@ -164,5 +166,14 @@ extension TidesRequest where Response == WaterLevels {
   /// - Returns: A reusable request that attaches context after direct wire decoding.
   public static func waterLevels(matching query: WaterLevelQuery) -> Self {
     Self(resolution: .waterLevels(query))
+  }
+}
+
+extension TidesRequest where Response == WaterTemperatureObservations {
+  /// Describes water temperature with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func waterTemperatureObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .waterTemperatureObservations(query))
   }
 }

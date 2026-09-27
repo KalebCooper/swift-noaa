@@ -763,6 +763,77 @@
     }
   },
   {
+    "bytes": 645,
+    "name": "water_temperature-english",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:05:50.047140+00:00",
+    "sha256": "17076010449494051b945a83a48b2fb9347686a7ca10f4db2c0c5170a9724a5c",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 195,
+    "name": "water_temperature-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:05:50.123614+00:00",
+    "sha256": "c0fb4b5ab7598054ccc516739dcc7803032c48e5d06bdb84cf105652887e0443",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 645,
+    "name": "water_temperature-metric",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:05:50.121325+00:00",
+    "sha256": "0ef55662e1e647614f51db316d3e065c14c0affcb19e03b8b293d22ad30d4b28",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 195,
+    "name": "water_temperature-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:05:50.025778+00:00",
+    "sha256": "00e67c23c96ddc32c86627f899cdf10da5e06f59013499c33c90e9d9e9d61f26",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 241,
+    "name": "water_temperature-missing",
+    "path": "/api/prod/datagetter?begin_date=20240212%2011:12&end_date=20240212%2011:24&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:31:53.097423+00:00",
+    "sha256": "861c9904a15e18a5539be16c8785951739fd9818869e08b0a557bd01446a715b",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "water_temperature-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:15.881371+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
     "bytes": 108,
     "name": "water-invalid-datum",
     "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=water_level&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json",

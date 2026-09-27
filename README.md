@@ -11,6 +11,9 @@ Weather forecasts, observations, alerts, and tide predictions from NOAA, with Sw
 Station notices and sensor status are available through the Tides & Currents client, reusable
 requests, and direct endpoints. Sensor status and elevation units retain NOAA's reported values.
 
+water temperature observations are available in both unit systems, with explicit
+six-minute or hourly selection. See the Tides documentation for query examples and units.
+
 ## What's included
 
 Choose the service you need. Each has a client and a separate models library for use with your own

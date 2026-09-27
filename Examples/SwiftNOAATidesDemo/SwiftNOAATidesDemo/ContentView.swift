@@ -10,6 +10,7 @@ struct ContentView: View {
   var body: some View {
     NavigationStack {
       List {
+        NavigationLink("Coastal observations") { CoastalObservationView() }
         NavigationLink("Station notices and sensors") { CoastalMetadataView() }
         NavigationLink("Current observations") { CurrentDemoView() }
         NavigationLink("Current predictions") { CurrentPredictionDemoView() }

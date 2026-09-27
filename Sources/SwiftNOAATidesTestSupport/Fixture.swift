@@ -125,6 +125,18 @@ package enum Fixture: String, CaseIterable, Sendable {
   case waterOverMonth = "water-over-month"
   /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&station=9414290&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
   case waterPreliminary = "water-preliminary"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=english
+  case waterTemperatureEnglish = "water_temperature-english"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=english&interval=h
+  case waterTemperatureEnglishHourly = "water_temperature-english-hourly"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric
+  case waterTemperatureMetric = "water_temperature-metric"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric&interval=h
+  case waterTemperatureMetricHourly = "water_temperature-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20240212%2011:12&end_date=20240212%2011:24&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric
+  case waterTemperatureMissing = "water_temperature-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=water_temperature&station=1611400&time_zone=gmt&units=metric
+  case waterTemperatureNoData = "water_temperature-no-data"
 
   package func data() throws -> Data {
     guard

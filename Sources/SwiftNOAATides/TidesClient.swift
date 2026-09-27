@@ -229,7 +229,8 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .currentEvents, .currentObservations, .currentPredictions, .highLowTides,
+    case .waterTemperatureObservations, .currentEvents, .currentObservations, .currentPredictions,
+      .highLowTides,
       .hourlyWaterLevels, .tidePredictions, .waterLevels:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
@@ -405,4 +406,32 @@ public struct TidesClient: Sendable {
     }
     return url
   }()
+}
+
+extension TidesClient {
+  /// Executes a reusable water temperature query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<WaterTemperatureObservations>)
+    async throws(TidesError) -> WaterTemperatureObservations
+  {
+    guard case .waterTemperatureObservations(let query) = request.resolution else {
+      preconditionFailure("Only the waterTemperatureObservations factory constructs this request.")
+    }
+    let response = try await send(.waterTemperatureObservations(matching: query))
+    return WaterTemperatureObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+
+  /// Retrieves reported water temperature and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func waterTemperatureObservations(matching query: CoastalObservationQuery)
+    async throws(TidesError) -> WaterTemperatureObservations
+  {
+    try await value(for: .waterTemperatureObservations(matching: query))
+  }
+
 }

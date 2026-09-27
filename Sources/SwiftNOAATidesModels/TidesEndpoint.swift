@@ -331,3 +331,24 @@ extension TidesEndpoint where Response == WaterLevelResponse {
         ]))
   }
 }
+
+extension TidesEndpoint where Response == WaterTemperatureResponse {
+  /// Retrieves reported water temperature without metadata preflight.
+  /// - Parameter query: Explicit cadence, GMT range, station and requested units.
+  /// - Returns: One independently decodable JSON endpoint.
+  public static func waterTemperatureObservations(matching query: CoastalObservationQuery) -> Self {
+    var items = [
+      URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+    ]
+    if query.interval == .hourly { items.append(URLQueryItem(name: "interval", value: "h")) }
+    items += [
+      URLQueryItem(name: "product", value: "water_temperature"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
+  }
+}
