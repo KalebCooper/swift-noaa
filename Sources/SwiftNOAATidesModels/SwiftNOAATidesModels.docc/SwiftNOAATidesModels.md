@@ -296,6 +296,103 @@ let reused = try await tides.value(for: request)
 let wire = try await tides.send(.windObservations(matching: query))
 ```
 
+
+## conductivity observations
+
+Use `conductivityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
+direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
+sample on the hour, without averaging. GMT bounds are inclusive and limited to one Gregorian
+calendar month for native samples or twelve calendar months for hourly samples. No datum is sent.
+
+`ConductivityObservation.conductivity` uses millisiemens per centimeter in both metric and English requests. Numeric text remains unchanged;
+empty text means a missing measurement, while null, omitted required fields, malformed numbers,
+and malformed timestamps fail decoding. Raw flags preserve maximum, minimum, and rate-limit fields
+in that order. Missing samples remain gaps, and no-data refusals remain provider errors.
+`ConductivityResponse` decodes independently; `ConductivityObservations` adds `requestedQuery`
+without replacing provider metadata. There is no station preflight, substitution, polling, or conversion.
+
+```swift
+let query = try CoastalObservationQuery(
+  interval: .sixMinutes, range: window, stationIdentifier: identifier, units: .metric)
+let result = try await tides.conductivityObservations(matching: query)
+let request = TidesRequest.conductivityObservations(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.conductivityObservations(matching: query))
+```
+
+
+## humidity observations
+
+Use `humidityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
+direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
+sample on the hour, without averaging. GMT bounds are inclusive and limited to one Gregorian
+calendar month for native samples or twelve calendar months for hourly samples. No datum is sent.
+
+`HumidityObservation.humidity` uses percent relative humidity in both metric and English requests. Numeric text remains unchanged;
+empty text means a missing measurement, while null, omitted required fields, malformed numbers,
+and malformed timestamps fail decoding. Raw flags preserve maximum, minimum, and rate-limit fields
+in that order. Missing samples remain gaps, and no-data refusals remain provider errors.
+`HumidityResponse` decodes independently; `HumidityObservations` adds `requestedQuery`
+without replacing provider metadata. There is no station preflight, substitution, polling, or conversion.
+
+```swift
+let query = try CoastalObservationQuery(
+  interval: .sixMinutes, range: window, stationIdentifier: identifier, units: .metric)
+let result = try await tides.humidityObservations(matching: query)
+let request = TidesRequest.humidityObservations(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.humidityObservations(matching: query))
+```
+
+
+## salinity observations
+
+Use `salinityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
+direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
+sample on the hour, without averaging. GMT bounds are inclusive and limited to one Gregorian
+calendar month for native samples or twelve calendar months for hourly samples. No datum is sent.
+
+`SalinityObservation.salinity` uses practical salinity units in both metric and English requests. Numeric text remains unchanged;
+empty text means a missing measurement, while null, omitted required fields, malformed numbers,
+and malformed timestamps fail decoding. `SalinityObservation.specificGravity` is dimensionless and independently reported.
+It is never calculated from salinity; either quantity can retain empty missing text.
+This product has no raw flag field. Missing samples remain gaps, and no-data refusals remain provider errors.
+`SalinityResponse` decodes independently; `SalinityObservations` adds `requestedQuery`
+without replacing provider metadata. There is no station preflight, substitution, polling, or conversion.
+
+```swift
+let query = try CoastalObservationQuery(
+  interval: .sixMinutes, range: window, stationIdentifier: identifier, units: .metric)
+let result = try await tides.salinityObservations(matching: query)
+let request = TidesRequest.salinityObservations(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.salinityObservations(matching: query))
+```
+
+
+## visibility observations
+
+Use `visibilityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
+direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
+sample on the hour, without averaging. GMT bounds are inclusive and limited to one Gregorian
+calendar month for native samples or twelve calendar months for hourly samples. No datum is sent.
+
+`VisibilityObservation.visibility` uses kilometers in metric requests and nautical miles in English requests. Numeric text remains unchanged;
+empty text means a missing measurement, while null, omitted required fields, malformed numbers,
+and malformed timestamps fail decoding. Raw flags preserve maximum, minimum, and rate-limit fields
+in that order. Missing samples remain gaps, and no-data refusals remain provider errors.
+`VisibilityResponse` decodes independently; `VisibilityObservations` adds `requestedQuery`
+without replacing provider metadata. There is no station preflight, substitution, polling, or conversion.
+
+```swift
+let query = try CoastalObservationQuery(
+  interval: .sixMinutes, range: window, stationIdentifier: identifier, units: .metric)
+let result = try await tides.visibilityObservations(matching: query)
+let request = TidesRequest.visibilityObservations(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.visibilityObservations(matching: query))
+```
+
 ## Topics
 
 ### Stations
@@ -410,3 +507,27 @@ let wire = try await tides.send(.windObservations(matching: query))
 - ``WindObservation``
 - ``WindObservations``
 - ``WindResponse``
+
+### Conductivity observations
+
+- ``ConductivityObservation``
+- ``ConductivityObservations``
+- ``ConductivityResponse``
+
+### Humidity observations
+
+- ``HumidityObservation``
+- ``HumidityObservations``
+- ``HumidityResponse``
+
+### Salinity observations
+
+- ``SalinityObservation``
+- ``SalinityObservations``
+- ``SalinityResponse``
+
+### Visibility observations
+
+- ``VisibilityObservation``
+- ``VisibilityObservations``
+- ``VisibilityResponse``

@@ -212,6 +212,27 @@ extension TidesEndpoint where Response == CoastalStations {
   }
 }
 
+extension TidesEndpoint where Response == ConductivityResponse {
+  /// Retrieves reported conductivity without metadata preflight.
+  /// - Parameter query: Explicit cadence, GMT range, station and requested units.
+  /// - Returns: One independently decodable JSON endpoint.
+  public static func conductivityObservations(matching query: CoastalObservationQuery) -> Self {
+    var items = [
+      URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+    ]
+    if query.interval == .hourly { items.append(URLQueryItem(name: "interval", value: "h")) }
+    items += [
+      URLQueryItem(name: "product", value: "conductivity"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
+  }
+}
+
 extension TidesEndpoint where Response == CurrentBins {
   /// Retrieves a station's bin table with explicitly requested units.
   /// - Parameters:
@@ -333,6 +354,48 @@ extension TidesEndpoint where Response == HourlyWaterLevelResponse {
   }
 }
 
+extension TidesEndpoint where Response == HumidityResponse {
+  /// Retrieves reported humidity without metadata preflight.
+  /// - Parameter query: Explicit cadence, GMT range, station and requested units.
+  /// - Returns: One independently decodable JSON endpoint.
+  public static func humidityObservations(matching query: CoastalObservationQuery) -> Self {
+    var items = [
+      URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+    ]
+    if query.interval == .hourly { items.append(URLQueryItem(name: "interval", value: "h")) }
+    items += [
+      URLQueryItem(name: "product", value: "humidity"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
+  }
+}
+
+extension TidesEndpoint where Response == SalinityResponse {
+  /// Retrieves reported salinity without metadata preflight.
+  /// - Parameter query: Explicit cadence, GMT range, station and requested units.
+  /// - Returns: One independently decodable JSON endpoint.
+  public static func salinityObservations(matching query: CoastalObservationQuery) -> Self {
+    var items = [
+      URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+    ]
+    if query.interval == .hourly { items.append(URLQueryItem(name: "interval", value: "h")) }
+    items += [
+      URLQueryItem(name: "product", value: "salinity"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
+  }
+}
+
 extension TidesEndpoint where Response == TidePredictionResponse {
   /// Retrieves predicted tide samples as an independent wire envelope.
   /// - Parameter query: A validated explicit GMT query.
@@ -351,6 +414,27 @@ extension TidesEndpoint where Response == TidePredictionResponse {
           URLQueryItem(name: "time_zone", value: "gmt"),
           URLQueryItem(name: "units", value: query.units.rawValue),
         ]))
+  }
+}
+
+extension TidesEndpoint where Response == VisibilityResponse {
+  /// Retrieves reported visibility without metadata preflight.
+  /// - Parameter query: Explicit cadence, GMT range, station and requested units.
+  /// - Returns: One independently decodable JSON endpoint.
+  public static func visibilityObservations(matching query: CoastalObservationQuery) -> Self {
+    var items = [
+      URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+      URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+      URLQueryItem(name: "format", value: "json"),
+    ]
+    if query.interval == .hourly { items.append(URLQueryItem(name: "interval", value: "h")) }
+    items += [
+      URLQueryItem(name: "product", value: "visibility"),
+      URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+      URLQueryItem(name: "time_zone", value: "gmt"),
+      URLQueryItem(name: "units", value: query.units.rawValue),
+    ]
+    return builtIn(path: "/api/prod/datagetter" + Self.query(items))
   }
 }
 

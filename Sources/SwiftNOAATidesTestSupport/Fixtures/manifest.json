@@ -196,6 +196,77 @@
     ]
   },
   {
+    "bytes": 658,
+    "name": "conductivity-english",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:05:50.439213+00:00",
+    "sha256": "2ec3877340c18c33db1aaa7b06bf9a976a7d33fb5c48aa8c5d2f1ed6d6161c22",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 199,
+    "name": "conductivity-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:05:50.453466+00:00",
+    "sha256": "ffcbab65f88b0b447e7791e27e242051b6d1b448b48b2841c37e8cadc8d5ef6e",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 658,
+    "name": "conductivity-metric",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:05:50.416535+00:00",
+    "sha256": "2ec3877340c18c33db1aaa7b06bf9a976a7d33fb5c48aa8c5d2f1ed6d6161c22",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 199,
+    "name": "conductivity-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:05:50.442248+00:00",
+    "sha256": "ffcbab65f88b0b447e7791e27e242051b6d1b448b48b2841c37e8cadc8d5ef6e",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 245,
+    "name": "conductivity-missing",
+    "path": "/api/prod/datagetter?begin_date=20260819+12%3A48&end_date=20260819+13%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:37:28.182040+00:00",
+    "sha256": "d24dae93a10d4d2272010b81b37011f1770e2b60d62b913027aa45b297e2ce7b",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "conductivity-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:16.631180+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
     "bytes": 1039,
     "name": "current-events-harmonic",
     "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=max_slack&vel_type=default",
@@ -469,6 +540,77 @@
     ]
   },
   {
+    "bytes": 647,
+    "name": "humidity-english",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:21:14.845685+00:00",
+    "sha256": "9e924ea2f298e14e265546186aba94f76238550d0a0b0ef2ecaf5d50a76c544c",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 197,
+    "name": "humidity-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:21:14.997284+00:00",
+    "sha256": "4f419cba6fe2450d807f67db5ad79a6c50ecdf3feaee7459a53283b50d710d15",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 647,
+    "name": "humidity-metric",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:14.501996+00:00",
+    "sha256": "9e924ea2f298e14e265546186aba94f76238550d0a0b0ef2ecaf5d50a76c544c",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 197,
+    "name": "humidity-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:21:14.838894+00:00",
+    "sha256": "4f419cba6fe2450d807f67db5ad79a6c50ecdf3feaee7459a53283b50d710d15",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 245,
+    "name": "humidity-missing",
+    "path": "/api/prod/datagetter?begin_date=20260819+12%3A48&end_date=20260819+13%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:37:28.959975+00:00",
+    "sha256": "c1a45c6ae643c92f6bd3df5045b7eea8697ec573fa8bb1399c5e0f92a281c75b",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "humidity-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:17.011545+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
     "bytes": 90,
     "name": "invalid-station",
     "path": "/api/prod/datagetter?begin_date=20260926&end_date=20260927&station=invalid&product=predictions&datum=MLLW&time_zone=gmt&interval=hilo&units=metric&application=swift-noaa&format=json",
@@ -516,6 +658,77 @@
     "topLevelKeys": [
       "notices",
       "self"
+    ]
+  },
+  {
+    "bytes": 657,
+    "name": "salinity-english",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:05:50.725587+00:00",
+    "sha256": "0d33cc72147e4f488a50a4a71bf9305477bff7a36f87895c8c20d068c10f16b7",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 199,
+    "name": "salinity-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:05:50.732223+00:00",
+    "sha256": "b417c47dd7f1b62659976dd65e4195c909f3a02501dc8a48686a3a5ea356b55d",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 657,
+    "name": "salinity-metric",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:05:50.727591+00:00",
+    "sha256": "0d33cc72147e4f488a50a4a71bf9305477bff7a36f87895c8c20d068c10f16b7",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 199,
+    "name": "salinity-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:05:50.722837+00:00",
+    "sha256": "b417c47dd7f1b62659976dd65e4195c909f3a02501dc8a48686a3a5ea356b55d",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 240,
+    "name": "salinity-missing",
+    "path": "/api/prod/datagetter?begin_date=20260819+12%3A48&end_date=20260819+13%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:37:29.002051+00:00",
+    "sha256": "d904483a1e0ddd8459727568b2c9d685b92c0dba5e7b8ad40c6e2fdf1dff40b0",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "salinity-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:16.775507+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
     ]
   },
   {
@@ -903,6 +1116,77 @@
     "providerError": {
       "message": "No Predictions data was found. Please make sure the Datum input is valid."
     }
+  },
+  {
+    "bytes": 661,
+    "name": "visibility-english",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:21:15.625222+00:00",
+    "sha256": "6408ad840c8209a1241a34c0f227deb26bbda02e64ef8a3d84fd7fecad196554",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 220,
+    "name": "visibility-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:21:15.753485+00:00",
+    "sha256": "f028ca4dd191198232b5deacc5ae23f5fc535d2986f7147d1c843366e7b0138e",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 672,
+    "name": "visibility-metric",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:15.134107+00:00",
+    "sha256": "1bc321f710238fe76a898cb3df8f9e480e680983fdcda07def48134c7264b1cf",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 222,
+    "name": "visibility-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:21:15.297855+00:00",
+    "sha256": "00c960e0cfcece4ffad9f2241820b302dea96cc82bae103b28dd8788a703e255",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 268,
+    "name": "visibility-missing",
+    "path": "/api/prod/datagetter?begin_date=20260801+11%3A36&end_date=20260801+11%3A48&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:37:29.775782+00:00",
+    "sha256": "f232d0f06f5019fc7865c0905228b771e59a4ff3d34fc5b74036c7f33b522e67",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "visibility-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:17.017446+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
   },
   {
     "bytes": 645,

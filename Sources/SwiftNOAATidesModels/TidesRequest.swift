@@ -6,6 +6,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case airPressureObservations(CoastalObservationQuery)
     /// Attaches requested context to air temperature observations.
     case airTemperatureObservations(CoastalObservationQuery)
+    /// Attaches requested context to conductivity observations.
+    case conductivityObservations(CoastalObservationQuery)
     /// Attach requested context to predicted current events.
     case currentEvents(CurrentEventQuery)
     /// Attach requested bin, units and range to measured currents.
@@ -18,10 +20,16 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case highLowTides(HighLowTideQuery)
     /// Attach requested context to verified hourly heights.
     case hourlyWaterLevels(HourlyWaterLevelQuery)
+    /// Attaches requested context to humidity observations.
+    case humidityObservations(CoastalObservationQuery)
+    /// Attaches requested context to salinity observations.
+    case salinityObservations(CoastalObservationQuery)
     /// Require exactly one matching station from its detail envelope.
     case station(CoastalStationIdentifier)
     /// Attach requested context to sampled tide predictions.
     case tidePredictions(TidePredictionQuery)
+    /// Attaches requested context to visibility observations.
+    case visibilityObservations(CoastalObservationQuery)
     /// Attach requested context to measured six-minute water levels.
     case waterLevels(WaterLevelQuery)
     /// Attaches requested context to water temperature observations.
@@ -116,6 +124,15 @@ extension TidesRequest where Response == CoastalStations {
   }
 }
 
+extension TidesRequest where Response == ConductivityObservations {
+  /// Describes conductivity with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func conductivityObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .conductivityObservations(query))
+  }
+}
+
 extension TidesRequest where Response == CurrentBins {
   /// Describes a station bin-table request without conversion.
   /// - Parameters:
@@ -175,12 +192,39 @@ extension TidesRequest where Response == HourlyWaterLevels {
   }
 }
 
+extension TidesRequest where Response == HumidityObservations {
+  /// Describes humidity with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func humidityObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .humidityObservations(query))
+  }
+}
+
+extension TidesRequest where Response == SalinityObservations {
+  /// Describes salinity with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func salinityObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .salinityObservations(query))
+  }
+}
+
 extension TidesRequest where Response == TidePredictions {
   /// Describes sampled tide predictions with immutable requested context.
   /// - Parameter query: The validated explicit GMT query.
   /// - Returns: A reusable request that attaches context after direct wire decoding.
   public static func tidePredictions(matching query: TidePredictionQuery) -> Self {
     Self(resolution: .tidePredictions(query))
+  }
+}
+
+extension TidesRequest where Response == VisibilityObservations {
+  /// Describes visibility with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func visibilityObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .visibilityObservations(query))
   }
 }
 

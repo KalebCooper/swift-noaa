@@ -229,10 +229,10 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .airPressureObservations, .airTemperatureObservations, .waterTemperatureObservations,
-      .currentEvents, .currentObservations, .currentPredictions,
-      .highLowTides,
-      .hourlyWaterLevels, .tidePredictions, .waterLevels, .windObservations:
+    case .airPressureObservations, .airTemperatureObservations, .conductivityObservations,
+      .currentEvents, .currentObservations, .currentPredictions, .highLowTides, .hourlyWaterLevels,
+      .humidityObservations, .salinityObservations, .tidePredictions, .visibilityObservations,
+      .waterLevels, .waterTemperatureObservations, .windObservations:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
       )
@@ -515,6 +515,115 @@ extension TidesClient {
     -> WindObservations
   {
     try await value(for: .windObservations(matching: query))
+  }
+
+}
+
+extension TidesClient {
+  /// Retrieves reported conductivity and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func conductivityObservations(matching query: CoastalObservationQuery)
+    async throws(TidesError) -> ConductivityObservations
+  {
+    try await value(for: .conductivityObservations(matching: query))
+  }
+
+  /// Executes a reusable conductivity query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<ConductivityObservations>) async throws(TidesError)
+    -> ConductivityObservations
+  {
+    guard case .conductivityObservations(let query) = request.resolution else {
+      preconditionFailure("Only the conductivityObservations factory constructs this request.")
+    }
+    let response = try await send(.conductivityObservations(matching: query))
+    return ConductivityObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+}
+
+extension TidesClient {
+  /// Retrieves reported humidity and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func humidityObservations(matching query: CoastalObservationQuery) async throws(TidesError)
+    -> HumidityObservations
+  {
+    try await value(for: .humidityObservations(matching: query))
+  }
+
+  /// Executes a reusable humidity query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<HumidityObservations>) async throws(TidesError)
+    -> HumidityObservations
+  {
+    guard case .humidityObservations(let query) = request.resolution else {
+      preconditionFailure("Only the humidityObservations factory constructs this request.")
+    }
+    let response = try await send(.humidityObservations(matching: query))
+    return HumidityObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+}
+
+extension TidesClient {
+  /// Retrieves reported salinity and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func salinityObservations(matching query: CoastalObservationQuery) async throws(TidesError)
+    -> SalinityObservations
+  {
+    try await value(for: .salinityObservations(matching: query))
+  }
+
+  /// Executes a reusable salinity query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<SalinityObservations>) async throws(TidesError)
+    -> SalinityObservations
+  {
+    guard case .salinityObservations(let query) = request.resolution else {
+      preconditionFailure("Only the salinityObservations factory constructs this request.")
+    }
+    let response = try await send(.salinityObservations(matching: query))
+    return SalinityObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+}
+
+extension TidesClient {
+  /// Executes a reusable visibility query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<VisibilityObservations>) async throws(TidesError)
+    -> VisibilityObservations
+  {
+    guard case .visibilityObservations(let query) = request.resolution else {
+      preconditionFailure("Only the visibilityObservations factory constructs this request.")
+    }
+    let response = try await send(.visibilityObservations(matching: query))
+    return VisibilityObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+
+  /// Retrieves reported visibility and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func visibilityObservations(matching query: CoastalObservationQuery)
+    async throws(TidesError) -> VisibilityObservations
+  {
+    try await value(for: .visibilityObservations(matching: query))
   }
 
 }

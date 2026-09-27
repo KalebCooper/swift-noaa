@@ -31,6 +31,18 @@ package enum Fixture: String, CaseIterable, Sendable {
   case binsInvalid = "bins-invalid"
   /// /mdapi/prod/webapi/stations/CFR1624/bins.json?units=metric
   case binsSurvey = "bins-survey"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=english
+  case conductivityEnglish = "conductivity-english"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=english&interval=h
+  case conductivityEnglishHourly = "conductivity-english-hourly"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric
+  case conductivityMetric = "conductivity-metric"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric&interval=h
+  case conductivityMetricHourly = "conductivity-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20260819+12%3A48&end_date=20260819+13%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric
+  case conductivityMissing = "conductivity-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=conductivity&station=8419870&time_zone=gmt&units=metric
+  case conductivityNoData = "conductivity-no-data"
   /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=max_slack&vel_type=default
   case currentEventsHarmonic = "current-events-harmonic"
   /// /api/prod/datagetter?begin_date=20240229+00%3A00&end_date=20250302+00%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=max_slack
@@ -75,6 +87,18 @@ package enum Fixture: String, CaseIterable, Sendable {
   case hourlyOverYear = "hourly-over-year"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=hourly_height&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
   case hourlyWater = "hourly-water"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=english
+  case humidityEnglish = "humidity-english"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=english&interval=h
+  case humidityEnglishHourly = "humidity-english-hourly"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric
+  case humidityMetric = "humidity-metric"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric&interval=h
+  case humidityMetricHourly = "humidity-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20260819+12%3A48&end_date=20260819+13%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric
+  case humidityMissing = "humidity-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=humidity&station=8419870&time_zone=gmt&units=metric
+  case humidityNoData = "humidity-no-data"
   /// Data API invalid-station refusal; exact request is recorded in Fixtures/manifest.json.
   case invalidStation = "invalid-station"
   /// /mdapi/prod/webapi/stations/9414290/notices.json
@@ -83,6 +107,18 @@ package enum Fixture: String, CaseIterable, Sendable {
   case noticesInvalid = "notices-invalid"
   /// /mdapi/prod/webapi/stations/8638610/notices.json
   case noticesPopulated = "notices-8638610"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=english
+  case salinityEnglish = "salinity-english"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=english&interval=h
+  case salinityEnglishHourly = "salinity-english-hourly"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric
+  case salinityMetric = "salinity-metric"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric&interval=h
+  case salinityMetricHourly = "salinity-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20260819+12%3A48&end_date=20260819+13%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric
+  case salinityMissing = "salinity-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=metric
+  case salinityNoData = "salinity-no-data"
   /// /mdapi/prod/webapi/stations/9414290/sensors.json?units=english
   case sensorsEnglish = "sensors-english"
   /// /mdapi/prod/webapi/stations/invalid/sensors.json?units=metric
@@ -135,6 +171,18 @@ package enum Fixture: String, CaseIterable, Sendable {
   case tideSubordinate = "tide-subordinate"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=8557863&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=6
   case tideSubordinateSampled = "tide-subordinate-sampled"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=english
+  case visibilityEnglish = "visibility-english"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=english&interval=h
+  case visibilityEnglishHourly = "visibility-english-hourly"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric
+  case visibilityMetric = "visibility-metric"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric&interval=h
+  case visibilityMetricHourly = "visibility-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20260801+11%3A36&end_date=20260801+11%3A48&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric
+  case visibilityMissing = "visibility-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=visibility&station=9414296&time_zone=gmt&units=metric
+  case visibilityNoData = "visibility-no-data"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=water_level&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json
   case waterInvalidDatum = "water-invalid-datum"
   /// /api/prod/datagetter?begin_date=20240926%2000:00&end_date=20240926%2001:00&station=9414290&product=water_level&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json

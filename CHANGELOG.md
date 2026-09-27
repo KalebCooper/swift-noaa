@@ -8,6 +8,18 @@ All notable changes are documented here, following
 
 ### Added
 
+- visibility observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
+- salinity observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
+- humidity observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
+- conductivity observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
 - wind observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 

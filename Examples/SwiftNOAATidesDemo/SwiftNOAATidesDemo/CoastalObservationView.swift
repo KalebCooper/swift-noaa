@@ -7,6 +7,10 @@ struct CoastalObservationView: View {
   private enum Product: String, CaseIterable {
     case airPressureObservations = "air pressure"
     case airTemperatureObservations = "air temperature"
+    case conductivityObservations = "conductivity"
+    case humidityObservations = "humidity"
+    case salinityObservations = "salinity"
+    case visibilityObservations = "visibility"
     case waterTemperatureObservations = "water temperature"
     case windObservations = "wind"
   }
@@ -93,6 +97,33 @@ struct CoastalObservationView: View {
             + ($0.temperature.value == nil
               ? "Missing temperature"
               : $0.temperature.rawValue + " " + (units == .metric ? "°C" : "°F"))
+        }
+      case .conductivityObservations:
+        let response = try await client.conductivityObservations(matching: query)
+        rows = response.observations.map {
+          $0.time.rawValue + " GMT: "
+            + ($0.conductivity.value == nil
+              ? "Missing conductivity" : $0.conductivity.rawValue + " " + "mS/cm")
+        }
+      case .humidityObservations:
+        let response = try await client.humidityObservations(matching: query)
+        rows = response.observations.map {
+          $0.time.rawValue + " GMT: "
+            + ($0.humidity.value == nil ? "Missing humidity" : $0.humidity.rawValue + " " + "%")
+        }
+      case .salinityObservations:
+        let response = try await client.salinityObservations(matching: query)
+        rows = response.observations.map {
+          $0.time.rawValue + " GMT: salinity " + format($0.salinity, "psu") + ", specific gravity "
+            + format($0.specificGravity, "(dimensionless)")
+        }
+      case .visibilityObservations:
+        let response = try await client.visibilityObservations(matching: query)
+        rows = response.observations.map {
+          $0.time.rawValue + " GMT: "
+            + ($0.visibility.value == nil
+              ? "Missing visibility"
+              : $0.visibility.rawValue + " " + (units == .metric ? "km" : "nmi"))
         }
       case .waterTemperatureObservations:
         let response = try await client.waterTemperatureObservations(matching: query)
