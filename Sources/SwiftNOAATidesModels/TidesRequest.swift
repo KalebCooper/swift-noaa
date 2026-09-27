@@ -24,6 +24,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case humidityObservations(CoastalObservationQuery)
     /// Validates latest-reading cardinality and attaches requested context.
     case latestWaterLevel(LatestWaterLevelQuery)
+    /// Attaches requested context to provider-verified observed extrema.
+    case observedHighLowWaterLevels(ObservedHighLowWaterLevelQuery)
     /// Attaches requested context to preliminary one-minute levels.
     case oneMinuteWaterLevels(OneMinuteWaterLevelQuery)
     /// Attaches requested context to salinity observations.
@@ -224,6 +226,17 @@ extension TidesRequest where Response == LatestWaterLevel {
   /// - Returns: A reusable latest request; each execution can return a different reading.
   public static func latestWaterLevel(matching query: LatestWaterLevelQuery) -> Self {
     Self(resolution: .latestWaterLevel(query))
+  }
+}
+
+extension TidesRequest where Response == ObservedHighLowWaterLevels {
+  /// Describes observed high/low levels without performing I/O.
+  /// - Parameter query: The validated observed high/low query.
+  /// - Returns: An immutable reusable request.
+  public static func observedHighLowWaterLevels(matching query: ObservedHighLowWaterLevelQuery)
+    -> Self
+  {
+    Self(resolution: .observedHighLowWaterLevels(query))
   }
 }
 

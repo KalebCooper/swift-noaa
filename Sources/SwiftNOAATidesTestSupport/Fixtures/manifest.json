@@ -777,6 +777,41 @@
     ]
   },
   {
+    "bytes": 580,
+    "name": "observed-high-low-english",
+    "path": "/api/prod/datagetter?format=json&product=high_low&station=9414290&datum=MLLW&time_zone=gmt&units=english&begin_date=20250101+00%3A00&end_date=20250103+00%3A00",
+    "recordedAt": "2026-09-27T14:59:25.269128+00:00",
+    "sha256": "3d2e797d862b9ee983e6bfde9315bfd203eca658d6ed748e58d73487085b0290",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 579,
+    "name": "observed-high-low-metric",
+    "path": "/api/prod/datagetter?format=json&product=high_low&station=9414290&datum=MLLW&time_zone=gmt&units=metric&begin_date=20250101+00%3A00&end_date=20250103+00%3A00",
+    "recordedAt": "2026-09-27T14:59:25.063757+00:00",
+    "sha256": "da9447bc236918832da620810f3a6224fc5b2e79871d5ff56f31c3047890c038",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "observed-high-low-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101%2000:00&end_date=18000101%2001:00&format=json&product=high_low&station=9414290&datum=MLLW&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T15:17:57.255074+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
     "bytes": 325,
     "name": "one-minute-english",
     "path": "/api/prod/datagetter?format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=english&begin_date=20250101+00%3A00&end_date=20250101+00%3A05",

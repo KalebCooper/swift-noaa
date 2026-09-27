@@ -246,9 +246,9 @@ public struct TidesClient: Sendable {
       return try await send(endpoint)
     case .airPressureObservations, .airTemperatureObservations, .conductivityObservations,
       .currentEvents, .currentObservations, .currentPredictions, .highLowTides, .hourlyWaterLevels,
-      .humidityObservations, .latestWaterLevel, .oneMinuteWaterLevels, .salinityObservations,
-      .tidePredictions, .visibilityObservations, .waterLevels, .waterTemperatureObservations,
-      .windObservations:
+      .humidityObservations, .latestWaterLevel, .observedHighLowWaterLevels, .oneMinuteWaterLevels,
+      .salinityObservations, .tidePredictions, .visibilityObservations, .waterLevels,
+      .waterTemperatureObservations, .windObservations:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
       )
@@ -697,6 +697,33 @@ extension TidesClient {
     }
     let response = try await send(.oneMinuteWaterLevels(matching: query))
     return OneMinuteWaterLevels(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+}
+
+extension TidesClient {
+  /// Retrieves provider-verified observed high/low levels with separate requested context.
+  /// - Parameter query: The validated observed high/low query.
+  /// - Returns: Provider observations without local extrema calculation or prediction.
+  /// - Throws: Any shared execution error.
+  public func observedHighLowWaterLevels(matching query: ObservedHighLowWaterLevelQuery)
+    async throws(TidesError) -> ObservedHighLowWaterLevels
+  {
+    try await value(for: .observedHighLowWaterLevels(matching: query))
+  }
+
+  /// Executes a observed high/low query through the shared send path.
+  /// - Parameter request: A request from the observed high/low factory.
+  /// - Returns: Provider metadata and observations with their original requested context.
+  /// - Throws: Any shared execution error.
+  public func value(for request: TidesRequest<ObservedHighLowWaterLevels>) async throws(TidesError)
+    -> ObservedHighLowWaterLevels
+  {
+    guard case .observedHighLowWaterLevels(let query) = request.resolution else {
+      preconditionFailure("Only the observedHighLowWaterLevels factory constructs this request.")
+    }
+    let response = try await send(.observedHighLowWaterLevels(matching: query))
+    return ObservedHighLowWaterLevels(
       metadata: response.metadata, observations: response.observations, requestedQuery: query)
   }
 }

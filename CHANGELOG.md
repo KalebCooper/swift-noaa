@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- Verified observed high/low water levels, distinct from predictions, with exact open event codes,
+  raw flags, explicit query context, and a twelve-month limit.
+
 - Raw NOS/NWS flood thresholds and action levels with explicit units and preserved null values;
   reference-datum uncertainty is documented without automatic comparisons.
 

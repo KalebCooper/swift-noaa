@@ -394,6 +394,28 @@ extension TidesEndpoint where Response == HumidityResponse {
   }
 }
 
+extension TidesEndpoint where Response == ObservedHighLowWaterLevelResponse {
+  /// Describes provider-verified observed extrema without local extrema calculation.
+  /// - Parameter query: Explicit datum, inclusive GMT range, station and units.
+  /// - Returns: One independently decodable JSON endpoint.
+  public static func observedHighLowWaterLevels(matching query: ObservedHighLowWaterLevelQuery)
+    -> Self
+  {
+    builtIn(
+      path: "/api/prod/datagetter"
+        + Self.query([
+          URLQueryItem(name: "begin_date", value: TidesDateRange.encoded(query.range.begin)),
+          URLQueryItem(name: "datum", value: query.datum.rawValue),
+          URLQueryItem(name: "end_date", value: TidesDateRange.encoded(query.range.end)),
+          URLQueryItem(name: "format", value: "json"),
+          URLQueryItem(name: "product", value: "high_low"),
+          URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+          URLQueryItem(name: "time_zone", value: "gmt"),
+          URLQueryItem(name: "units", value: query.units.rawValue),
+        ]))
+  }
+}
+
 extension TidesEndpoint where Response == OneMinuteWaterLevelResponse {
   /// Describes preliminary one-minute water levels without inferring six-minute fields.
   /// - Parameter query: Explicit datum, inclusive GMT range, station and units.

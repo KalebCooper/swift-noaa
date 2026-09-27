@@ -42,6 +42,8 @@ Preliminary one-minute water levels have a dedicated explicit query with a four-
 
 Flood-threshold metadata retains NOS/NWS values separately, with explicit units and unreported datum context.
 
+Verified observed high/low events are available separately from predicted high/low tides.
+
 ## What's included
 
 Choose the service you need. Each has a client and a separate models library for use with your own

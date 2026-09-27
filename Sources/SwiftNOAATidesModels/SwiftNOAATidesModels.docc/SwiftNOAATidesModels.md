@@ -103,7 +103,7 @@ option on the six-minute water-level product.
 value and an exceeded expected level limit. There is no echoed quality code: verification is part
 of the provider product definition. `HourlyWaterLevels` keeps provider metadata and observations
 alongside the original requested query. Unknown flags and empty numeric text remain observable;
-missing time steps stay absent. Observed high/low levels and daily/monthly means are unsupported.
+missing time steps stay absent. Daily/monthly means are unsupported.
 
 ## Current observations
 
@@ -177,9 +177,9 @@ GMT minutes. Units, datum and bin choices are explicit where applicable. Returne
 requested context remain separate; no rounding, splitting, interpolation or conversion occurs.
 
 Unsupported CO-OPS scope includes all-bin queries, historical deployment interpretation, local civil
-time, relative/latest selectors, observed high/low water levels, daily/monthly statistics, one-minute
-measurements, meteorological products, OFS guidance, and DPAPI. Metadata links are retained without
-resource expansion. These values do not provide navigation advice or flood-danger classification.
+time, relative selectors other than latest water level, daily/monthly statistics, unlisted products,
+OFS guidance, and DPAPI. Metadata links are retained without automatic resource expansion. These
+values do not provide navigation advice or flood-danger classification.
 
 
 ## Station notices and sensors
@@ -462,6 +462,35 @@ let reused = try await tides.value(for: request)
 let wire = try await tides.send(.floodLevels(stationIdentifier: identifier, units: .metric))
 ```
 
+
+## Observed high/low water levels
+
+Use `observedHighLowWaterLevels(matching:)` for NOAA's verified `high_low` product.
+This is separate from `highLowTides(matching:)` predictions. The dedicated query requires datum,
+units and inclusive GMT bounds, with a twelve-Gregorian-calendar-month limit. Verification and
+availability are provider-controlled; no publication date or event is inferred from age or samples.
+
+`ObservedHighLowWaterLevel` retains finite height text, GMT time, raw event kind, and the
+inferred-value/level-limit flags in that order. Heights use requested meters or feet and datum.
+Recorded event codes include `HH`, `H `, `L ` and `LL`; exact trailing spaces survive
+round-trips and equality. `kind.classification` recognizes the documented unpadded codes and
+recorded single-space padding. Unfamiliar codes yield no classification and keep their raw text.
+The recordings have no empty-height representation: empty, null, absent or malformed heights
+fail decoding. No missing event is manufactured. Successful empty arrays stay empty; no-data,
+unsupported datum, and unverified-period refusals remain provider errors.
+
+The wire response decodes independently; `ObservedHighLowWaterLevels.requestedQuery`
+retains requested context separately from the reported station metadata.
+
+```swift
+let query = try ObservedHighLowWaterLevelQuery(
+  datum: .meanLowerLowWater, range: window, stationIdentifier: identifier, units: .metric)
+let events = try await tides.observedHighLowWaterLevels(matching: query)
+let request = TidesRequest.observedHighLowWaterLevels(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.observedHighLowWaterLevels(matching: query))
+```
+
 ## Topics
 
 ### Stations
@@ -616,3 +645,11 @@ let wire = try await tides.send(.floodLevels(stationIdentifier: identifier, unit
 ### Flood metadata
 
 - ``CoastalFloodLevels``
+
+### Observed high and low water levels
+
+- ``ObservedHighLowWaterLevel``
+- ``ObservedHighLowWaterLevelKind``
+- ``ObservedHighLowWaterLevelQuery``
+- ``ObservedHighLowWaterLevelResponse``
+- ``ObservedHighLowWaterLevels``
