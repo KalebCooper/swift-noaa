@@ -24,6 +24,17 @@ struct CoastalMetadataTests {
       try decoder.decode(CoastalSensors.self, from: Data(#"{"sensors":[]}"#.utf8)).sensors == [])
   }
 
+  @Test("Named observation station categories use provider codes")
+  func namedObservationStationCategoriesUseProviderCodes() {
+    #expect(CoastalStationType.conductivity.rawValue == "cond")
+    #expect(CoastalStationType.meteorological.rawValue == "met")
+    #expect(CoastalStationType.oneMinuteWaterLevels.rawValue == "1minute")
+    #expect(CoastalStationType.physicalOceanography.rawValue == "physocean")
+    #expect(CoastalStationType.visibility.rawValue == "visibility")
+    #expect(CoastalStationType.waterLevelsAndMeteorological.rawValue == "waterlevelsandmet")
+    #expect(CoastalStationType.waterTemperature.rawValue == "watertemp")
+  }
+
   @Test("Notices retain literal markup and whitespace")
   func noticesRetainLiteralMarkupAndWhitespace() throws {
     let result = try JSONDecoder().decode(
@@ -35,6 +46,28 @@ struct CoastalMetadataTests {
     )
     let constructed = Data(#"{"name":" A ","text":"\r\n<b>x</b> "}"#.utf8)
     #expect(try JSONDecoder().decode(CoastalNotice.self, from: constructed).text == "\r\n<b>x</b> ")
+  }
+
+  @Test("Required notice and sensor fields reject omission and null", arguments: [false, true])
+  func requiredNoticeAndSensorFieldsRejectOmissionAndNull(useNull: Bool) throws {
+    let decoder = JSONDecoder()
+    let notice: [String: Any] = ["name": "Name", "text": "Text"]
+    for key in ["name", "text"] {
+      var fields = notice
+      if useNull { fields[key] = NSNull() } else { fields.removeValue(forKey: key) }
+      let data = try JSONSerialization.data(withJSONObject: fields)
+      #expect(throws: DecodingError.self) { try decoder.decode(CoastalNotice.self, from: data) }
+    }
+    let sensor: [String: Any] = ["name": "Sensor", "sensorID": "X", "status": 1]
+    for key in ["name", "sensorID", "status"] {
+      var fields = sensor
+      if useNull { fields[key] = NSNull() } else { fields.removeValue(forKey: key) }
+      let data = try JSONSerialization.data(withJSONObject: fields)
+      #expect(throws: DecodingError.self) { try decoder.decode(CoastalSensor.self, from: data) }
+    }
+    #expect(throws: DecodingError.self) {
+      try decoder.decode(CoastalNotices.self, from: Data(#"{"notices":null}"#.utf8))
+    }
   }
 
   @Test("Sensors retain units elevation status and nullable metadata")

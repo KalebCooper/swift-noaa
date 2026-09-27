@@ -48,6 +48,16 @@ struct StationClientTests {
     let client = TidesClient(transport: transport)
     let request = try TidesRequest<StationCount>.sanFrancisco()
     #expect(try await client.value(for: request).count == 1)
+    let range = try TidesDateRange(
+      begin: TidesTimestamp("2025-01-01 00:00").date,
+      end: TidesTimestamp("2025-01-01 01:00").date)
+    let observationQuery = try CoastalObservationQuery(
+      interval: .hourly, range: range,
+      stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric)
+    let observationRequest = TidesRequest.windObservations(matching: observationQuery)
+    let observationEndpoint = TidesEndpoint.windObservations(matching: observationQuery)
+    let _: TidesRequest<WindObservations> = observationRequest
+    let _: TidesEndpoint<WindResponse> = observationEndpoint
     let _: NWSConfiguration = .init(userAgent: "test")
     let _: Endpoint<WeatherGlossary> = .glossary
   }

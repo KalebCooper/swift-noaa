@@ -162,15 +162,29 @@ there is no automatic preflight, station substitution, alternate request, or int
 
 | Operation | Query / selection | Maximum explicit GMT window |
 |---|---|---|
-| Station directories and detail | `CoastalStationQuery`, `CoastalStationIdentifier` | Not a time series |
-| High/low tide predictions | `HighLowTideQuery` | 10 calendar years |
-| Sampled tide predictions | `TidePredictionQuery` | 1 calendar year |
+| Air pressure | CoastalObservationQuery | 1 calendar month native / 12 hourly |
+| Air temperature | CoastalObservationQuery | 1 calendar month native / 12 hourly |
+| Conductivity | CoastalObservationQuery | 1 calendar month native / 12 hourly |
+| Current observations | CurrentObservationQuery | 1 calendar month |
 | Datum and current-bin metadata | Explicit station and units | Not a time series |
-| Six-minute water levels | `WaterLevelQuery` | 1 calendar month |
-| Verified hourly heights | `HourlyWaterLevelQuery` | 1 calendar year |
-| Current observations | `CurrentObservationQuery` | 1 calendar month |
-| Max/slack current predictions | `CurrentEventQuery` | 1 calendar year |
-| Sampled current predictions | `CurrentPredictionQuery` | 1 calendar month |
+| Flood thresholds | Explicit station and units; datum unreported | Not a time series |
+| High/low tide predictions | HighLowTideQuery | 10 calendar years |
+| Humidity | CoastalObservationQuery | 1 calendar month native / 12 hourly |
+| Latest water level | LatestWaterLevelQuery | Provider latest selector; no explicit range |
+| Max/slack current predictions | CurrentEventQuery | 1 calendar year |
+| Observed high/low water levels | ObservedHighLowWaterLevelQuery | 12 calendar months |
+| One-minute water levels | OneMinuteWaterLevelQuery | 4 calendar days |
+| Salinity and specific gravity | CoastalObservationQuery | 1 calendar month native / 12 hourly |
+| Sampled current predictions | CurrentPredictionQuery | 1 calendar month |
+| Sampled tide predictions | TidePredictionQuery | 1 calendar year |
+| Sensor status | Explicit station and units | Not a time series |
+| Six-minute water levels | WaterLevelQuery | 1 calendar month |
+| Station directories and detail | CoastalStationQuery, CoastalStationIdentifier | Not a time series |
+| Station notices | Explicit station | Not a time series |
+| Verified hourly heights | HourlyWaterLevelQuery | 1 calendar year |
+| Visibility | CoastalObservationQuery | 1 calendar month native / 12 hourly |
+| Water temperature | CoastalObservationQuery | 1 calendar month native / 12 hourly |
+| Wind | CoastalObservationQuery | 1 calendar month native / 12 hourly |
 
 Every operation has client, reusable request and direct endpoint access. Date bounds are inclusive
 GMT minutes. Units, datum and bin choices are explicit where applicable. Returned values and
@@ -199,7 +213,7 @@ visibility, water temperature, and combined water-level/meteorological categorie
 installed capabilities rather than guaranteeing data for a requested time.
 
 
-## water temperature observations
+## Water temperature observations
 
 Use `waterTemperatureObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -223,7 +237,7 @@ let wire = try await tides.send(.waterTemperatureObservations(matching: query))
 ```
 
 
-## air pressure observations
+## Air pressure observations
 
 Use `airPressureObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -247,7 +261,7 @@ let wire = try await tides.send(.airPressureObservations(matching: query))
 ```
 
 
-## air temperature observations
+## Air temperature observations
 
 Use `airTemperatureObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -271,7 +285,7 @@ let wire = try await tides.send(.airTemperatureObservations(matching: query))
 ```
 
 
-## wind observations
+## Wind observations
 
 Use `windObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -297,7 +311,7 @@ let wire = try await tides.send(.windObservations(matching: query))
 ```
 
 
-## conductivity observations
+## Conductivity observations
 
 Use `conductivityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -321,7 +335,7 @@ let wire = try await tides.send(.conductivityObservations(matching: query))
 ```
 
 
-## humidity observations
+## Humidity observations
 
 Use `humidityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -345,7 +359,7 @@ let wire = try await tides.send(.humidityObservations(matching: query))
 ```
 
 
-## salinity observations
+## Salinity observations
 
 Use `salinityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -370,7 +384,7 @@ let wire = try await tides.send(.salinityObservations(matching: query))
 ```
 
 
-## visibility observations
+## Visibility observations
 
 Use `visibilityObservations(matching:)` with `CoastalObservationQuery` at the client, reusable request, or
 direct endpoint level. Select `.sixMinutes` or `.hourly` explicitly; hourly selects the six-minute
@@ -453,7 +467,7 @@ Each threshold field is required but nullable: null means unavailable, while zer
 numbers are retained. No undocumented numeric sentinel is normalized. Missing fields and malformed
 numbers fail decoding; unsupported stations retain their HTTP or provider errors.
 The raw `selfLink` remains optional. See the
-[Metadata API field table](https://api.tidesandcurrents.noaa.gov/mdapi/prod/#floodlevels).
+[Metadata API field table](https://api.tidesandcurrents.noaa.gov/mdapi/prod/).
 
 ```swift
 let thresholds = try await tides.floodLevels(stationIdentifier: identifier, units: .metric)

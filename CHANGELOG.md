@@ -8,6 +8,10 @@ All notable changes are documented here, following
 
 ### Added
 
+- New contextual `TidesRequest.Resolution` cases for weather/ocean observations and latest,
+  one-minute, and observed high/low water levels. Custom executors and exhaustive switches over
+  `Resolution` must handle these cases, alongside the error cases noted below.
+
 - Verified observed high/low water levels, distinct from predictions, with exact open event codes,
   raw flags, explicit query context, and a twelve-month limit.
 
@@ -21,28 +25,28 @@ All notable changes are documented here, following
   and `TidesError.invalidLatestWaterLevelResponse` for plural responses. Exhaustive switches
   over `TidesError` must handle the new case.
 
-- visibility observations with explicit GMT ranges, six-minute or hourly selection,
+- Visibility observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
-- salinity observations with explicit GMT ranges, six-minute or hourly selection,
+- Salinity observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
-- humidity observations with explicit GMT ranges, six-minute or hourly selection,
+- Humidity observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
-- conductivity observations with explicit GMT ranges, six-minute or hourly selection,
+- Conductivity observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
-- wind observations with explicit GMT ranges, six-minute or hourly selection,
+- Wind observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
-- air temperature observations with explicit GMT ranges, six-minute or hourly selection,
+- Air temperature observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
-- air pressure observations with explicit GMT ranges, six-minute or hourly selection,
+- Air pressure observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
-- water temperature observations with explicit GMT ranges, six-minute or hourly selection,
+- Water temperature observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 
 - Station notices, sensor status and elevation metadata, plus additional coastal station categories.
