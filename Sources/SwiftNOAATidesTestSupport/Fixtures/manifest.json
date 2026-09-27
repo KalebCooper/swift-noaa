@@ -1,5 +1,147 @@
 [
   {
+    "bytes": 670,
+    "name": "air_pressure-english",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:21:12.309010+00:00",
+    "sha256": "652ada749d32d984b81d664378143a348fe7eee713251cc0de5774d72d44889d",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 202,
+    "name": "air_pressure-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:21:12.286462+00:00",
+    "sha256": "85c25b64b024788e6c2a72df7caac2d90f68c7721006fe94f5c9def89c2413c2",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 670,
+    "name": "air_pressure-metric",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:12.258345+00:00",
+    "sha256": "652ada749d32d984b81d664378143a348fe7eee713251cc0de5774d72d44889d",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 202,
+    "name": "air_pressure-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:21:12.269881+00:00",
+    "sha256": "85c25b64b024788e6c2a72df7caac2d90f68c7721006fe94f5c9def89c2413c2",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 247,
+    "name": "air_pressure-missing",
+    "path": "/api/prod/datagetter?begin_date=20260819%2012:48&end_date=20260819%2013:00&format=json&product=air_pressure&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:39:06.043075+00:00",
+    "sha256": "0d174159017c14f78f7ebee6430f06a55b50ee615324a1dd17a1aff56c21633a",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "air_pressure-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:16.604337+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
+    "bytes": 648,
+    "name": "air_temperature-english",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=english",
+    "recordedAt": "2026-09-27T14:21:13.198882+00:00",
+    "sha256": "6e49d58e2d10ae9dfbd26f50758c542c885b339121be3eeaff8dd6768fba8495",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 198,
+    "name": "air_temperature-english-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=english&interval=h",
+    "recordedAt": "2026-09-27T14:21:13.176993+00:00",
+    "sha256": "edfb8e2820f29a3a00c46e29a624b0aab2834befa293bfd28dd71cad162cdf44",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 648,
+    "name": "air_temperature-metric",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:13.113621+00:00",
+    "sha256": "d43b0572ad2408923db4ccee90e75c6bde7892d7108e10f897b70c2d2e46ea59",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 198,
+    "name": "air_temperature-metric-hourly",
+    "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=metric&interval=h",
+    "recordedAt": "2026-09-27T14:21:13.200147+00:00",
+    "sha256": "e07a706d06d0679489d33115ffd40b772a48aae546d07fca4688d426d033080a",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 243,
+    "name": "air_temperature-missing",
+    "path": "/api/prod/datagetter?begin_date=20260819%2012:48&end_date=20260819%2013:00&format=json&product=air_temperature&station=8419870&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:39:05.751476+00:00",
+    "sha256": "bd114f9f9c68a2c4d2670afeebada1cdcd86904c256446ce002b973000d6d931",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "air_temperature-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T14:21:15.937110+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
     "bytes": 2364,
     "name": "bins-english",
     "path": "/mdapi/prod/webapi/stations/cb0102/bins.json?units=english",

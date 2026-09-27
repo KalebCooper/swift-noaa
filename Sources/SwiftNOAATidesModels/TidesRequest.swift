@@ -2,6 +2,10 @@
 public struct TidesRequest<Response>: Hashable, Sendable {
   /// The portable work needed to obtain the response.
   public enum Resolution: Hashable, Sendable {
+    /// Attaches requested context to air pressure observations.
+    case airPressureObservations(CoastalObservationQuery)
+    /// Attaches requested context to air temperature observations.
+    case airTemperatureObservations(CoastalObservationQuery)
     /// Attach requested context to predicted current events.
     case currentEvents(CurrentEventQuery)
     /// Attach requested bin, units and range to measured currents.
@@ -35,6 +39,24 @@ extension TidesRequest where Response: Decodable {
   /// - Parameter endpoint: The endpoint whose body decodes as Response.
   public init(endpoint: TidesEndpoint<Response>) {
     self.resolution = .endpoint(endpoint)
+  }
+}
+
+extension TidesRequest where Response == AirPressureObservations {
+  /// Describes air pressure with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func airPressureObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .airPressureObservations(query))
+  }
+}
+
+extension TidesRequest where Response == AirTemperatureObservations {
+  /// Describes air temperature with separate requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: An immutable request that performs no I/O.
+  public static func airTemperatureObservations(matching query: CoastalObservationQuery) -> Self {
+    Self(resolution: .airTemperatureObservations(query))
   }
 }
 

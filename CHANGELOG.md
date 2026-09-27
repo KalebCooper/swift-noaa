@@ -8,6 +8,12 @@ All notable changes are documented here, following
 
 ### Added
 
+- air temperature observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
+- air pressure observations with explicit GMT ranges, six-minute or hourly selection,
+  separate requested context, and product-specific units.
+
 - water temperature observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 

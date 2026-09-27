@@ -14,6 +14,12 @@ requests, and direct endpoints. Sensor status and elevation units retain NOAA's 
 water temperature observations are available in both unit systems, with explicit
 six-minute or hourly selection. See the Tides documentation for query examples and units.
 
+air pressure observations are available in both unit systems, with explicit
+six-minute or hourly selection. See the Tides documentation for query examples and units.
+
+air temperature observations are available in both unit systems, with explicit
+six-minute or hourly selection. See the Tides documentation for query examples and units.
+
 ## What's included
 
 Choose the service you need. Each has a client and a separate models library for use with your own

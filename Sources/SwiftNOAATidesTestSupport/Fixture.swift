@@ -1,6 +1,30 @@
 import Foundation
 
 package enum Fixture: String, CaseIterable, Sendable {
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=english
+  case airPressureEnglish = "air_pressure-english"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=english&interval=h
+  case airPressureEnglishHourly = "air_pressure-english-hourly"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=metric
+  case airPressureMetric = "air_pressure-metric"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=metric&interval=h
+  case airPressureMetricHourly = "air_pressure-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20260819%2012:48&end_date=20260819%2013:00&format=json&product=air_pressure&station=8419870&time_zone=gmt&units=metric
+  case airPressureMissing = "air_pressure-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=air_pressure&station=9414290&time_zone=gmt&units=metric
+  case airPressureNoData = "air_pressure-no-data"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=english
+  case airTemperatureEnglish = "air_temperature-english"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=english&interval=h
+  case airTemperatureEnglishHourly = "air_temperature-english-hourly"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=metric
+  case airTemperatureMetric = "air_temperature-metric"
+  /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=metric&interval=h
+  case airTemperatureMetricHourly = "air_temperature-metric-hourly"
+  /// /api/prod/datagetter?begin_date=20260819%2012:48&end_date=20260819%2013:00&format=json&product=air_temperature&station=8419870&time_zone=gmt&units=metric
+  case airTemperatureMissing = "air_temperature-missing"
+  /// /api/prod/datagetter?begin_date=18000101+00%3A00&end_date=18000101+01%3A00&format=json&product=air_temperature&station=9414290&time_zone=gmt&units=metric
+  case airTemperatureNoData = "air_temperature-no-data"
   /// /mdapi/prod/webapi/stations/cb0102/bins.json?units=english
   case binsEnglish = "bins-english"
   /// /mdapi/prod/webapi/stations/invalid/bins.json?units=metric

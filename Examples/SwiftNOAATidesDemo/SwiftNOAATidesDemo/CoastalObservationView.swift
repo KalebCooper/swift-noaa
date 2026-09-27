@@ -5,6 +5,8 @@ import SwiftUI
 
 struct CoastalObservationView: View {
   private enum Product: String, CaseIterable {
+    case airPressureObservations = "air pressure"
+    case airTemperatureObservations = "air temperature"
     case waterTemperatureObservations = "water temperature"
   }
 
@@ -73,6 +75,20 @@ struct CoastalObservationView: View {
         stationIdentifier: CoastalStationIdentifier(identifier), units: units)
       let client = TidesClient()
       switch product {
+      case .airPressureObservations:
+        let response = try await client.airPressureObservations(matching: query)
+        rows = response.observations.map {
+          $0.time.rawValue + " GMT: "
+            + ($0.pressure.value == nil ? "Missing pressure" : $0.pressure.rawValue + " " + "mb")
+        }
+      case .airTemperatureObservations:
+        let response = try await client.airTemperatureObservations(matching: query)
+        rows = response.observations.map {
+          $0.time.rawValue + " GMT: "
+            + ($0.temperature.value == nil
+              ? "Missing temperature"
+              : $0.temperature.rawValue + " " + (units == .metric ? "°C" : "°F"))
+        }
       case .waterTemperatureObservations:
         let response = try await client.waterTemperatureObservations(matching: query)
         rows = response.observations.map {

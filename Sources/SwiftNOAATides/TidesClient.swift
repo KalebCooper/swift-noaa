@@ -229,7 +229,8 @@ public struct TidesClient: Sendable {
     switch request.resolution {
     case .endpoint(let endpoint):
       return try await send(endpoint)
-    case .waterTemperatureObservations, .currentEvents, .currentObservations, .currentPredictions,
+    case .airPressureObservations, .airTemperatureObservations, .waterTemperatureObservations,
+      .currentEvents, .currentObservations, .currentPredictions,
       .highLowTides,
       .hourlyWaterLevels, .tidePredictions, .waterLevels:
       preconditionFailure(
@@ -434,4 +435,58 @@ extension TidesClient {
     try await value(for: .waterTemperatureObservations(matching: query))
   }
 
+}
+
+extension TidesClient {
+  /// Retrieves reported air pressure and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func airPressureObservations(matching query: CoastalObservationQuery)
+    async throws(TidesError) -> AirPressureObservations
+  {
+    try await value(for: .airPressureObservations(matching: query))
+  }
+
+  /// Executes a reusable air pressure query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<AirPressureObservations>) async throws(TidesError)
+    -> AirPressureObservations
+  {
+    guard case .airPressureObservations(let query) = request.resolution else {
+      preconditionFailure("Only the airPressureObservations factory constructs this request.")
+    }
+    let response = try await send(.airPressureObservations(matching: query))
+    return AirPressureObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
+}
+
+extension TidesClient {
+  /// Retrieves reported air temperature and the original requested context.
+  /// - Parameter query: The validated observation query.
+  /// - Returns: Observations without conversion, gap filling, or station substitution.
+  /// - Throws: Any `TidesError` from the shared execution path.
+  public func airTemperatureObservations(matching query: CoastalObservationQuery)
+    async throws(TidesError) -> AirTemperatureObservations
+  {
+    try await value(for: .airTemperatureObservations(matching: query))
+  }
+
+  /// Executes a reusable air temperature query through the shared send path.
+  /// - Parameter request: The concrete request selected by its factory.
+  /// - Returns: Provider metadata and measurements with separate query context.
+  /// - Throws: Any `TidesError` from execution.
+  public func value(for request: TidesRequest<AirTemperatureObservations>) async throws(TidesError)
+    -> AirTemperatureObservations
+  {
+    guard case .airTemperatureObservations(let query) = request.resolution else {
+      preconditionFailure("Only the airTemperatureObservations factory constructs this request.")
+    }
+    let response = try await send(.airTemperatureObservations(matching: query))
+    return AirTemperatureObservations(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
+  }
 }
