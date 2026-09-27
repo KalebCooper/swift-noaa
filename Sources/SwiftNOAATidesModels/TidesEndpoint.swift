@@ -164,6 +164,25 @@ extension TidesEndpoint where Response == CoastalDatums {
   }
 }
 
+extension TidesEndpoint where Response == CoastalFloodLevels {
+  /// Retrieves a station's raw flood-threshold table with explicitly requested units.
+  /// - Parameters:
+  ///   - stationIdentifier: The validated station identifier.
+  ///   - units: A nonempty provider unit-system code without controls.
+  /// - Returns: One metadata endpoint, without conversion or linked-resource expansion.
+  /// - Throws: `TidesQueryError.invalidUnits` for an empty code or control characters.
+  public static func floodLevels(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    throws(TidesQueryError) -> Self
+  {
+    guard !units.rawValue.isEmpty,
+      !units.rawValue.unicodeScalars.contains(where: { $0.properties.generalCategory == .control })
+    else { throw .invalidUnits(units.rawValue) }
+    return builtIn(
+      path: "/mdapi/prod/webapi/stations/\(stationIdentifier.rawValue)/floodlevels.json"
+        + Self.query([URLQueryItem(name: "units", value: units.rawValue)]))
+  }
+}
+
 extension TidesEndpoint where Response == CoastalNotices {
   /// Retrieves the station's notices without expanding linked resources.
   /// - Parameter stationIdentifier: The validated station identifier.

@@ -486,6 +486,87 @@
     ]
   },
   {
+    "bytes": 259,
+    "name": "floodlevels-8419870",
+    "path": "/mdapi/prod/webapi/stations/8419870/floodlevels.json?units=metric",
+    "recordedAt": "2026-09-27T14:59:25.760746+00:00",
+    "sha256": "a83f1d0e158d7d2234c673cb70a27c5fa9f6a83848d10857f3e16f9fd332f6e3",
+    "status": 200,
+    "topLevelKeys": [
+      "nos_minor",
+      "nos_moderate",
+      "nos_major",
+      "nws_minor",
+      "nws_moderate",
+      "nws_major",
+      "action",
+      "self"
+    ]
+  },
+  {
+    "bytes": 262,
+    "name": "floodlevels-8638610",
+    "path": "/mdapi/prod/webapi/stations/8638610/floodlevels.json?units=metric",
+    "recordedAt": "2026-09-27T14:59:25.524928+00:00",
+    "sha256": "9ce93b349d947b093ae93778daca2d7e731c092ec5885340eae74c21473b9d87",
+    "status": 200,
+    "topLevelKeys": [
+      "nos_minor",
+      "nos_moderate",
+      "nos_major",
+      "nws_minor",
+      "nws_moderate",
+      "nws_major",
+      "action",
+      "self"
+    ]
+  },
+  {
+    "bytes": 259,
+    "name": "floodlevels-english",
+    "path": "/mdapi/prod/webapi/stations/9414290/floodlevels.json?units=english",
+    "recordedAt": "2026-09-27T14:04:34.643907+00:00",
+    "sha256": "65e19a354ea35b08b7019eabcf43946bd4cad1f07c5d53eeb27a435b90848d03",
+    "status": 200,
+    "topLevelKeys": [
+      "nos_minor",
+      "nos_moderate",
+      "nos_major",
+      "nws_minor",
+      "nws_moderate",
+      "nws_major",
+      "action",
+      "self"
+    ]
+  },
+  {
+    "bytes": 431,
+    "name": "floodlevels-invalid",
+    "path": "/mdapi/prod/webapi/stations/invalid/floodlevels.json?units=metric",
+    "recordedAt": "2026-09-27T14:05:49.589595+00:00",
+    "sha256": "270d2fb55aa801662897590a27ec1c152407fa36be1d6678c27fd8c1859239e4",
+    "status": 404,
+    "topLevelKeys": []
+  },
+  {
+    "bytes": 259,
+    "name": "floodlevels-metric",
+    "path": "/mdapi/prod/webapi/stations/9414290/floodlevels.json?units=metric",
+    "recordedAt": "2026-09-27T14:04:34.642598+00:00",
+    "sha256": "b0c93017b803ca69e503c41492276da9478430a1ea7fd00d145e405b7915929f",
+    "status": 200,
+    "topLevelKeys": [
+      "nos_minor",
+      "nos_moderate",
+      "nos_major",
+      "nws_minor",
+      "nws_moderate",
+      "nws_major",
+      "action",
+      "self"
+    ]
+  },
+  {
     "bytes": 108,
     "name": "hourly-invalid-datum",
     "path": "/api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=hourly_height&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json",

@@ -88,6 +88,19 @@ extension TidesRequest where Response == CoastalDatums {
   }
 }
 
+extension TidesRequest where Response == CoastalFloodLevels {
+  /// Retrieves raw flood thresholds without expanding linked resources.
+  /// - Parameter stationIdentifier: The validated station identifier.
+  /// - Parameter units: Requested threshold units; the body does not echo its units or datum.
+  /// - Returns: The provider's raw threshold metadata.
+  /// - Throws: `TidesQueryError.invalidUnits` for empty or control-containing units.
+  public static func floodLevels(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    throws(TidesQueryError) -> Self
+  {
+    Self(endpoint: try .floodLevels(stationIdentifier: stationIdentifier, units: units))
+  }
+}
+
 extension TidesRequest where Response == CoastalNotices {
   /// Retrieves the station's notices without expanding linked resources.
   /// - Parameter stationIdentifier: The validated station identifier.

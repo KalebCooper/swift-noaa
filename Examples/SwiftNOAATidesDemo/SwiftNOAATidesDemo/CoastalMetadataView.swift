@@ -3,22 +3,45 @@ import SwiftNOAATidesModels
 import SwiftUI
 
 struct CoastalMetadataView: View {
+  @State private var floodLevels: CoastalFloodLevels?
   @State private var identifier = "9414290"
   @State private var isLoading = false
   @State private var message: String?
   @State private var notices: CoastalNotices?
   @State private var sensors: CoastalSensors?
+  @State private var units = TidesUnits.metric
 
   var body: some View {
     List {
       Section("Station") {
         TextField("Station identifier", text: $identifier)
           .textInputAutocapitalization(.never)
+        Picker("Metadata units", selection: $units) {
+          Text("Metric").tag(TidesUnits.metric)
+          Text("English").tag(TidesUnits.english)
+        }
+        Button("Load flood thresholds") { Task { await loadFloodLevels() } }
         Button("Load notices") { Task { await loadNotices() } }
         Button("Load sensors") { Task { await loadSensors() } }
       }.disabled(isLoading)
       if isLoading { ProgressView() }
       if let message { Text(message) }
+      if let floodLevels {
+        Section("Flood threshold metadata") {
+          Text(
+            "Requested units: " + (units == .metric ? "meters" : "feet")
+              + ". Reference datum is not reported; no comparison to observations is made."
+          )
+          .font(.footnote)
+          LabeledContent("Action", value: threshold(floodLevels.actionLevel))
+          LabeledContent("NOS major", value: threshold(floodLevels.nosMajor))
+          LabeledContent("NOS minor", value: threshold(floodLevels.nosMinor))
+          LabeledContent("NOS moderate", value: threshold(floodLevels.nosModerate))
+          LabeledContent("NWS major", value: threshold(floodLevels.nwsMajor))
+          LabeledContent("NWS minor", value: threshold(floodLevels.nwsMinor))
+          LabeledContent("NWS moderate", value: threshold(floodLevels.nwsModerate))
+        }
+      }
       if let notices {
         Section("Station notices") {
           if notices.notices.isEmpty { Text("No notices in this response.") }
@@ -56,9 +79,21 @@ struct CoastalMetadataView: View {
       }
     }
     .navigationTitle("Station metadata")
-    .onChange(of: identifier) {
-      message = nil; notices = nil; sensors = nil
+    .onChange(of: units) {
+      message = nil; floodLevels = nil; sensors = nil
     }
+    .onChange(of: identifier) {
+      message = nil; floodLevels = nil; notices = nil; sensors = nil
+    }
+  }
+
+  private func loadFloodLevels() async {
+    isLoading = true; message = nil; floodLevels = nil
+    defer { isLoading = false }
+    do {
+      floodLevels = try await TidesClient().floodLevels(
+        stationIdentifier: CoastalStationIdentifier(identifier), units: units)
+    } catch { show(error) }
   }
 
   private func loadNotices() async {
@@ -75,7 +110,7 @@ struct CoastalMetadataView: View {
     defer { isLoading = false }
     do {
       sensors = try await TidesClient().sensors(
-        stationIdentifier: CoastalStationIdentifier(identifier), units: .metric)
+        stationIdentifier: CoastalStationIdentifier(identifier), units: units)
     } catch { show(error) }
   }
 
@@ -90,4 +125,6 @@ struct CoastalMetadataView: View {
       message = "Enter a valid station identifier."
     }
   }
+
+  private func threshold(_ value: Double?) -> String { value.map { String($0) } ?? "Unavailable" }
 }

@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- Raw NOS/NWS flood thresholds and action levels with explicit units and preserved null values;
+  reference-datum uncertainty is documented without automatic comparisons.
+
 - Preliminary one-minute water levels with separate height/time records and a four-day range limit.
   Exhaustive `TidesQueryError` switches must handle the new `rangeTooLongDays` case.
 

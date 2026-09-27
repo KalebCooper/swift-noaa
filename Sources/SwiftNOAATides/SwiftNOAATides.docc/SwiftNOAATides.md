@@ -475,6 +475,29 @@ let reused = try await tides.value(for: request)
 let wire = try await tides.send(.oneMinuteWaterLevels(matching: query))
 ```
 
+
+## Flood threshold metadata
+
+Call `floodLevels(stationIdentifier:units:)` explicitly to retrieve `CoastalFloodLevels`.
+Metric requests return meters and English requests return feet. The resource does not echo its
+unit setting or reference datum, and its field documentation does not establish a fixed datum.
+Keep the requested units outside the decoded metadata; do not assume comparison with a water-level
+query is valid. No reference conversion, agency preference, flood classification, or threshold overlay is performed.
+
+NOS minor/moderate/major, NWS minor/moderate/major, and the action level remain separate.
+Each threshold field is required but nullable: null means unavailable, while zero and negative
+numbers are retained. No undocumented numeric sentinel is normalized. Missing fields and malformed
+numbers fail decoding; unsupported stations retain their HTTP or provider errors.
+The raw `selfLink` remains optional. See the
+[Metadata API field table](https://api.tidesandcurrents.noaa.gov/mdapi/prod/#floodlevels).
+
+```swift
+let thresholds = try await tides.floodLevels(stationIdentifier: identifier, units: .metric)
+let request = try TidesRequest.floodLevels(stationIdentifier: identifier, units: .metric)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.floodLevels(stationIdentifier: identifier, units: .metric))
+```
+
 ## Topics
 
 ### Essentials

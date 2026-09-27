@@ -79,6 +79,16 @@ package enum Fixture: String, CaseIterable, Sendable {
   case currentSubordinateEvents = "current-subordinate-events"
   /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=ACT0091&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=1&interval=10
   case currentSubordinateSamples = "current-subordinate-samples"
+  /// /mdapi/prod/webapi/stations/8638610/floodlevels.json?units=metric
+  case floodlevels8638610 = "floodlevels-8638610"
+  /// /mdapi/prod/webapi/stations/8419870/floodlevels.json?units=metric
+  case floodlevels8419870 = "floodlevels-8419870"
+  /// /mdapi/prod/webapi/stations/9414290/floodlevels.json?units=english
+  case floodlevelsEnglish = "floodlevels-english"
+  /// /mdapi/prod/webapi/stations/invalid/floodlevels.json?units=metric
+  case floodlevelsInvalid = "floodlevels-invalid"
+  /// /mdapi/prod/webapi/stations/9414290/floodlevels.json?units=metric
+  case floodlevelsMetric = "floodlevels-metric"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=hourly_height&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json
   case hourlyInvalidDatum = "hourly-invalid-datum"
   /// /api/prod/datagetter?begin_date=18000101&end_date=18000101&station=9414290&product=hourly_height&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json

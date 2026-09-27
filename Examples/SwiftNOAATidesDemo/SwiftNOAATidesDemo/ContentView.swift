@@ -15,7 +15,7 @@ struct ContentView: View {
         NavigationLink("Current predictions") { CurrentPredictionDemoView() }
         NavigationLink("Latest water level") { LatestWaterLevelView() }
         NavigationLink("One-minute water levels") { OneMinuteWaterLevelView() }
-        NavigationLink("Station notices and sensors") { CoastalMetadataView() }
+        NavigationLink("Station metadata") { CoastalMetadataView() }
         Section("Request") {
           Button {
             showingStations = true

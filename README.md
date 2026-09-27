@@ -40,6 +40,8 @@ See the Tides documentation for empty-response and unavailable-data behavior.
 
 Preliminary one-minute water levels have a dedicated explicit query with a four-day limit.
 
+Flood-threshold metadata retains NOS/NWS values separately, with explicit units and unreported datum context.
+
 ## What's included
 
 Choose the service you need. Each has a client and a separate models library for use with your own

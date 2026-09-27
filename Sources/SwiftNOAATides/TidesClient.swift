@@ -98,6 +98,21 @@ public struct TidesClient: Sendable {
     return try await value(for: request)
   }
 
+  /// Retrieves the station's raw flood thresholds through the shared request executor.
+  /// - Parameter stationIdentifier: The validated station identifier.
+  /// - Parameter units: Explicit metric or English threshold units.
+  /// - Returns: Unchanged provider metadata, without availability inference.
+  /// - Throws: Any `TidesError` from execution, or invalid units.
+  public func floodLevels(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    async throws(TidesError) -> CoastalFloodLevels
+  {
+    let request: TidesRequest<CoastalFloodLevels>
+    do { request = try .floodLevels(stationIdentifier: stationIdentifier, units: units) } catch {
+      throw .invalidQuery(error)
+    }
+    return try await value(for: request)
+  }
+
   /// Retrieves predicted high/low events with their requested station, datum, units, and GMT range.
   /// - Parameter query: A validated high/low prediction query.
   /// - Returns: Events in provider order with requested context.
