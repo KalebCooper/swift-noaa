@@ -212,6 +212,28 @@ time, relative/latest selectors, observed high/low water levels, daily/monthly s
 measurements, meteorological products, OFS guidance, and DPAPI. Metadata links are retained without
 resource expansion. These values do not provide navigation advice or flood-danger classification.
 
+
+## Station notices and sensors
+
+Request `notices(stationIdentifier:)` and `sensors(stationIdentifier:units:)` independently at the
+client, request, or endpoint level. Notices preserve text and markup without rendering. Sensors
+retain integer status codes (0 disabled, 1 enabled, unknown codes unchanged), messages, reference
+datums, nullable elevations, and reported elevation units. Enabled status does not establish
+recent observations. A required null sensor table remains distinct from an empty array; an absent
+collection is a decoding error. NOAA can return empty notices or null sensors for an unknown station.
+
+```swift
+let notices = try await tides.notices(stationIdentifier: identifier)
+let sensors = try await tides.sensors(stationIdentifier: identifier, units: .metric)
+let stored = try TidesRequest.sensors(stationIdentifier: identifier, units: .metric)
+let reused = try await tides.value(for: stored)
+let wire = try await tides.send(.notices(stationIdentifier: identifier))
+```
+
+Directories also offer conductivity, meteorological, one-minute water levels, physical oceanography,
+visibility, water temperature, and combined water-level/meteorological categories. They identify
+installed capabilities rather than guaranteeing data for a requested time.
+
 ## Topics
 
 ### Essentials

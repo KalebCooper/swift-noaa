@@ -118,6 +118,16 @@ public struct TidesClient: Sendable {
     try await value(for: .hourlyWaterLevels(matching: query))
   }
 
+  /// Retrieves the station's notices through the shared request executor.
+  /// - Parameter stationIdentifier: The validated station identifier.
+  /// - Returns: Unchanged provider metadata, without availability inference.
+  /// - Throws: Any `TidesError` from execution.
+  public func notices(stationIdentifier: CoastalStationIdentifier) async throws(TidesError)
+    -> CoastalNotices
+  {
+    try await value(for: .notices(stationIdentifier: stationIdentifier))
+  }
+
   /// Sends a JSON endpoint, following at most five validated same-origin redirects.
   /// - Parameter endpoint: A built-in or consumer-defined endpoint.
   /// - Returns: The wire response, without request context.
@@ -161,6 +171,21 @@ public struct TidesClient: Sendable {
       }
     }
     throw .tooManyRedirects
+  }
+
+  /// Retrieves the station's sensors through the shared request executor.
+  /// - Parameter stationIdentifier: The validated station identifier.
+  /// - Parameter units: Requested elevation units.
+  /// - Returns: Unchanged provider metadata, without availability inference.
+  /// - Throws: Any `TidesError` from execution, or invalid units.
+  public func sensors(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    async throws(TidesError) -> CoastalSensors
+  {
+    let request: TidesRequest<CoastalSensors>
+    do { request = try .sensors(stationIdentifier: stationIdentifier, units: units) } catch {
+      throw .invalidQuery(error)
+    }
+    return try await value(for: request)
   }
 
   /// Retrieves exactly one matching station, retaining its detail spelling and resource links.

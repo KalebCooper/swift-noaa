@@ -8,6 +8,8 @@ All notable changes are documented here, following
 
 ### Added
 
+- Station notices, sensor status and elevation metadata, plus additional coastal station categories.
+
 - Max/slack current events and sampled current predictions, preserving actual velocity
   representations, signed values, nullable depths, reported units, and requested context.
 

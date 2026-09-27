@@ -8,6 +8,9 @@ Weather forecasts, observations, alerts, and tide predictions from NOAA, with Sw
 [Documentation](https://kalebcooper.github.io/swift-noaa/documentation/) ·
 [Examples](#example-apps) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
+Station notices and sensor status are available through the Tides & Currents client, reusable
+requests, and direct endpoints. Sensor status and elevation units retain NOAA's reported values.
+
 ## What's included
 
 Choose the service you need. Each has a client and a separate models library for use with your own

@@ -15,12 +15,6 @@ package enum Fixture: String, CaseIterable, Sendable {
   case currentPredictionInvalidBin = "current-prediction-invalid-bin"
   /// /api/prod/datagetter?begin_date=20260926&end_date=20260926&station=PCT1291&product=currents_predictions&time_zone=gmt&interval=max_slack&units=metric&application=swift-noaa&format=json&bin=1
   case currentPredictions = "current-predictions"
-  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=10&vel_type=speed_dir
-  case currentSpeedMetric = "current-speed-metric"
-  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=ACT0091&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=1&interval=max_slack
-  case currentSubordinateEvents = "current-subordinate-events"
-  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=ACT0091&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=1&interval=10
-  case currentSubordinateSamples = "current-subordinate-samples"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=cb0102&product=currents&time_zone=gmt&units=english&application=swift-noaa&format=json&bin=4
   case currentsEnglish = "currents-english"
   /// /api/prod/datagetter?begin_date=20240926&end_date=20240926&station=PCT1291&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=max_slack
@@ -35,6 +29,8 @@ package enum Fixture: String, CaseIterable, Sendable {
   case currentsNoData = "currents-no-data"
   /// /api/prod/datagetter?begin_date=20240101+00%3A00&end_date=20240202+00%3A00&station=cb0102&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=4
   case currentsOverMonth = "currents-over-month"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=10&vel_type=speed_dir
+  case currentSpeedMetric = "current-speed-metric"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=cb0102&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json
   case currentsPorts = "currents-ports"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=EPT0003&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=14&interval=10&vel_type=speed_dir
@@ -43,6 +39,10 @@ package enum Fixture: String, CaseIterable, Sendable {
   case currentsSpeedDirectionCurrent = "currents-speed-direction-current"
   /// /api/prod/datagetter?begin_date=20160401+00%3A00&end_date=20160401+01%3A00&station=CFR1624&product=currents&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=9
   case currentsSurvey = "currents-survey"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=ACT0091&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=1&interval=max_slack
+  case currentSubordinateEvents = "current-subordinate-events"
+  /// /api/prod/datagetter?begin_date=20260926+00%3A00&end_date=20260927+00%3A00&station=ACT0091&product=currents_predictions&time_zone=gmt&units=metric&application=swift-noaa&format=json&bin=1&interval=10
+  case currentSubordinateSamples = "current-subordinate-samples"
   /// /api/prod/datagetter?begin_date=20240926+00%3A00&end_date=20240926+01%3A00&station=9414290&product=hourly_height&datum=INVALID&time_zone=gmt&units=metric&application=swift-noaa&format=json
   case hourlyInvalidDatum = "hourly-invalid-datum"
   /// /api/prod/datagetter?begin_date=18000101&end_date=18000101&station=9414290&product=hourly_height&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json
@@ -53,6 +53,18 @@ package enum Fixture: String, CaseIterable, Sendable {
   case hourlyWater = "hourly-water"
   /// Data API invalid-station refusal; exact request is recorded in Fixtures/manifest.json.
   case invalidStation = "invalid-station"
+  /// /mdapi/prod/webapi/stations/9414290/notices.json
+  case notices = "notices"
+  /// /mdapi/prod/webapi/stations/invalid/notices.json?units=metric
+  case noticesInvalid = "notices-invalid"
+  /// /mdapi/prod/webapi/stations/8638610/notices.json
+  case noticesPopulated = "notices-8638610"
+  /// /mdapi/prod/webapi/stations/9414290/sensors.json?units=english
+  case sensorsEnglish = "sensors-english"
+  /// /mdapi/prod/webapi/stations/invalid/sensors.json?units=metric
+  case sensorsInvalid = "sensors-invalid"
+  /// /mdapi/prod/webapi/stations/9414290/sensors.json?units=metric
+  case sensorsMetric = "sensors-metric"
   /// /mdapi/prod/webapi/stations/9414290.json
   case station
   /// /mdapi/prod/webapi/stations/cb0102/bins.json?units=metric
@@ -69,14 +81,14 @@ package enum Fixture: String, CaseIterable, Sendable {
   case stationDatumsEnglish = "station-datums-english"
   /// /mdapi/prod/webapi/stations/invalid.json
   case stationInvalidMDAPI = "station-invalid-mdapi"
-  /// /mdapi/prod/webapi/stations/8557863.json
-  case stationSubordinate = "station-subordinate"
-  /// /mdapi/prod/webapi/stations/CFR1624.json
-  case stationSurvey = "station-survey"
   /// /mdapi/prod/webapi/stations.json?type=currents
   case stationsCurrents = "stations-currents"
   /// /mdapi/prod/webapi/stations.json?type=tidepredictions
   case stationsTidePredictions = "stations-tidepredictions"
+  /// /mdapi/prod/webapi/stations/8557863.json
+  case stationSubordinate = "station-subordinate"
+  /// /mdapi/prod/webapi/stations/CFR1624.json
+  case stationSurvey = "station-survey"
   /// /mdapi/prod/webapi/stations.json?type=waterlevels
   case stationsWaterLevels = "stations-waterlevels"
   /// /api/prod/datagetter?begin_date=20260926+00%3A18&end_date=20260926+00%3A19&station=9414290&product=predictions&datum=MLLW&time_zone=gmt&units=metric&application=swift-noaa&format=json&interval=hilo

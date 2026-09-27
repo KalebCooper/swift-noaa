@@ -341,6 +341,81 @@
     }
   },
   {
+    "bytes": 118,
+    "name": "notices",
+    "path": "/mdapi/prod/webapi/stations/9414290/notices.json",
+    "recordedAt": "2026-09-27T14:04:07.379853+00:00",
+    "sha256": "76097ea7fe954448f1c14af17664c360b01feafbbdc8efca2e37f8adc474f46f",
+    "status": 200,
+    "topLevelKeys": [
+      "notices",
+      "self"
+    ]
+  },
+  {
+    "bytes": 311,
+    "name": "notices-8638610",
+    "path": "/mdapi/prod/webapi/stations/8638610/notices.json",
+    "recordedAt": "2026-09-27T14:05:48.820974+00:00",
+    "sha256": "9be6a28359ccf77983820782351e1ec7dc81f92ac796804785cbddb9c0899ab1",
+    "status": 200,
+    "topLevelKeys": [
+      "notices",
+      "self"
+    ]
+  },
+  {
+    "bytes": 118,
+    "name": "notices-invalid",
+    "path": "/mdapi/prod/webapi/stations/invalid/notices.json?units=metric",
+    "recordedAt": "2026-09-27T14:05:49.589723+00:00",
+    "sha256": "54765f7d5de1749d2c279d4e00f3ac6a332e3fdecccb9bc16ef0406452972caf",
+    "status": 200,
+    "topLevelKeys": [
+      "notices",
+      "self"
+    ]
+  },
+  {
+    "bytes": 1466,
+    "name": "sensors-english",
+    "path": "/mdapi/prod/webapi/stations/9414290/sensors.json?units=english",
+    "recordedAt": "2026-09-27T14:04:34.644350+00:00",
+    "sha256": "a2e363a68b55544e98e4d9cc75a63e06183ba489c4dfe056370c025936d8331d",
+    "status": 200,
+    "topLevelKeys": [
+      "units",
+      "sensors",
+      "self"
+    ]
+  },
+  {
+    "bytes": 141,
+    "name": "sensors-invalid",
+    "path": "/mdapi/prod/webapi/stations/invalid/sensors.json?units=metric",
+    "recordedAt": "2026-09-27T14:05:49.604517+00:00",
+    "sha256": "252c705eea073380e92681c49a4b8348fe6162c987c6914f53279340a40fa92f",
+    "status": 200,
+    "topLevelKeys": [
+      "units",
+      "sensors",
+      "self"
+    ]
+  },
+  {
+    "bytes": 1445,
+    "name": "sensors-metric",
+    "path": "/mdapi/prod/webapi/stations/9414290/sensors.json?units=metric",
+    "recordedAt": "2026-09-27T14:04:34.642913+00:00",
+    "sha256": "2a20ecfe285fe0312d1756e981f57c03ac82ecf6390381b62b896674a51f5a60",
+    "status": 200,
+    "topLevelKeys": [
+      "units",
+      "sensors",
+      "self"
+    ]
+  },
+  {
     "bytes": 2641,
     "name": "station",
     "path": "/mdapi/prod/webapi/stations/9414290.json",

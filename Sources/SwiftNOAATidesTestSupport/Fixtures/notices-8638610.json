@@ -1,0 +1,9 @@
+{
+  "notices": [
+    {
+      "name": "High Water Condition",
+      "text": "This station is currently in <a href='http://tidesandcurrents.noaa.gov/waterconditions.html#high'>high water condition</a>."
+    }
+  ],
+  "self": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/8638610/notices.json"
+}

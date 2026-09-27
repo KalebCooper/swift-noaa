@@ -50,6 +50,28 @@ extension TidesRequest where Response == CoastalDatums {
   }
 }
 
+extension TidesRequest where Response == CoastalNotices {
+  /// Retrieves the station's notices without expanding linked resources.
+  /// - Parameter stationIdentifier: The validated station identifier.
+  /// - Returns: The provider's notices envelope.
+  public static func notices(stationIdentifier: CoastalStationIdentifier) -> Self {
+    Self(endpoint: .notices(stationIdentifier: stationIdentifier))
+  }
+}
+
+extension TidesRequest where Response == CoastalSensors {
+  /// Retrieves the station's sensors without expanding linked resources.
+  /// - Parameter stationIdentifier: The validated station identifier.
+  /// - Parameter units: Requested elevation units; the response retains reported units.
+  /// - Returns: The provider's sensors envelope.
+  /// - Throws: `TidesQueryError.invalidUnits` for empty or control-containing units.
+  public static func sensors(stationIdentifier: CoastalStationIdentifier, units: TidesUnits)
+    throws(TidesQueryError) -> Self
+  {
+    Self(endpoint: try .sensors(stationIdentifier: stationIdentifier, units: units))
+  }
+}
+
 extension TidesRequest where Response == CoastalStation {
   /// Describes a detail lookup that requires one matching station.
   /// - Parameter identifier: A validated provider identifier.
