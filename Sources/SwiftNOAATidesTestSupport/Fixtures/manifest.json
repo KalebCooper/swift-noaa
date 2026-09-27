@@ -625,6 +625,41 @@
     }
   },
   {
+    "bytes": 172,
+    "name": "latest-english",
+    "path": "/api/prod/datagetter?format=json&product=water_level&station=9414290&datum=MLLW&time_zone=gmt&units=english&date=latest",
+    "recordedAt": "2026-09-27T14:59:24.246515+00:00",
+    "sha256": "816cf476dadde7f710f747631ad186f5dbd6bdd3a8f8f006c86f4371f2c93178",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 172,
+    "name": "latest-metric",
+    "path": "/api/prod/datagetter?format=json&product=water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric&date=latest",
+    "recordedAt": "2026-09-27T14:59:24.246453+00:00",
+    "sha256": "65ffd64bd7ddc8d007d14f240eb52a9b9f554caa1e7e1b641a0116d99081ef0f",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 116,
+    "name": "latest-no-data",
+    "path": "/api/prod/datagetter?format=json&product=water_level&station=9414296&datum=STND&time_zone=gmt&units=metric&date=latest",
+    "recordedAt": "2026-09-27T14:59:49.669699+00:00",
+    "sha256": "34cef0453fa36926502f3b7582a3d21f19511049994492b17047b3cacc56ee22",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
     "bytes": 118,
     "name": "notices",
     "path": "/mdapi/prod/webapi/stations/9414290/notices.json",

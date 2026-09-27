@@ -13,6 +13,8 @@ public enum TidesError: Error {
   case decoding(any Error)
   /// An HTTP failure without a decoded provider refusal.
   case httpStatus(body: Data, code: Int)
+  /// The latest selector returned more than one observation in a successful body.
+  case invalidLatestWaterLevelResponse(observationCount: Int)
   /// A redirect had a disallowed origin, credentials, fragment, or encoded path.
   case invalidLink(String)
   /// A locally invalid query argument was rejected before sending.

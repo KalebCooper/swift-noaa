@@ -8,6 +8,10 @@ All notable changes are documented here, following
 
 ### Added
 
+- Latest water levels with an explicit provider selector, optional reading for empty success,
+  and `TidesError.invalidLatestWaterLevelResponse` for plural responses. Exhaustive switches
+  over `TidesError` must handle the new case.
+
 - visibility observations with explicit GMT ranges, six-minute or hourly selection,
   separate requested context, and product-specific units.
 

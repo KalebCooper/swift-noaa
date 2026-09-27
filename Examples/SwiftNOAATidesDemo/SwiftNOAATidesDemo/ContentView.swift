@@ -11,9 +11,10 @@ struct ContentView: View {
     NavigationStack {
       List {
         NavigationLink("Coastal observations") { CoastalObservationView() }
-        NavigationLink("Station notices and sensors") { CoastalMetadataView() }
         NavigationLink("Current observations") { CurrentDemoView() }
         NavigationLink("Current predictions") { CurrentPredictionDemoView() }
+        NavigationLink("Latest water level") { LatestWaterLevelView() }
+        NavigationLink("Station notices and sensors") { CoastalMetadataView() }
         Section("Request") {
           Button {
             showingStations = true

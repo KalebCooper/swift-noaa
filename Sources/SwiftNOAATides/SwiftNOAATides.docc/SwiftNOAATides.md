@@ -429,6 +429,29 @@ let reused = try await tides.value(for: request)
 let wire = try await tides.send(.visibilityObservations(matching: query))
 ```
 
+
+## Latest water level
+
+Use `LatestWaterLevelQuery` with explicit station, datum and units. NOAA's `date=latest`
+selector checks an eighteen-minute availability window; no range or device clock is evaluated.
+A reusable request performs one fresh send each time, without polling, cached readings or fallback.
+
+`LatestWaterLevel` keeps provider metadata and `requestedQuery` separate. Its `observation`
+is absent only for a valid successful empty array. A no-data provider refusal remains
+`TidesError.provider`; more than one successful reading raises
+`TidesError.invalidLatestWaterLevelResponse(observationCount:)` at the client and request levels.
+The direct `WaterLevelResponse` deliberately preserves the wire array without this unwrapping.
+Missing height text remains a missing quantity within an observation. No quality is inferred from age.
+
+```swift
+let query = try LatestWaterLevelQuery(
+  datum: .meanLowerLowWater, stationIdentifier: identifier, units: .metric)
+let latest = try await tides.latestWaterLevel(matching: query)
+let request = TidesRequest.latestWaterLevel(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.latestWaterLevel(matching: query))
+```
+
 ## Topics
 
 ### Essentials

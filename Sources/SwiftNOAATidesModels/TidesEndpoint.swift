@@ -439,6 +439,23 @@ extension TidesEndpoint where Response == VisibilityResponse {
 }
 
 extension TidesEndpoint where Response == WaterLevelResponse {
+  /// Requests NOAA's latest water level, preserving the wire array even when empty or plural.
+  /// - Parameter query: Explicit station, datum and units.
+  /// - Returns: A single JSON endpoint using the provider's latest selector.
+  public static func latestWaterLevel(matching query: LatestWaterLevelQuery) -> Self {
+    builtIn(
+      path: "/api/prod/datagetter"
+        + Self.query([
+          URLQueryItem(name: "date", value: "latest"),
+          URLQueryItem(name: "datum", value: query.datum.rawValue),
+          URLQueryItem(name: "format", value: "json"),
+          URLQueryItem(name: "product", value: "water_level"),
+          URLQueryItem(name: "station", value: query.stationIdentifier.rawValue),
+          URLQueryItem(name: "time_zone", value: "gmt"),
+          URLQueryItem(name: "units", value: query.units.rawValue),
+        ]))
+  }
+
   /// Retrieves measured six-minute water levels as an independent wire envelope.
   /// - Parameter query: A validated explicit GMT query.
   /// - Returns: One JSON endpoint, with no station preflight or date-window splitting.

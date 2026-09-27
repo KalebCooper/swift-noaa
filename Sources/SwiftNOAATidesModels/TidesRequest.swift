@@ -22,6 +22,8 @@ public struct TidesRequest<Response>: Hashable, Sendable {
     case hourlyWaterLevels(HourlyWaterLevelQuery)
     /// Attaches requested context to humidity observations.
     case humidityObservations(CoastalObservationQuery)
+    /// Validates latest-reading cardinality and attaches requested context.
+    case latestWaterLevel(LatestWaterLevelQuery)
     /// Attaches requested context to salinity observations.
     case salinityObservations(CoastalObservationQuery)
     /// Require exactly one matching station from its detail envelope.
@@ -198,6 +200,15 @@ extension TidesRequest where Response == HumidityObservations {
   /// - Returns: An immutable request that performs no I/O.
   public static func humidityObservations(matching query: CoastalObservationQuery) -> Self {
     Self(resolution: .humidityObservations(query))
+  }
+}
+
+extension TidesRequest where Response == LatestWaterLevel {
+  /// Describes a latest reading without evaluating a clock or performing I/O.
+  /// - Parameter query: Explicit station, datum and units.
+  /// - Returns: A reusable latest request; each execution can return a different reading.
+  public static func latestWaterLevel(matching query: LatestWaterLevelQuery) -> Self {
+    Self(resolution: .latestWaterLevel(query))
   }
 }
 

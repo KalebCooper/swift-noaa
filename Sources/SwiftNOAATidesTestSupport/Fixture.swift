@@ -101,6 +101,12 @@ package enum Fixture: String, CaseIterable, Sendable {
   case humidityNoData = "humidity-no-data"
   /// Data API invalid-station refusal; exact request is recorded in Fixtures/manifest.json.
   case invalidStation = "invalid-station"
+  /// /api/prod/datagetter?format=json&product=water_level&station=9414290&datum=MLLW&time_zone=gmt&units=english&date=latest
+  case latestEnglish = "latest-english"
+  /// /api/prod/datagetter?format=json&product=water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric&date=latest
+  case latestMetric = "latest-metric"
+  /// /api/prod/datagetter?format=json&product=water_level&station=9414296&datum=STND&time_zone=gmt&units=metric&date=latest
+  case latestNoData = "latest-no-data"
   /// /mdapi/prod/webapi/stations/9414290/notices.json
   case notices = "notices"
   /// /mdapi/prod/webapi/stations/invalid/notices.json?units=metric

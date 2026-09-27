@@ -231,7 +231,8 @@ public struct TidesClient: Sendable {
       return try await send(endpoint)
     case .airPressureObservations, .airTemperatureObservations, .conductivityObservations,
       .currentEvents, .currentObservations, .currentPredictions, .highLowTides, .hourlyWaterLevels,
-      .humidityObservations, .salinityObservations, .tidePredictions, .visibilityObservations,
+      .humidityObservations, .latestWaterLevel, .salinityObservations, .tidePredictions,
+      .visibilityObservations,
       .waterLevels, .waterTemperatureObservations, .windObservations:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
@@ -626,4 +627,34 @@ extension TidesClient {
     try await value(for: .visibilityObservations(matching: query))
   }
 
+}
+
+extension TidesClient {
+  /// Retrieves NOAA's latest available reading without polling or history fallback.
+  /// - Parameter query: The explicit latest query.
+  /// - Returns: One reading or a successful empty result, retaining query and reported metadata.
+  /// - Throws: A provider refusal, cardinality error, or other shared execution error.
+  public func latestWaterLevel(matching query: LatestWaterLevelQuery) async throws(TidesError)
+    -> LatestWaterLevel
+  {
+    try await value(for: .latestWaterLevel(matching: query))
+  }
+
+  /// Executes a latest request and rejects plural successful observations.
+  /// - Parameter request: A request constructed by the latest factory.
+  /// - Returns: The sole reading, or an absent observation for a successful empty array.
+  /// - Throws: `TidesError.invalidLatestWaterLevelResponse` for multiple readings, or a shared execution error.
+  public func value(for request: TidesRequest<LatestWaterLevel>) async throws(TidesError)
+    -> LatestWaterLevel
+  {
+    guard case .latestWaterLevel(let query) = request.resolution else {
+      preconditionFailure("Only the latestWaterLevel factory constructs this request.")
+    }
+    let response = try await send(.latestWaterLevel(matching: query))
+    guard response.observations.count <= 1 else {
+      throw .invalidLatestWaterLevelResponse(observationCount: response.observations.count)
+    }
+    return LatestWaterLevel(
+      metadata: response.metadata, observation: response.observations.first, requestedQuery: query)
+  }
 }
