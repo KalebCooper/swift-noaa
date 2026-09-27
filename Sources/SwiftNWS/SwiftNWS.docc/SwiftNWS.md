@@ -1,46 +1,51 @@
 # ``SwiftNWS``
 
-Retrieve observations, forecasts, alerts, and the rest of the National Weather Service API through
-a typed client.
+Fetch weather observations, forecasts, and alerts from the National Weather Service with Swift
+and `async`/`await`.
 
 ## Overview
 
-``NWSClient`` sends the requests that `SwiftNWSModels` describes. It follows the links between
-responses, pages collections on demand, validates every link and redirect before following it, and
-maps each failure into one typed ``NWSError``.
+Start with ``NWSClient`` and a coordinate. The client handles the requests needed to find your
+forecast, follows service links, and reports failures as ``NWSError``.
 
 ```swift
 import SwiftNWS
 import SwiftNWSModels
 
-let weather = NWSClient(userAgent: "(myweatherapp.com, contact@myweatherapp.com)")
-let home = try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431)
-let observation = try await weather.latestObservation(from: .nearest(to: home))
-print(observation.stationId, observation.timestamp)
+let weather = NWSClient(userAgent: "(MyWeatherApp, contact@example.com)")
+let location = try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431)
+let forecast = try await weather.forecast(for: location)
+
+for period in forecast.periods {
+  print(period.name ?? "Forecast", period.shortForecast)
+}
 ```
 
-The service rejects a request without a User-Agent naming your application and a contact, so the
-client requires one and has no default identity. The short initializer sends through the shared URL
-session on Apple platforms. A configuration-based initializer takes a custom session or transport,
-a ``PointCache``, an opt-in retry policy for the service's transient failures, and the clock that
-times its waits.
+No API key is needed. Set the User-Agent to your app's name and a contact. The initializer above
+uses the shared URL session on Apple platforms; use a `transport:` initializer for other platforms
+or a custom networking setup.
 
-Every operation is available at three levels that share one executor: an everyday method such as
-``NWSClient/forecast(for:options:)``, a reusable `WeatherRequest` executed by
-``NWSClient/value(for:)``, and the individual `Endpoint` values sent by ``NWSClient/send(_:)``.
+### Choose a guide
 
-### What the client does not do
+- Read current and past observations with <doc:ObservationHistory>, find stations with
+  <doc:ObservationStations>, and convert measurements with <doc:Units>.
+- Get daily and hourly forecasts with <doc:Forecasts>, or explore individual layers with
+  <doc:ForecastGrids>.
+- Find current warnings with <doc:ActiveAlerts> and earlier notices with <doc:AlertHistory>.
+- Explore <doc:Zones>, <doc:Offices>, text bulletins in <doc:Products>, and the <doc:Glossary>.
 
-The client keeps what the service sends. Lists keep service order, readings keep their WMO unit
-codes, `null` values stay `nil`, and unknown codes stay in `rawValue`. It does not sort, filter,
-deduplicate, or convert, and it infers no ordering, freshness, or completeness the service does not
-promise: a coordinate's first listed station is not guaranteed to be the closest, and an old
-observation is returned as it is. Apart from ``PointCache``, it caches no responses; see
-<doc:UsingRequests#HTTP-caching>.
+For larger collections, see <doc:PaginatingCollections>. To store requests, customize networking,
+or configure caching and retries, see <doc:UsingRequests>.
 
-Aviation, radar, and terminal aerodrome forecast routes are not yet built. XML and plain-text
-representations (CAP XML and Atom alerts, radio speech synthesis documents, and `text/plain`
-products) are not supported, and no PDF or image is downloaded.
+### Working with service data
+
+Responses keep the service's order, unit codes, and unknown code values. Missing readings stay
+`nil`. Observation lookups using `.nearest(to:)` select the first station NWS returns, without a
+distance or freshness guarantee. Check the observation's station and timestamp when those matter
+to your app.
+
+The client supports JSON responses. Aviation and radar routes, XML representations, and PDF or
+image downloads are not yet supported.
 
 ## Topics
 

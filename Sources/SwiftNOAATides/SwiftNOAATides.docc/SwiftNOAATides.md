@@ -1,41 +1,44 @@
 # ``SwiftNOAATides``
 
-Discover NOAA CO-OPS stations and retrieve tide predictions, measured water levels, and currents.
+Find coastal stations and fetch tide predictions, measured water levels, and datum metadata from
+NOAA Tides & Currents (CO-OPS).
 
 ## Overview
 
-``TidesClient`` executes portable requests from [TidesRequest](https://kalebcooper.github.io/swift-noaa/documentation/swiftnoaatidesmodels/tidesrequest/) independently of
-SwiftNWS. Choose a service's models alone for your own networking stack, or add its SDK product.
+Start with ``TidesClient`` and a NOAA station identifier. No API key is needed. These examples use
+the Apple-platform initializer; use a `transport:` initializer for a custom networking setup.
 
 ```swift
 import SwiftNOAATides
 import SwiftNOAATidesModels
 
 let tides = TidesClient()
-let query = try CoastalStationQuery(type: .tidePredictions)
-let directory = try await tides.stations(matching: query)
 let identifier = try CoastalStationIdentifier("9414290")
 let station = try await tides.station(identifier: identifier)
-let reusable = try await tides.value(for: .station(identifier: identifier))
-let direct = try await tides.send(.station(identifier: identifier))
+print(station.name)
 ```
 
-The directory is one response. Detail convenience calls require exactly one matching station;
-direct sends retain the envelope. No nearest-station choice, resource expansion, sorting,
-deduplication, pagination, or capability preflight is performed.
+To find other stations, request the tide-prediction directory:
 
-CO-OPS application identification is optional and separate from User-Agent. ``TidesConfiguration``
-defaults the Data API application to swift-noaa; set it to nil to omit it. The NWS requirement for
-a contact-bearing User-Agent does not apply to this client. Custom transports work on every
-supported platform. Apple callers can use the URLSession initializer.
+```swift
+let stationQuery = try CoastalStationQuery(type: .tidePredictions)
+let directory = try await tides.stations(matching: stationQuery)
 
-Every send checks cancellation and follows at most five same-origin HTTPS redirects without
-credentials, fragments, or invalid encoded paths. Retries are disabled by default; explicitly
-passing a swifty-networking RetryPolicy delegates retry timing to its injected Clock. The policy's
-attempt budget applies independently to each redirect hop. No retry policy is inferred from
-provider prose. Both Data API and Metadata API refusals become ``TidesError/provider(_:)``, even
-when carried by HTTP 200. Malformed bodies, HTTP failures without a refusal, and transport
-cancellation remain distinguishable.
+for station in directory.stations {
+  print(station.identifier, station.name)
+}
+```
+
+Choose a station explicitly. The directory returns one response in NOAA's order; station resource
+links remain metadata without extra requests. Station lookups require exactly one matching result.
+
+Use ``TidesConfiguration`` to set your Data API application name or optional User-Agent. The
+application name defaults to `swift-noaa`; set it to `nil` to omit it. You can also supply a custom
+transport, retry policy, and clock. Retries are disabled by default.
+
+Client operations throw ``TidesError``. NOAA refusals use ``TidesError/provider(_:)``, including
+refusals delivered with HTTP 200. The client checks cancellation before every send and follows up to
+five validated same-origin HTTPS redirects. An optional retry policy applies to each hop separately.
 
 ## Predicted high and low tides
 
@@ -48,11 +51,16 @@ let query = try HighLowTideQuery(
   datum: .meanLowerLowWater, range: range,
   stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
 )
-let request = TidesRequest.highLowTides(matching: query)
+let result = try await tides.highLowTides(matching: query)
+
+for tide in result.predictions {
+  print(tide.time.rawValue, tide.kind.rawValue, tide.height.rawValue)
+}
 ```
 
-The useful result keeps events with `requestedQuery`. This context is requested, not echoed by
-NOAA. Direct endpoint responses decode independently with an ordinary JSONDecoder and no userInfo.
+The result keeps events alongside `requestedQuery`, which records the station, datum, units, and
+window you asked for. NOAA does not echo that context in the response. Direct endpoint responses
+can also be decoded independently with an ordinary `JSONDecoder`.
 Timestamps are strict GMT minutes; custom date-decoding strategies do not change their interpretation.
 Both range bounds are inclusive. The high/low window is limited to ten Gregorian calendar years,
 including leap-day handling; no date rounding, splitting, interpolation, or extrema calculation occurs.
@@ -63,8 +71,15 @@ Subordinate tide stations require MLLW and support high/low predictions only. Th
 capability preflight or station substitution. A provider refusal for no data remains an error,
 including at HTTP 200, and differs from a successfully decoded empty event array.
 
-Execute `await tides.highLowTides(matching: query)`, `await tides.value(for: request)`, or
-`await tides.send(.highLowTides(matching: query))` with `try` for the same send/error behavior.
+To store a request for later or access the original response envelope, use:
+
+```swift
+let request = TidesRequest.highLowTides(matching: query)
+let events = try await tides.value(for: request)
+let response = try await tides.send(.highLowTides(matching: query))
+```
+
+Creating a request performs no networking. Each form uses the same client error handling.
 
 ## Sampled tides and datum metadata
 
@@ -73,8 +88,8 @@ let samples = try TidePredictionQuery(
   datum: .meanLowerLowWater, interval: .hourly, range: range,
   stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
 )
-let sampleRequest = TidesRequest.tidePredictions(matching: samples)
-let datumRequest = try TidesRequest.datums(
+let points = try await tides.tidePredictions(matching: samples)
+let datums = try await tides.datums(
   stationIdentifier: CoastalStationIdentifier("9414290"), units: .metric
 )
 ```

@@ -1,20 +1,31 @@
-# Tides & Currents example
+# Tides demo
 
-Open `SwiftNOAATidesDemo.xcodeproj`, select the generated app scheme and an iOS 26 or newer
-simulator, then run. Close the standalone package workspace first so Xcode resolves one package copy.
-Like the NWS, NPS Data, and GovInfo demos, this app uses a local `../..` package reference and the
-service's SDK and models products.
+A SwiftUI app for exploring NOAA coastal stations, predicted high and low tides, and hourly tide
+samples. No API key is required.
 
-Choose a station from the NOAA tide-prediction directory, select a day in GMT, and load predicted
-high and low tides. The app requests meters above MLLW and displays the provider's event order.
-Subordinate stations remain selectable; provider refusals are shown without substituting stations.
-No API key is required. Launching the app fetches the directory; predictions load only on request.
+## Run the app
 
-Prediction sections are separate from measured water levels and currents. The app does not calculate extrema, interpolate
-heights, convert datums, or provide navigation advice.
+1. Close the standalone `swift-noaa` package workspace in Xcode.
+2. Open `SwiftNOAATidesDemo.xcodeproj` in Xcode 26 or later.
+3. Select the app scheme and an iOS 26 or later simulator or device, then run.
 
-Load hourly samples to plot reported points without interpolation. Subordinate stations may refuse
-sampled predictions; the provider message remains visible. No datum conversion is performed.
+The app uses the package in this repository through a local `../..` reference.
+
+## Try it
+
+Choose a station from the tide-prediction directory, select a day in GMT, and load high/low tides
+or hourly samples. The directory loads at launch; predictions load when you request them.
+
+Heights are in meters above mean lower low water (MLLW). Events keep NOAA's order, and the chart
+shows reported sample points without interpolation. Some stations support only high/low predictions;
+any provider refusal is shown without switching stations.
+
+Predictions and measured six-minute water levels have separate requests and displays. Measurements
+retain provider quality codes and raw flags; missing values stay missing. The app does not convert
+between datums.
+
+See the [tides guide](../../Sources/SwiftNOAATides/SwiftNOAATides.docc/SwiftNOAATides.md) for the client
+examples, or the [package README](../../README.md) for installation and other services.
 
 Measured six-minute water levels are a separate request and display, retaining provider quality
 codes and flags. Missing heights are shown as missing, and absent time steps are not filled.

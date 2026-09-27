@@ -1,14 +1,19 @@
 # ``SwiftNOAATidesModels``
 
-Portable CO-OPS station, tide, water-level and current models, without networking dependencies.
+Decode NOAA coastal station data, tide predictions, water levels, and datum tables with any networking stack.
 
 ## Overview
 
-Use ``CoastalStationQuery`` to select a station directory and ``CoastalStationIdentifier`` to
-select a station explicitly. ``TidesEndpoint`` describes a single JSON request, and
-``TidesRequest`` describes the useful result. Both are immutable, Hashable, Sendable values.
+Use this library for response models, validated queries, and request descriptions without networking
+dependencies. Add `SwiftNOAATides` when you want a client to send the requests for you.
+
+``TidesEndpoint`` describes one HTTP request. ``TidesRequest`` describes an operation, such as
+looking up a station or retrieving predictions with their requested units and datum. Creating either
+value performs no networking.
 
 ```swift
+import SwiftNOAATidesModels
+
 let query = try CoastalStationQuery(type: .tidePredictions)
 let request = TidesRequest.stations(matching: query)
 let identifier = try CoastalStationIdentifier("9414290")
@@ -16,7 +21,7 @@ let detail = TidesRequest.station(identifier: identifier)
 ```
 
 Directory and detail endpoints both decode ``CoastalStations`` using an ordinary JSONDecoder.
-A useful detail request unwraps exactly one matching station; missing, plural, mismatched, or
+The client's station lookup unwraps exactly one matching station; missing, plural, mismatched, or
 malformed responses are errors. Names, provider order, empty strings, unknown kinds, capability
 indicators, and optional resource links retain the provider representation. No resource is fetched
 automatically. Time zone labels and offsets are metadata, not IANA zones.
@@ -35,8 +40,9 @@ let query = try HighLowTideQuery(
 let request = TidesRequest.highLowTides(matching: query)
 ```
 
-The useful result keeps events with `requestedQuery`. This context is requested, not echoed by
-NOAA. Direct endpoint responses decode independently with an ordinary JSONDecoder and no userInfo.
+``HighLowTides`` keeps events alongside `requestedQuery`, which records the station, datum, units,
+and time range you asked for. NOAA does not echo that context in the response.
+``HighLowTideResponse`` decodes the response body with an ordinary `JSONDecoder`.
 Timestamps are strict GMT minutes; custom date-decoding strategies do not change their interpretation.
 Both range bounds are inclusive. The high/low window is limited to ten Gregorian calendar years,
 including leap-day handling; no date rounding, splitting, interpolation, or extrema calculation occurs.

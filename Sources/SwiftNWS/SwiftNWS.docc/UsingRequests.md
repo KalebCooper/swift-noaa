@@ -68,8 +68,8 @@ a freshness policy. Measurements may be absent or contain a null value. WMO unit
 open strings; enumerated quality codes use open `QualityControlCode` values.
 
 For the existing GeoJSON envelope, unwrap `Endpoint.latestObservation(stationIdentifier:)`, then
-pass the endpoint to `send(_:)` or wrap it in a request. The result retains `Feature.id` and `Feature.properties`;
-geometry and other unmodeled metadata are not retained.
+pass the endpoint to `send(_:)` or wrap it in a request. The result retains `Feature.id`, `Feature.properties`,
+and the provider's raw GeoJSON geometry in `Feature.geometry`.
 
 ``NWSError`` distinguishes problem details, transport and decoding failures, invalid links,
 invalid or excessive redirects, invalid station or alert identifiers and alert locations, and empty station lists. Cancellation is

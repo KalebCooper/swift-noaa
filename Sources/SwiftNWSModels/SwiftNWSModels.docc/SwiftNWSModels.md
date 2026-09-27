@@ -4,7 +4,10 @@ Describe weather requests and decode National Weather Service responses with any
 
 ## Overview
 
-This product has no SDK or third-party dependency and imports no networking module. It provides:
+Use this library when you want to decode NWS data or send requests through your own networking
+stack. It has no third-party dependencies. For a ready-to-use client, add `SwiftNWS`.
+
+The library provides:
 
 - ``Endpoint`` values, each one HTTP request: a validated path with its query, the media type to
   ask for, and any forecast feature flags, typed by the response it decodes.
@@ -17,7 +20,10 @@ This product has no SDK or third-party dependency and imports no networking modu
   ``FeatureCollection`` envelopes and the service's ``ProblemDetail`` errors.
 
 ```swift
-let endpoint = Endpoint.point(for: try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431))
+import SwiftNWSModels
+
+let location = try WeatherCoordinate(latitude: 30.2672, longitude: -97.7431)
+let endpoint = Endpoint.point(for: location)
 // GET https://api.weather.gov/points/30.2672,-97.7431
 // Accept: application/geo+json
 ```
