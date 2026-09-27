@@ -113,6 +113,14 @@ package enum Fixture: String, CaseIterable, Sendable {
   case noticesInvalid = "notices-invalid"
   /// /mdapi/prod/webapi/stations/8638610/notices.json
   case noticesPopulated = "notices-8638610"
+  /// /api/prod/datagetter?format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=english&begin_date=20250101+00%3A00&end_date=20250101+00%3A05
+  case oneMinuteEnglish = "one-minute-english"
+  /// /api/prod/datagetter?format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric&begin_date=20250101+00%3A00&end_date=20250101+00%3A05
+  case oneMinuteMetric = "one-minute-metric"
+  /// /api/prod/datagetter?begin_date=20240228%2000:30&end_date=20240228%2005:20&format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric
+  case oneMinuteMissing = "one-minute-missing"
+  /// /api/prod/datagetter?begin_date=18000101%2000:00&end_date=18000101%2001:00&format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric
+  case oneMinuteNoData = "one-minute-no-data"
   /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=english
   case salinityEnglish = "salinity-english"
   /// /api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=english&interval=h

@@ -696,6 +696,53 @@
     ]
   },
   {
+    "bytes": 325,
+    "name": "one-minute-english",
+    "path": "/api/prod/datagetter?format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=english&begin_date=20250101+00%3A00&end_date=20250101+00%3A05",
+    "recordedAt": "2026-09-27T14:59:24.724380+00:00",
+    "sha256": "4b3d9c613f6cb9461fa8cbde1ee0a6055dff9d1877601957a1ecf333d1917d3b",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 325,
+    "name": "one-minute-metric",
+    "path": "/api/prod/datagetter?format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric&begin_date=20250101+00%3A00&end_date=20250101+00%3A05",
+    "recordedAt": "2026-09-27T14:59:24.555301+00:00",
+    "sha256": "f6f32f501eb7fff2d4f9336743fc2fdeef06a2c425f4491c42a05db41e558eca",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 9711,
+    "name": "one-minute-missing",
+    "path": "/api/prod/datagetter?begin_date=20240228%2000:30&end_date=20240228%2005:20&format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T15:18:14.204815+00:00",
+    "sha256": "96edccbed824021504a0d9e003055f7d333622b75eaed21e30669b7c65160e9c",
+    "status": 200,
+    "topLevelKeys": [
+      "metadata",
+      "data"
+    ]
+  },
+  {
+    "bytes": 115,
+    "name": "one-minute-no-data",
+    "path": "/api/prod/datagetter?begin_date=18000101%2000:00&end_date=18000101%2001:00&format=json&product=one_minute_water_level&station=9414290&datum=MLLW&time_zone=gmt&units=metric",
+    "recordedAt": "2026-09-27T15:17:53.300107+00:00",
+    "sha256": "500bdf8b7540e3b178fa94711e95e7bd7633578dac4778da5faed9dc45cbfb0f",
+    "status": 200,
+    "topLevelKeys": [
+      "error"
+    ]
+  },
+  {
     "bytes": 657,
     "name": "salinity-english",
     "path": "/api/prod/datagetter?begin_date=20250101+00%3A00&end_date=20250101+01%3A00&format=json&product=salinity&station=8419870&time_zone=gmt&units=english",

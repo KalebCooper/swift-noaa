@@ -8,6 +8,9 @@ All notable changes are documented here, following
 
 ### Added
 
+- Preliminary one-minute water levels with separate height/time records and a four-day range limit.
+  Exhaustive `TidesQueryError` switches must handle the new `rangeTooLongDays` case.
+
 - Latest water levels with an explicit provider selector, optional reading for empty success,
   and `TidesError.invalidLatestWaterLevelResponse` for plural responses. Exhaustive switches
   over `TidesError` must handle the new case.

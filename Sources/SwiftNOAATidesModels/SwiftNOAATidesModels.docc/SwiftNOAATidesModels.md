@@ -416,6 +416,29 @@ let reused = try await tides.value(for: request)
 let wire = try await tides.send(.latestWaterLevel(matching: query))
 ```
 
+
+## One-minute water levels
+
+`OneMinuteWaterLevelQuery` selects the separate preliminary `one_minute_water_level` product
+with explicit datum, units and inclusive GMT bounds. The limit is four Gregorian calendar days;
+an exact four-day endpoint is accepted and one additional minute raises
+`TidesQueryError.rangeTooLongDays(maximumDays:)`. Existing month-based limits are unchanged.
+
+`OneMinuteWaterLevel` has only height and time. It does not fabricate sigma, quality or flags
+from the six-minute product. Heights use meters or feet relative to the requested datum.
+Empty numeric text remains missing, omitted minutes remain gaps, and malformed required values fail.
+The independently decodable response retains provider metadata; `OneMinuteWaterLevels`
+adds the original request separately. A provider no-data refusal remains an error.
+
+```swift
+let query = try OneMinuteWaterLevelQuery(
+  datum: .meanLowerLowWater, range: window, stationIdentifier: identifier, units: .metric)
+let levels = try await tides.oneMinuteWaterLevels(matching: query)
+let request = TidesRequest.oneMinuteWaterLevels(matching: query)
+let reused = try await tides.value(for: request)
+let wire = try await tides.send(.oneMinuteWaterLevels(matching: query))
+```
+
 ## Topics
 
 ### Stations
@@ -559,3 +582,10 @@ let wire = try await tides.send(.latestWaterLevel(matching: query))
 
 - ``LatestWaterLevel``
 - ``LatestWaterLevelQuery``
+
+### One-minute water levels
+
+- ``OneMinuteWaterLevel``
+- ``OneMinuteWaterLevelQuery``
+- ``OneMinuteWaterLevelResponse``
+- ``OneMinuteWaterLevels``

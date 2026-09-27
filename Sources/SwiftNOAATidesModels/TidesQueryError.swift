@@ -20,4 +20,6 @@ public enum TidesQueryError: Error, Hashable, Sendable {
   case nonMinuteAlignedDate
   /// The range exceeds the product's maximum number of Gregorian calendar months.
   case rangeTooLong(maximumMonths: Int)
+  /// The range exceeds the product's maximum number of Gregorian calendar days.
+  case rangeTooLongDays(maximumDays: Int)
 }

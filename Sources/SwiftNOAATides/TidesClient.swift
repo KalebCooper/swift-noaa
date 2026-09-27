@@ -231,9 +231,9 @@ public struct TidesClient: Sendable {
       return try await send(endpoint)
     case .airPressureObservations, .airTemperatureObservations, .conductivityObservations,
       .currentEvents, .currentObservations, .currentPredictions, .highLowTides, .hourlyWaterLevels,
-      .humidityObservations, .latestWaterLevel, .salinityObservations, .tidePredictions,
-      .visibilityObservations,
-      .waterLevels, .waterTemperatureObservations, .windObservations:
+      .humidityObservations, .latestWaterLevel, .oneMinuteWaterLevels, .salinityObservations,
+      .tidePredictions, .visibilityObservations, .waterLevels, .waterTemperatureObservations,
+      .windObservations:
       preconditionFailure(
         "Contextual factories return non-Decodable results and use their specialized executor."
       )
@@ -656,5 +656,32 @@ extension TidesClient {
     }
     return LatestWaterLevel(
       metadata: response.metadata, observation: response.observations.first, requestedQuery: query)
+  }
+}
+
+extension TidesClient {
+  /// Retrieves preliminary one-minute levels with separate requested context.
+  /// - Parameter query: The validated one-minute query.
+  /// - Returns: Provider observations without resampling or gap filling.
+  /// - Throws: Any shared execution error.
+  public func oneMinuteWaterLevels(matching query: OneMinuteWaterLevelQuery)
+    async throws(TidesError) -> OneMinuteWaterLevels
+  {
+    try await value(for: .oneMinuteWaterLevels(matching: query))
+  }
+
+  /// Executes a one-minute query through the shared send path.
+  /// - Parameter request: A request from the one-minute factory.
+  /// - Returns: Provider metadata and observations with their original requested context.
+  /// - Throws: Any shared execution error.
+  public func value(for request: TidesRequest<OneMinuteWaterLevels>) async throws(TidesError)
+    -> OneMinuteWaterLevels
+  {
+    guard case .oneMinuteWaterLevels(let query) = request.resolution else {
+      preconditionFailure("Only the oneMinuteWaterLevels factory constructs this request.")
+    }
+    let response = try await send(.oneMinuteWaterLevels(matching: query))
+    return OneMinuteWaterLevels(
+      metadata: response.metadata, observations: response.observations, requestedQuery: query)
   }
 }

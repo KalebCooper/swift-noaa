@@ -29,6 +29,12 @@ public struct TidesDateRange: Hashable, Sendable {
     self.end = end
   }
 
+  func validate(maximumDays: Int) throws(TidesQueryError) {
+    guard let limit = TidesTimestamp.calendar.date(byAdding: .day, value: maximumDays, to: begin),
+      end <= limit
+    else { throw .rangeTooLongDays(maximumDays: maximumDays) }
+  }
+
   func validate(maximumMonths: Int) throws(TidesQueryError) {
     guard
       let limit = TidesTimestamp.calendar.date(byAdding: .month, value: maximumMonths, to: begin),

@@ -38,6 +38,8 @@ six-minute or hourly selection. See the Tides documentation for query examples a
 Latest water levels use NOAA's explicit latest selector with separate requested context.
 See the Tides documentation for empty-response and unavailable-data behavior.
 
+Preliminary one-minute water levels have a dedicated explicit query with a four-day limit.
+
 ## What's included
 
 Choose the service you need. Each has a client and a separate models library for use with your own
