@@ -103,9 +103,9 @@ jobs:
   apple:
     name: Build & Test (iOS Simulator)
     runs-on: xcode-27
-    # Provisional, from swifty-networking's matching lane; replace it once this lane has green runs.
-    # This lane keeps no build cache, so every run is a cold one.
-    timeout-minutes: 15
+    # The slowest green main run took 7m 23s: rounded to ten minutes, then tripled. This lane keeps
+    # no build cache, so every run is a cold one.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - name: Show Xcode version
@@ -114,14 +114,41 @@ jobs:
       # diagnosable from the log, not just a red X.
       - name: List available simulators
         run: xcrun simctl list devices available
-      # Pin iOS 27.0 explicitly; inspect the listed simulators before changing the pin.
+      # Pin iOS 27.0 explicitly; inspect the listed simulators before changing the pin. The runner
+      # image ships the simulator shut down. Left to the test action, it cold-boots after the build
+      # and the suites start while the simulator's own services are still coming up, which stalls
+      # every test in the process past its time limit. Booting it here overlaps the boot with the
+      # build, and the wait below keeps the tests off it until the boot has finished.
+      - name: Boot simulator
+        run: |
+          read -r udid state < <(xcrun simctl list devices available -j \
+            | jq -r '.devices["com.apple.CoreSimulator.SimRuntime.iOS-27-0"][]? | select(.name == "iPhone 18 Pro") | "\(.udid) \(.state)"')
+          if [ -z "$udid" ]; then
+            echo "No available iPhone 18 Pro simulator on iOS 27.0" >&2
+            exit 1
+          fi
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+          # `simctl boot` refuses a device that is already booted.
+          if [ "$state" != "Booted" ]; then
+            xcrun simctl boot "$udid"
+          fi
       # This lane compiles the Darwin URLSession path, unlike Linux and Android.
-      - name: Build and test
+      - name: Build for testing
         run: |
           set -o pipefail
-          xcodebuild test \
+          xcodebuild build-for-testing \
             -scheme swift-noaa-Package \
-            -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' \
+            -destination "id=$SIMULATOR_UDID" \
+            -skipPackagePluginValidation \
+            | xcbeautify --renderer github-actions
+      - name: Wait for simulator
+        run: xcrun simctl bootstatus "$SIMULATOR_UDID"
+      - name: Test
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -scheme swift-noaa-Package \
+            -destination "id=$SIMULATOR_UDID" \
             -skipPackagePluginValidation \
             | xcbeautify --renderer github-actions
 
